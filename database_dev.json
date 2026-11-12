@@ -812,9 +812,226 @@
       "price": 5000.0,
       "billingCycle": "One-Time",
       "status": "active"
+    },
+    {
+      "id": "add-709b6f",
+      "name": "Custom Integration Suite",
+      "desc": "One-time technical integration",
+      "categoryId": "all",
+      "categoryName": "All Web Applications",
+      "currency": "INR",
+      "price": 5000.0,
+      "billingCycle": "One-Time",
+      "status": "active"
     }
   ],
   "quotations": [
+    {
+      "id": "qt-fc19aa",
+      "quoteNumber": "AIV-QT-2026-745F",
+      "clientName": "Test Customer Alpha",
+      "classification": "Website",
+      "categoryId": "",
+      "categoryName": "",
+      "referenceUrl": "",
+      "currency": "INR",
+      "selectedPaymentPeriod": "One-Time",
+      "billingCadence": "One-Time",
+      "websitePrice": 12000.0,
+      "basePrice": 12000.0,
+      "domainAmount": 1200.0,
+      "websiteOneTime": 12000.0,
+      "onetimeAddons": [
+        {
+          "billingCycle": "One-Time",
+          "currency": "INR",
+          "id": "add-auth",
+          "name": "Google Auth",
+          "price": 2000
+        }
+      ],
+      "oneTimeSubtotal": 15200.0,
+      "oneTimeGST": 2736.0,
+      "oneTimeTotal": 17936.0,
+      "oneTimeTotal_INR": 17936.0,
+      "oneTimeTotal_USD": 0.0,
+      "oneTimeTotalStr": "₹17,936.00 (One-Time)",
+      "websiteMonthly": 0.0,
+      "monthlyAddons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "USD",
+          "id": "add-ai",
+          "name": "AI Voice",
+          "price": 20
+        }
+      ],
+      "monthlyINR": 0.0,
+      "monthlyUSD": 20.0,
+      "monthlyGST_INR": 0.0,
+      "monthlyGST_USD": 3.6,
+      "monthlyTotal_INR": 0.0,
+      "monthlyTotal_USD": 23.6,
+      "monthlyTotalStr": "$23.60 / Month",
+      "websiteAnnual": 0.0,
+      "annualAddons": [
+        {
+          "billingCycle": "Annually",
+          "currency": "USD",
+          "id": "add-ana",
+          "name": "Analytics",
+          "price": 100
+        }
+      ],
+      "annualINR": 0.0,
+      "annualUSD": 100.0,
+      "annualGST_INR": 0.0,
+      "annualGST_USD": 18.0,
+      "annualTotal_INR": 0.0,
+      "annualTotal_USD": 118.0,
+      "annualTotalStr": "$118.00 / Year",
+      "addons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "USD",
+          "id": "add-ai",
+          "name": "AI Voice",
+          "price": 20
+        },
+        {
+          "billingCycle": "Annually",
+          "currency": "USD",
+          "id": "add-ana",
+          "name": "Analytics",
+          "price": 100
+        },
+        {
+          "billingCycle": "One-Time",
+          "currency": "INR",
+          "id": "add-auth",
+          "name": "Google Auth",
+          "price": 2000
+        }
+      ],
+      "subtotal": 15200.0,
+      "gstRate": 18.0,
+      "gstAmount": 2736.0,
+      "totalPrice": 17936.0,
+      "commissionRate": 7.0,
+      "commissionAmount": 840.0,
+      "commExecutiveName": "Lead Rep",
+      "docCoordinatorName": "Doc Coord",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-12",
+      "updatedAt": "2026-11-12"
+    },
+    {
+      "id": "qt-312dc6",
+      "quoteNumber": "AIV-QT-2026-1617",
+      "clientName": "Test Customer Alpha",
+      "classification": "Website",
+      "categoryId": "",
+      "categoryName": "",
+      "referenceUrl": "",
+      "currency": "INR",
+      "selectedPaymentPeriod": "One-Time",
+      "billingCadence": "One-Time",
+      "websitePrice": 12000.0,
+      "basePrice": 12000.0,
+      "domainAmount": 1200.0,
+      "websiteOneTime": 12000.0,
+      "onetimeAddons": [
+        {
+          "billingCycle": "One-Time",
+          "currency": "INR",
+          "id": "add-auth",
+          "name": "Google Auth",
+          "price": 2000
+        }
+      ],
+      "oneTimeSubtotal": 15200.0,
+      "oneTimeGST": 2736.0,
+      "oneTimeTotal": 17936.0,
+      "oneTimeTotal_INR": 17936.0,
+      "oneTimeTotal_USD": 0.0,
+      "oneTimeTotalStr": "₹17,936.00 (One-Time)",
+      "websiteMonthly": 0.0,
+      "monthlyAddons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "USD",
+          "id": "add-ai",
+          "name": "AI Voice",
+          "price": 20
+        }
+      ],
+      "monthlyINR": 0.0,
+      "monthlyUSD": 20.0,
+      "monthlyGST_INR": 0.0,
+      "monthlyGST_USD": 3.6,
+      "monthlyTotal_INR": 0.0,
+      "monthlyTotal_USD": 23.6,
+      "monthlyTotalStr": "$23.60 / Month",
+      "websiteAnnual": 0.0,
+      "annualAddons": [
+        {
+          "billingCycle": "Annually",
+          "currency": "USD",
+          "id": "add-ana",
+          "name": "Analytics",
+          "price": 100
+        }
+      ],
+      "annualINR": 0.0,
+      "annualUSD": 100.0,
+      "annualGST_INR": 0.0,
+      "annualGST_USD": 18.0,
+      "annualTotal_INR": 0.0,
+      "annualTotal_USD": 118.0,
+      "annualTotalStr": "$118.00 / Year",
+      "addons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "USD",
+          "id": "add-ai",
+          "name": "AI Voice",
+          "price": 20
+        },
+        {
+          "billingCycle": "Annually",
+          "currency": "USD",
+          "id": "add-ana",
+          "name": "Analytics",
+          "price": 100
+        },
+        {
+          "billingCycle": "One-Time",
+          "currency": "INR",
+          "id": "add-auth",
+          "name": "Google Auth",
+          "price": 2000
+        }
+      ],
+      "subtotal": 15200.0,
+      "gstRate": 18.0,
+      "gstAmount": 2736.0,
+      "totalPrice": 17936.0,
+      "commissionRate": 7.0,
+      "commissionAmount": 840.0,
+      "commExecutiveName": "Lead Rep",
+      "docCoordinatorName": "Doc Coord",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-12",
+      "updatedAt": "2026-11-12"
+    },
     {
       "id": "qt-1a0f8d",
       "quoteNumber": "AIV-QT-2026-603B",

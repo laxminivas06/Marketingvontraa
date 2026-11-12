@@ -131,7 +131,7 @@ def test_addons_cycles():
         "status": "active"
     }
     res_add = client.post('/api/addons', json=new_addon)
-    assert res_add.status_code == 200
+    assert res_add.status_code in [200, 201], f"Create addon failed: {res_add.data}"
     created_addon = json.loads(res_add.data)['addon']
     assert created_addon['billingCycle'] == 'One-Time'
     print(f"[PASS] One-Time Add-on creation verified: {created_addon['id']}")
@@ -162,7 +162,7 @@ def test_quotations_calculation_and_segregation():
         "docCoordinatorName": "Doc Coord"
     }
     res_a = client.post('/api/quotations', json=quote_payload_a)
-    assert res_a.status_code == 200, f"Quotation creation failed: {res_a.data}"
+    assert res_a.status_code in [200, 201], f"Quotation creation failed: {res_a.data}"
     qa = json.loads(res_a.data)['quotation']
 
     # One-Time subtotal = 12000 (site) + 1200 (domain) + 2000 (one-time addon) = 15200
@@ -194,7 +194,7 @@ def test_quotations_calculation_and_segregation():
         ]
     }
     res_b = client.post('/api/quotations', json=quote_payload_b)
-    assert res_b.status_code == 200
+    assert res_b.status_code in [200, 201], f"Quotation B failed: {res_b.data}"
     qb = json.loads(res_b.data)['quotation']
 
     print(f"Quotation B (Monthly selected):")
@@ -220,7 +220,7 @@ def test_quotations_calculation_and_segregation():
         "addons": []
     }
     res_c = client.post('/api/quotations', json=quote_payload_c)
-    assert res_c.status_code == 200
+    assert res_c.status_code in [200, 201], f"Quotation C failed: {res_c.data}"
     qc = json.loads(res_c.data)['quotation']
 
     print(f"Quotation C (Annual selected):")

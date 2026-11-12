@@ -5,9 +5,9 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 19:26:17",
-    "record_count": 26,
-    "checksum": "b865cb80b63b79225d872b013f65b2cb6899ada40991cff45a0f04920a9fbfc1"
+    "updated_at": "2026-11-12 19:27:13",
+    "record_count": 27,
+    "checksum": "3099d4c6257c162aefd38d0bdf77d40a7edddc7bb09d57febe19ae07e6f677f5"
   },
   "records": [
     {
@@ -683,6 +683,18 @@
     },
     {
       "id": "add-dbc239",
+      "name": "Custom Integration Suite",
+      "desc": "One-time technical integration",
+      "categoryId": "all",
+      "categoryName": "All Web Applications",
+      "currency": "INR",
+      "price": 5000.0,
+      "billingCycle": "One-Time",
+      "status": "active",
+      "_entity_type": "addons"
+    },
+    {
+      "id": "add-709b6f",
       "name": "Custom Integration Suite",
       "desc": "One-time technical integration",
       "categoryId": "all",
