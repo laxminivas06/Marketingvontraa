@@ -5,9 +5,9 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 18:25:19",
-    "record_count": 17,
-    "checksum": "c9541fb5d7fd3e69293b0b01bee36be68752c84f2daa6b81f7219aca532d2a83"
+    "updated_at": "2026-11-12 18:46:24",
+    "record_count": 22,
+    "checksum": "c3867ad2a13bdb079211fdd9286b44d4438dfdcb15077ddd53d920eca471cef3"
   },
   "records": [
     {
@@ -423,6 +423,66 @@
         "Search & Filters"
       ],
       "_entity_type": "categories"
+    },
+    {
+      "id": "add-ai-voice",
+      "name": "AI Voice Assistant",
+      "desc": "Voice interactive AI assistant module with natural language comprehension.",
+      "categoryId": "all",
+      "categoryName": "All Web Applications",
+      "currency": "USD",
+      "price": 20.0,
+      "billingCycle": "Monthly",
+      "status": "active",
+      "_entity_type": "addons"
+    },
+    {
+      "id": "add-analytics",
+      "name": "Advanced Analytics",
+      "desc": "Deep conversion metrics, custom event tracking, and scheduled executive reports.",
+      "categoryId": "all",
+      "categoryName": "All Web Applications",
+      "currency": "USD",
+      "price": 100.0,
+      "billingCycle": "Annually",
+      "status": "active",
+      "_entity_type": "addons"
+    },
+    {
+      "id": "add-attendance",
+      "name": "Automated Attendance",
+      "desc": "Biometric and mobile attendance syncing system with automated reporting.",
+      "categoryId": "all",
+      "categoryName": "All Web Applications",
+      "currency": "INR",
+      "price": 2000.0,
+      "billingCycle": "Monthly",
+      "status": "active",
+      "_entity_type": "addons"
+    },
+    {
+      "id": "add-whatsapp",
+      "name": "WhatsApp Automation Suite",
+      "desc": "Automated notifications, alerts, and customer lead engagement via official API.",
+      "categoryId": "all",
+      "categoryName": "All Web Applications",
+      "currency": "INR",
+      "price": 1500.0,
+      "billingCycle": "Monthly",
+      "status": "active",
+      "_entity_type": "addons"
+    },
+    {
+      "id": "add-priority-sla",
+      "name": "Dedicated Priority Support & SLA",
+      "desc": "24/7 priority incident response with guaranteed 1-hour resolution turnaround.",
+      "categoryId": "all",
+      "categoryName": "All Web Applications",
+      "currency": "USD",
+      "price": 300.0,
+      "billingCycle": "Annually",
+      "status": "active",
+      "_entity_type": "addons"
     }
   ]
 }

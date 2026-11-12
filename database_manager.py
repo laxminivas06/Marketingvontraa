@@ -522,6 +522,11 @@ class DatabaseManager:
                     clean_rec = {k: v for k, v in rec.items() if k != "_entity_type"}
                     if etype and etype in state:
                         state[etype].append(clean_rec)
+                    elif shard.get("module") == "admin":
+                        if etype == "addons" or "billingCycle" in clean_rec:
+                            state["addons"].append(clean_rec)
+                        else:
+                            state["categories"].append(clean_rec)
                     elif shard.get("module") == "users":
                         state["users"].append(clean_rec)
                     elif shard.get("module") == "quotations":

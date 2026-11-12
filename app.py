@@ -753,17 +753,161 @@ def api_user_toggle_status(user_id):
 
 
 # -------------------------------------------------------------
-# ADD-ONS CONFIGURATION (Deprecated - returns empty list)
+# OPTIONAL ADD-ONS CONFIGURATION (Monthly & Annual Recurring)
 # -------------------------------------------------------------
+DEFAULT_ADDONS = [
+    {
+        "id": "add-ai-voice",
+        "name": "AI Voice Assistant",
+        "desc": "Voice interactive AI assistant module with natural language comprehension.",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "USD",
+        "price": 20.0,
+        "billingCycle": "Monthly",
+        "status": "active"
+    },
+    {
+        "id": "add-analytics",
+        "name": "Advanced Analytics",
+        "desc": "Deep conversion metrics, custom event tracking, and scheduled executive reports.",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "USD",
+        "price": 100.0,
+        "billingCycle": "Annually",
+        "status": "active"
+    },
+    {
+        "id": "add-attendance",
+        "name": "Automated Attendance",
+        "desc": "Biometric and mobile attendance syncing system with automated reporting.",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "INR",
+        "price": 2000.0,
+        "billingCycle": "Monthly",
+        "status": "active"
+    },
+    {
+        "id": "add-whatsapp",
+        "name": "WhatsApp Automation Suite",
+        "desc": "Automated notifications, alerts, and customer lead engagement via official API.",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "INR",
+        "price": 1500.0,
+        "billingCycle": "Monthly",
+        "status": "active"
+    },
+    {
+        "id": "add-priority-sla",
+        "name": "Dedicated Priority Support & SLA",
+        "desc": "24/7 priority incident response with guaranteed 1-hour resolution turnaround.",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "USD",
+        "price": 300.0,
+        "billingCycle": "Annually",
+        "status": "active"
+    }
+]
+
 @app.route('/api/addons', methods=['GET', 'POST'])
 def api_addons():
+    db = load_db()
+    if not db.get('addons'):
+        db['addons'] = list(DEFAULT_ADDONS)
+        save_db(db)
+
     if request.method == 'GET':
-        return jsonify([])
-    return jsonify({"success": True, "addons": []})
+        return jsonify(db.get('addons', []))
+
+    payload = request.get_json() or {}
+    name = payload.get('name', '').strip()
+    if not name:
+        return jsonify({"success": False, "message": "Add-on name is required"}), 400
+
+    price = float(payload.get('price', 0))
+    currency = payload.get('currency', 'INR').upper()
+    if currency not in ['INR', 'USD']:
+        currency = 'INR'
+
+    billing_cycle = payload.get('billingCycle', 'Monthly').capitalize()
+    if billing_cycle not in ['Monthly', 'Annually']:
+        billing_cycle = 'Monthly'
+
+    category_id = payload.get('categoryId', 'all')
+    category_name = payload.get('categoryName', 'All Web Applications')
+    if category_id != 'all':
+        cat = next((c for c in db.get('categories', []) if c['id'] == category_id), None)
+        if cat:
+            category_name = cat.get('name', category_name)
+
+    new_addon = {
+        "id": f"add-{uuid.uuid4().hex[:6]}",
+        "name": name,
+        "desc": payload.get('desc', '').strip(),
+        "categoryId": category_id,
+        "categoryName": category_name,
+        "currency": currency,
+        "price": price,
+        "billingCycle": billing_cycle,
+        "status": payload.get('status', 'active')
+    }
+    db.setdefault('addons', []).append(new_addon)
+    save_db(db)
+    return jsonify({"success": True, "addon": new_addon}), 201
 
 @app.route('/api/addons/<add_id>', methods=['PUT', 'DELETE'])
 def api_addon_item(add_id):
-    return jsonify({"success": True})
+    db = load_db()
+    addons = db.get('addons', [])
+    idx = next((i for i, a in enumerate(addons) if a['id'] == add_id), None)
+    if idx is None:
+        return jsonify({"success": False, "message": "Add-on not found"}), 404
+
+    if request.method == 'PUT':
+        payload = request.get_json() or {}
+        name = payload.get('name', addons[idx]['name']).strip()
+        if not name:
+            return jsonify({"success": False, "message": "Add-on name cannot be empty"}), 400
+
+        price = float(payload.get('price', addons[idx].get('price', 0)))
+        currency = payload.get('currency', addons[idx].get('currency', 'INR')).upper()
+        if currency not in ['INR', 'USD']:
+            currency = 'INR'
+
+        billing_cycle = payload.get('billingCycle', addons[idx].get('billingCycle', 'Monthly')).capitalize()
+        if billing_cycle not in ['Monthly', 'Annually']:
+            billing_cycle = 'Monthly'
+
+        category_id = payload.get('categoryId', addons[idx].get('categoryId', 'all'))
+        category_name = payload.get('categoryName', addons[idx].get('categoryName', 'All Web Applications'))
+        if category_id != 'all':
+            cat = next((c for c in db.get('categories', []) if c['id'] == category_id), None)
+            if cat:
+                category_name = cat.get('name', category_name)
+        else:
+            category_name = 'All Web Applications'
+
+        addons[idx].update({
+            "name": name,
+            "desc": payload.get('desc', addons[idx].get('desc', '')).strip(),
+            "categoryId": category_id,
+            "categoryName": category_name,
+            "currency": currency,
+            "price": price,
+            "billingCycle": billing_cycle,
+            "status": payload.get('status', addons[idx].get('status', 'active'))
+        })
+        save_db(db)
+        return jsonify({"success": True, "addon": addons[idx]})
+
+    elif request.method == 'DELETE':
+        deleted = addons.pop(idx)
+        save_db(db)
+        return jsonify({"success": True, "deleted": deleted})
 
 
 # -------------------------------------------------------------
@@ -789,55 +933,38 @@ def api_quotations():
     if currency not in ['INR', 'USD']:
         currency = 'INR'
 
-    billing_cadence = payload.get('billingCadence', 'annual').lower()
     base_price = float(payload.get('basePrice', 0))
     domain_amount = float(payload.get('domainAmount', 0))
     addons = payload.get('addons', [])
 
-    # Calculate separate totals for INR and USD
-    inr_addons = [a for a in addons if str(a.get('currency', '')).upper() == 'INR']
-    usd_addons = [a for a in addons if str(a.get('currency', '')).upper() == 'USD']
-    addons_inr = round(sum(float(a.get('price', 0)) for a in inr_addons), 2)
-    addons_usd = round(sum(float(a.get('price', 0)) for a in usd_addons), 2)
+    # 1. Main Web Application – One-Time Payment Cost
+    one_time_subtotal = round(base_price + domain_amount, 2)
+    one_time_gst = round(one_time_subtotal * 0.18, 2) if one_time_subtotal > 0 else 0.0
+    one_time_total = round(one_time_subtotal + one_time_gst, 2) if one_time_subtotal > 0 else 0.0
 
-    # Base price and domain belong to the base quotation currency
-    base_inr = (base_price + domain_amount) if currency == 'INR' else 0.0
-    base_usd = (base_price + domain_amount) if currency == 'USD' else 0.0
+    # 2. Optional Add-ons – Monthly Recurring Cost
+    monthly_addons = [a for a in addons if str(a.get('billingCycle', '')).capitalize() == 'Monthly']
+    monthly_inr = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    monthly_usd = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+    monthly_gst_inr = round(monthly_inr * 0.18, 2) if monthly_inr > 0 else 0.0
+    monthly_gst_usd = round(monthly_usd * 0.18, 2) if monthly_usd > 0 else 0.0
+    monthly_total_inr = round(monthly_inr + monthly_gst_inr, 2) if monthly_inr > 0 else 0.0
+    monthly_total_usd = round(monthly_usd + monthly_gst_usd, 2) if monthly_usd > 0 else 0.0
 
-    subtotal_inr = round(base_inr + addons_inr, 2)
-    subtotal_usd = round(base_usd + addons_usd, 2)
+    # 3. Optional Add-ons – Annual Recurring Cost
+    annual_addons = [a for a in addons if str(a.get('billingCycle', '')).capitalize() in ['Annually', 'Annual', 'Yearly']]
+    annual_inr = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    annual_usd = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+    annual_gst_inr = round(annual_inr * 0.18, 2) if annual_inr > 0 else 0.0
+    annual_gst_usd = round(annual_usd * 0.18, 2) if annual_usd > 0 else 0.0
+    annual_total_inr = round(annual_inr + annual_gst_inr, 2) if annual_inr > 0 else 0.0
+    annual_total_usd = round(annual_usd + annual_gst_usd, 2) if annual_usd > 0 else 0.0
 
-    gst_inr = round(subtotal_inr * 0.18, 2) if subtotal_inr > 0 else 0.0
-    total_inr = round(subtotal_inr + gst_inr, 2) if subtotal_inr > 0 else 0.0
-
-    gst_usd = round(subtotal_usd * 0.18, 2) if subtotal_usd > 0 else 0.0
-    total_usd = round(subtotal_usd + gst_usd, 2) if subtotal_usd > 0 else 0.0
-
-    is_mixed_currency = (subtotal_inr > 0 and subtotal_usd > 0)
-
-    # Primary fields based on base currency or single currency
-    if currency == 'USD':
-        subtotal = subtotal_usd
-        gst_amount = gst_usd
-        total_price = total_usd
-    else:
-        subtotal = subtotal_inr
-        gst_amount = gst_inr
-        total_price = total_inr
-
-    # Automatic Commission Calculation based on currency slabs
-    slabs_inr = db.get('commissionSlabsINR', [])
-    matched_slab_inr = next((s for s in slabs_inr if subtotal_inr >= s.get('minPrice', 0) and subtotal_inr <= s.get('maxPrice', 99999999)), None)
-    rate_inr = min(10.0, matched_slab_inr.get('rate', 7.0)) if matched_slab_inr else 7.0
-    commission_amount_inr = round((subtotal_inr * rate_inr) / 100, 2)
-
-    slabs_usd = db.get('commissionSlabsUSD', [])
-    matched_slab_usd = next((s for s in slabs_usd if subtotal_usd >= s.get('minPrice', 0) and subtotal_usd <= s.get('maxPrice', 99999999)), None)
-    rate_usd = min(10.0, matched_slab_usd.get('rate', 7.0)) if matched_slab_usd else 7.0
-    commission_amount_usd = round((subtotal_usd * rate_usd) / 100, 2)
-
-    commission_amount = commission_amount_usd if currency == 'USD' else commission_amount_inr
-    rate = rate_usd if currency == 'USD' else rate_inr
+    # Internal Commission: calculated strictly on the One-Time Application subtotal (excluding domain)
+    slabs = db.get('commissionSlabsUSD', []) if currency == 'USD' else db.get('commissionSlabsINR', [])
+    matched_slab = next((s for s in slabs if base_price >= s.get('minPrice', 0) and base_price <= s.get('maxPrice', 99999999)), None)
+    rate = min(10.0, matched_slab.get('rate', 7.0)) if matched_slab else 7.0
+    commission_amount = round((base_price * rate) / 100, 2)
 
     cat_id = payload.get('categoryId', '')
     cat = next((c for c in db.get('categories', []) if c['id'] == cat_id), None)
@@ -852,34 +979,50 @@ def api_quotations():
         "categoryName": payload.get('categoryName', ''),
         "referenceUrl": reference_url,
         "currency": currency,
-        "billingCadence": billing_cadence,
+        "paymentType": "One-Time Payment",
+        
+        # 1. Main Application One-Time Investment
         "basePrice": base_price,
         "domainAmount": domain_amount,
+        "oneTimeSubtotal": one_time_subtotal,
+        "oneTimeGST": one_time_gst,
+        "oneTimeTotal": one_time_total,
+        
+        # 2. Monthly Recurring
+        "monthlyAddons": monthly_addons,
+        "monthlyINR": monthly_inr,
+        "monthlyUSD": monthly_usd,
+        "monthlyGST_INR": monthly_gst_inr,
+        "monthlyGST_USD": monthly_gst_usd,
+        "monthlyTotal_INR": monthly_total_inr,
+        "monthlyTotal_USD": monthly_total_usd,
+        
+        # 3. Annual Recurring
+        "annualAddons": annual_addons,
+        "annualINR": annual_inr,
+        "annualUSD": annual_usd,
+        "annualGST_INR": annual_gst_inr,
+        "annualGST_USD": annual_gst_usd,
+        "annualTotal_INR": annual_total_inr,
+        "annualTotal_USD": annual_total_usd,
+
+        # Full Addons array
         "addons": addons,
-        "addonsINR": addons_inr,
-        "addonsUSD": addons_usd,
-        "subtotal": subtotal,
-        "subtotalINR": subtotal_inr,
-        "subtotalUSD": subtotal_usd,
+
+        # Standard fallback fields
+        "subtotal": one_time_subtotal,
         "gstRate": 18.0,
-        "gstAmount": gst_amount,
-        "gstINR": gst_inr,
-        "gstUSD": gst_usd,
-        "totalPrice": total_price,
-        "totalINR": total_inr,
-        "totalUSD": total_usd,
-        "isMixedCurrency": is_mixed_currency,
+        "gstAmount": one_time_gst,
+        "totalPrice": one_time_total,
         "commissionRate": rate,
         "commissionAmount": commission_amount,
-        "commissionAmountINR": commission_amount_inr,
-        "commissionAmountUSD": commission_amount_usd,
         "commExecutiveName": payload.get('commExecutiveName', 'Client Communication Exec'),
         "docCoordinatorName": payload.get('docCoordinatorName', 'Project Documentation Coordinator'),
         "assignedMarketing": payload.get('assignedMarketing', []),
         "requirementsFiles": payload.get('requirementsFiles', []),
-        "status": payload.get('status', 'Generated'),  # Draft, Generated, Sent to Customer, Accepted, Rejected
+        "status": payload.get('status', 'Generated'),
         "assignmentStatus": "none",
-        "terms": payload.get('terms', "50% advance on kickoff, 50% upon deployment. 30 days post-launch support included. All prices subject to 18% GST."),
+        "terms": payload.get('terms', "Main application cost is a one-time payment. Selected optional add-on subscriptions are billed on their respective monthly or annual recurring schedules. All prices are subject to 18% GST."),
         "createdAt": today_str,
         "updatedAt": today_str
     }

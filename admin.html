@@ -61,7 +61,11 @@
         </a>
         <a href="/admin/categories" class="nav-item" data-tab="categories" onclick="handleNavClick('categories', event, this)">
           <span class="nav-icon">📁</span>
-          <span>Category Management</span>
+          <span>Web Applications (One-Time)</span>
+        </a>
+        <a href="/admin/addons" class="nav-item" data-tab="addons" onclick="handleNavClick('addons', event, this)">
+          <span class="nav-icon">🧩</span>
+          <span>Optional Add-ons (Recurring)</span>
         </a>
         <a href="/admin/quotations" class="nav-item" data-tab="quotations" onclick="handleNavClick('quotations', event, this)">
           <span class="nav-icon">📄</span>
@@ -178,12 +182,12 @@
           </div>
         </section>
 
-        <!-- 2. CATEGORY MANAGEMENT – BULK EXCEL UPLOAD & REFERENCE WEBSITES -->
+        <!-- 2. MAIN WEB APPLICATIONS – ONE-TIME PAYMENT PRICING -->
         <section id="tab-categories" class="tab-pane" style="display: none;">
           <div class="section-header">
             <div>
-              <h2>Category Management</h2>
-              <p>Add individual categories or bulk upload via Excel. Set reference website URLs to share examples with marketing executives.</p>
+              <h2>Main Web Applications – One-Time Payment Pricing</h2>
+              <p>All primary web applications operate on a One-Time Payment structure. Configure application deliverables, one-time INR & USD prices, and benchmark URLs.</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <a href="/api/categories/template" class="btn btn-secondary btn-sm" download>
@@ -191,21 +195,24 @@
               </a>
               <input type="file" id="cat-excel-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleCategoryExcelUpload(event)">
               <button class="btn btn-primary btn-sm" onclick="document.getElementById('cat-excel-input').click()">
-                📤 Bulk Upload Categories (Excel)
+                📤 Bulk Upload Applications (Excel)
               </button>
             </div>
           </div>
 
-          <!-- Add Category Form -->
+          <!-- Add Web Application Form -->
           <div class="card" style="margin-bottom: 2rem;">
-            <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900); margin-bottom: 1.25rem;">
-              Add New Category
-            </h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900);">
+                Add New Web Application
+              </h3>
+              <span class="pill pill-active">Payment Structure: One-Time Payment</span>
+            </div>
             <form id="form-add-category" onsubmit="saveNewCategory(event)">
               <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                  <label for="cat-name">Category Name *</label>
-                  <input type="text" id="cat-name" class="form-control" placeholder="e.g. Basic Business Website" required>
+                  <label for="cat-name">Application Name *</label>
+                  <input type="text" id="cat-name" class="form-control" placeholder="e.g. School Management Website" required>
                 </div>
 
                 <div class="form-group">
@@ -221,27 +228,30 @@
 
               <div class="form-group">
                 <label for="cat-desc">Description</label>
-                <textarea id="cat-desc" class="form-control" rows="2" placeholder="Brief deliverables overview..."></textarea>
+                <textarea id="cat-desc" class="form-control" rows="2" placeholder="Deliverables and architecture overview..."></textarea>
               </div>
 
               <div class="form-group">
-                <label for="cat-ref-url">Reference Website URL (New)</label>
+                <label for="cat-ref-url">Reference Website URL</label>
                 <input type="url" id="cat-ref-url" class="form-control" placeholder="https://example.com" style="font-family: var(--font-mono);">
-                <small style="color: var(--slate-500); font-size: 0.75rem;">This reference website URL will automatically be available to marketing executives in their Website References page and Calculator.</small>
+                <small style="color: var(--slate-500); font-size: 0.75rem;">This reference website URL will be accessible to marketing executives during customer discussions.</small>
               </div>
 
               <div style="background: var(--slate-50); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--slate-200); margin-bottom: 1.25rem;">
-                <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.75rem; letter-spacing: 0.05em;">
-                  Base Pricing Configuration (INR & USD)
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--slate-700); letter-spacing: 0.05em;">
+                    One-Time Application Pricing (INR & USD)
+                  </div>
+                  <span class="pill pill-primary" style="font-size: 0.7rem;">One-Time Payment Only</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                   <div class="form-group" style="margin-bottom: 0;">
-                    <label for="cat-price-inr">Indian Base Price (INR ₹) *</label>
+                    <label for="cat-price-inr">One-Time Price (INR ₹) *</label>
                     <input type="number" id="cat-price-inr" class="form-control" placeholder="15000" min="0" required style="font-family: var(--font-mono); font-weight: 700;">
                   </div>
                   <div class="form-group" style="margin-bottom: 0;">
-                    <label for="cat-price-usd">Foreign Base Price (USD $) *</label>
-                    <input type="number" id="cat-price-usd" class="form-control" placeholder="250" min="0" required style="font-family: var(--font-mono); font-weight: 700;">
+                    <label for="cat-price-usd">One-Time Price (USD $) *</label>
+                    <input type="number" id="cat-price-usd" class="form-control" placeholder="500" min="0" required style="font-family: var(--font-mono); font-weight: 700;">
                   </div>
                 </div>
               </div>
@@ -249,12 +259,12 @@
               <div class="form-group">
                 <label for="cat-features">Included Features (Enter one feature per line) *</label>
                 <textarea id="cat-features" class="form-control" rows="4" placeholder="Google Sign-in Authentication&#10;Responsive Design&#10;Basic Dashboard&#10;Contact Form&#10;Database Integration" required></textarea>
-                <small style="color: var(--slate-500); font-size: 0.75rem;">These bullet points will automatically appear on customer quotations.</small>
+                <small style="color: var(--slate-500); font-size: 0.75rem;">Features will appear on official client proposals as standard deliverables.</small>
               </div>
 
               <div style="text-align: right;">
                 <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-size: 0.95rem;">
-                  SAVE CATEGORY
+                  SAVE APPLICATION
                 </button>
               </div>
             </form>
@@ -262,22 +272,54 @@
 
           <!-- Existing Categories Table -->
           <div class="section-header">
-            <h3>View Categories</h3>
+            <h3>Registered Web Applications</h3>
           </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Category Name</th>
+                  <th>Application Name</th>
                   <th>Classification</th>
+                  <th>Payment Type</th>
                   <th>Reference Website</th>
-                  <th>INR Price (₹)</th>
-                  <th>USD Price ($)</th>
+                  <th>One-Time Price (INR ₹)</th>
+                  <th>One-Time Price (USD $)</th>
                   <th>Included Features</th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
               </thead>
               <tbody id="table-categories-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3. OPTIONAL ADD-ONS CONFIGURATION (MONTHLY & ANNUAL RECURRING) -->
+        <section id="tab-addons" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Optional Add-ons Configuration</h2>
+              <p>Configure independent monthly or annual recurring client add-ons in INR (₹) and USD ($). Each add-on has its own price, currency, and recurring billing frequency.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAddAddonModal()">
+              + Add New Add-on
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Add-on Name & Description</th>
+                  <th>Target Web Application</th>
+                  <th>Billing Cycle</th>
+                  <th>Price & Currency</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-addons-body">
                 <!-- Injected via JS -->
               </tbody>
             </table>
