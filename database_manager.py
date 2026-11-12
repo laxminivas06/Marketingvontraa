@@ -385,7 +385,8 @@ class DatabaseManager:
         with _DB_LOCK:
             catalog = self._get_catalog()
             registry = catalog.setdefault("shard_registry", {})
-            record_index = catalog.setdefault("record_index", {})
+            record_index = {}
+            catalog["record_index"] = record_index
             now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             mapping = {

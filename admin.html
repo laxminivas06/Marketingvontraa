@@ -1968,7 +1968,12 @@
     function renderAddons() {
       const tbody = document.getElementById('table-addons-body');
       tbody.innerHTML = '';
-      (API.state.addons || []).forEach(a => {
+      const list = API.state.addons || [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--slate-400);">No add-ons configured yet. Click "+ Create Add-on" above to add one.</td></tr>`;
+        return;
+      }
+      list.forEach(a => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
