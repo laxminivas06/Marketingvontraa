@@ -37,10 +37,6 @@
           <span class="nav-icon">📊</span>
           <span>Dashboard Overview</span>
         </a>
-        <a href="/admin/categories" class="nav-item" data-tab="categories" onclick="handleNavClick('categories', event, this)">
-          <span class="nav-icon">📁</span>
-          <span>Category Management</span>
-        </a>
         <a href="/admin/assignments" class="nav-item" data-tab="assignments" onclick="handleNavClick('assignments', event, this)">
           <span class="nav-icon">📌</span>
           <span>Project Assignments</span>
@@ -48,7 +44,7 @@
         </a>
         <a href="/admin/slabs" class="nav-item" data-tab="slabs" onclick="handleNavClick('slabs', event, this)">
           <span class="nav-icon">⚙️</span>
-          <span>Commission Slabs</span>
+          <span>Commissions</span>
         </a>
         <a href="/admin/marketing-users" class="nav-item" data-tab="marketing-users" onclick="handleNavClick('marketing-users', event, this)">
           <span class="nav-icon">💼</span>
@@ -57,6 +53,10 @@
         <a href="/admin/dev-users" class="nav-item" data-tab="dev-users" onclick="handleNavClick('dev-users', event, this)">
           <span class="nav-icon">💻</span>
           <span>Developer Team</span>
+        </a>
+        <a href="/admin/categories" class="nav-item" data-tab="categories" onclick="handleNavClick('categories', event, this)">
+          <span class="nav-icon">📁</span>
+          <span>Category Management</span>
         </a>
         <a href="/admin/addons" class="nav-item" data-tab="addons" onclick="handleNavClick('addons', event, this)">
           <span class="nav-icon">🧩</span>
@@ -92,12 +92,10 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div style="font-size: 0.72rem; color: var(--slate-400); margin-bottom: 0.5rem; text-align: center; font-weight: 600;">
-          laxminivasmorishetty143@gmail.com
+        <div style="font-size: 0.72rem; color: var(--slate-400); text-align: center; font-weight: 600;">
+          Aivontraa Automation Pvt. Ltd.<br>
+          <span style="font-size: 0.65rem; color: var(--slate-400);">v3.5 Enterprise</span>
         </div>
-        <button class="btn btn-secondary btn-sm btn-block" onclick="API.logout()">
-          Sign Out
-        </button>
       </div>
     </aside>
 
@@ -106,17 +104,22 @@
       <!-- TOPBAR -->
       <header class="topbar">
         <div class="topbar-left">
-          <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-backdrop').classList.toggle('active');">☰</button>
+          <button class="mobile-toggle" onclick="API.toggleMobileSidebar()" aria-label="Toggle Navigation">☰</button>
           <div class="page-title" id="page-heading">Dashboard Overview</div>
         </div>
         <div class="topbar-right">
           <div class="user-profile-badge">
             <div class="user-avatar" id="header-user-avatar" style="background: #b91c1c;">L</div>
-            <div>
-              <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-900);" id="header-user-name">Laxminivas Morishetty</div>
-              <div style="font-size: 0.7rem; color: #b91c1c; font-weight: 800;" id="header-user-role">ADMINISTRATOR</div>
+            <div class="user-meta-info">
+              <div class="user-name" id="header-user-name">Laxminivas Morishetty</div>
+              <div class="user-email" id="header-user-email">laxminivasmorishetty143@gmail.com</div>
+              <div class="user-role" id="header-user-role" style="color: #b91c1c;">ADMINISTRATOR</div>
             </div>
           </div>
+          <button type="button" class="btn-header-signout" onclick="API.logout()" title="Sign Out">
+            <span class="signout-icon">🚪</span>
+            <span class="signout-text">Sign Out</span>
+          </button>
         </div>
       </header>
 
@@ -1274,9 +1277,7 @@
         API.navigate('/admin', tabId, headingMap[tabId]);
       }
 
-      if (window.innerWidth <= 860) {
-        document.querySelector('.sidebar').classList.remove('open');
-      }
+      API.closeMobileSidebar();
     }
 
     async function refreshAllData() {

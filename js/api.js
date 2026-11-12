@@ -246,9 +246,11 @@ const API = {
     }
 
     const nameEl = document.getElementById('header-user-name');
+    const emailEl = document.getElementById('header-user-email');
     const roleEl = document.getElementById('header-user-role');
     const avatarEl = document.getElementById('header-user-avatar');
-    if (nameEl) nameEl.innerText = user.name || user.email;
+    if (nameEl) nameEl.innerText = user.name || user.email.split('@')[0];
+    if (emailEl) emailEl.innerText = user.email || '';
     if (roleEl) roleEl.innerText = this.formatRoleName(user.role).toUpperCase();
     if (avatarEl) avatarEl.innerText = (user.name || user.email).charAt(0).toUpperCase();
 

@@ -59,12 +59,10 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div style="font-size: 0.72rem; color: var(--slate-400); margin-bottom: 0.5rem; text-align: center; font-weight: 600;">
-          Aivontraa Automation Pvt. Ltd.
+        <div style="font-size: 0.72rem; color: var(--slate-400); text-align: center; font-weight: 600;">
+          Aivontraa Automation Pvt. Ltd.<br>
+          <span style="font-size: 0.65rem; color: var(--slate-400);">v3.5 Enterprise</span>
         </div>
-        <button class="btn btn-secondary btn-sm btn-block" onclick="API.logout()">
-          Sign Out
-        </button>
       </div>
     </aside>
 
@@ -72,17 +70,22 @@
     <div class="main-wrapper">
       <header class="topbar">
         <div class="topbar-left">
-          <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-backdrop').classList.toggle('active');">☰</button>
+          <button class="mobile-toggle" onclick="API.toggleMobileSidebar()" aria-label="Toggle Navigation">☰</button>
           <div class="page-title" id="page-heading">Price Calculator & Proposal</div>
         </div>
         <div class="topbar-right">
           <div class="user-profile-badge">
             <div class="user-avatar" id="header-user-avatar" style="background: var(--primary);">M</div>
-            <div>
-              <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-900);" id="header-user-name">Marketing Executive</div>
-              <div style="font-size: 0.7rem; color: #1e40af; font-weight: 800;" id="header-user-role">MARKETING TEAM</div>
+            <div class="user-meta-info">
+              <div class="user-name" id="header-user-name">Marketing Executive</div>
+              <div class="user-email" id="header-user-email">rajesh.marketing@aivontraa.com</div>
+              <div class="user-role" id="header-user-role" style="color: #1e40af;">MARKETING TEAM</div>
             </div>
           </div>
+          <button type="button" class="btn-header-signout" onclick="API.logout()" title="Sign Out">
+            <span class="signout-icon">🚪</span>
+            <span class="signout-text">Sign Out</span>
+          </button>
         </div>
       </header>
 
