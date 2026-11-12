@@ -61,11 +61,11 @@
         </a>
         <a href="/admin/categories" class="nav-item" data-tab="categories" onclick="handleNavClick('categories', event, this)">
           <span class="nav-icon">📁</span>
-          <span>Web Applications (One-Time)</span>
+          <span>Web Applications & Bundles</span>
         </a>
         <a href="/admin/addons" class="nav-item" data-tab="addons" onclick="handleNavClick('addons', event, this)">
           <span class="nav-icon">🧩</span>
-          <span>Optional Add-ons (Recurring)</span>
+          <span>Optional Add-ons</span>
         </a>
         <a href="/admin/quotations" class="nav-item" data-tab="quotations" onclick="handleNavClick('quotations', event, this)">
           <span class="nav-icon">📄</span>
@@ -182,12 +182,12 @@
           </div>
         </section>
 
-        <!-- 2. MAIN WEB APPLICATIONS – ONE-TIME PAYMENT PRICING -->
+        <!-- 2. MAIN WEB APPLICATIONS & BUNDLES – MULTI-PAYMENT PRICING -->
         <section id="tab-categories" class="tab-pane" style="display: none;">
           <div class="section-header">
             <div>
-              <h2>Main Web Applications – One-Time Payment Pricing</h2>
-              <p>All primary web applications operate on a One-Time Payment structure. Configure application deliverables, one-time INR & USD prices, and benchmark URLs.</p>
+              <h2>Web Applications & Bundles – Multi-Payment Models</h2>
+              <p>Configure websites, custom bundles, deliverables, and payment models (One-Time, Monthly Subscription, and Annual Subscription in INR & USD).</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <a href="/api/categories/template" class="btn btn-secondary btn-sm" download>
@@ -203,22 +203,24 @@
           <!-- Add Web Application Form -->
           <div class="card" style="margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-              <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900);">
-                Add New Web Application
+              <h3 id="cat-form-title" style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900);">
+                Add New Web Application / Bundle
               </h3>
-              <span class="pill pill-active">Payment Structure: One-Time Payment</span>
+              <span id="cat-form-badge" class="pill pill-primary">Configurable Payment Models</span>
             </div>
             <form id="form-add-category" onsubmit="saveNewCategory(event)">
+              <input type="hidden" id="cat-edit-id" value="">
               <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
                 <div class="form-group">
-                  <label for="cat-name">Application Name *</label>
-                  <input type="text" id="cat-name" class="form-control" placeholder="e.g. School Management Website" required>
+                  <label for="cat-name">Application or Bundle Name *</label>
+                  <input type="text" id="cat-name" class="form-control" placeholder="e.g. Basic Business Website Bundle" required>
                 </div>
 
                 <div class="form-group">
                   <label for="cat-classification">Classification *</label>
                   <select id="cat-classification" class="form-control" required>
                     <option value="Website">Website</option>
+                    <option value="Website Bundle">Website Bundle</option>
                     <option value="Software Application">Software Application</option>
                     <option value="Mobile Application">Mobile Application</option>
                     <option value="Other">Other</option>
@@ -237,21 +239,71 @@
                 <small style="color: var(--slate-500); font-size: 0.75rem;">This reference website URL will be accessible to marketing executives during customer discussions.</small>
               </div>
 
+              <!-- Multi-Payment Model Pricing Section -->
               <div style="background: var(--slate-50); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--slate-200); margin-bottom: 1.25rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                  <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--slate-700); letter-spacing: 0.05em;">
-                    One-Time Application Pricing (INR & USD)
+                  <div style="font-size: 0.825rem; font-weight: 800; text-transform: uppercase; color: var(--slate-800); letter-spacing: 0.05em;">
+                    Payment Models & Pricing Configuration (INR & USD)
                   </div>
-                  <span class="pill pill-primary" style="font-size: 0.7rem;">One-Time Payment Only</span>
+                  <span style="font-size: 0.75rem; color: var(--slate-500);">Enable one or more payment options</span>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div class="form-group" style="margin-bottom: 0;">
-                    <label for="cat-price-inr">One-Time Price (INR ₹) *</label>
-                    <input type="number" id="cat-price-inr" class="form-control" placeholder="15000" min="0" required style="font-family: var(--font-mono); font-weight: 700;">
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                  <!-- Option 1: One-Time Payment -->
+                  <div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 700; color: var(--slate-900); margin-bottom: 0.75rem;">
+                      <input type="checkbox" id="cat-enable-onetime" checked onchange="togglePricingInputs()">
+                      <span>1. One-Time Payment</span>
+                      <span class="pill pill-active" style="font-size: 0.68rem; margin-left: auto;">One-Time</span>
+                    </label>
+                    <div id="cat-pricing-onetime-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="cat-price-onetime-inr" style="font-size: 0.8rem;">One-Time Price (INR ₹)</label>
+                        <input type="number" id="cat-price-onetime-inr" class="form-control" placeholder="12000" min="0" style="font-family: var(--font-mono); font-weight: 700;">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="cat-price-onetime-usd" style="font-size: 0.8rem;">One-Time Price (USD $)</label>
+                        <input type="number" id="cat-price-onetime-usd" class="form-control" placeholder="169" min="0" style="font-family: var(--font-mono); font-weight: 700;">
+                      </div>
+                    </div>
                   </div>
-                  <div class="form-group" style="margin-bottom: 0;">
-                    <label for="cat-price-usd">One-Time Price (USD $) *</label>
-                    <input type="number" id="cat-price-usd" class="form-control" placeholder="500" min="0" required style="font-family: var(--font-mono); font-weight: 700;">
+
+                  <!-- Option 2: Monthly Subscription -->
+                  <div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 700; color: var(--slate-900); margin-bottom: 0.75rem;">
+                      <input type="checkbox" id="cat-enable-monthly" onchange="togglePricingInputs()">
+                      <span>2. Monthly Subscription</span>
+                      <span class="pill pill-info" style="font-size: 0.68rem; margin-left: auto;">Monthly Recurring</span>
+                    </label>
+                    <div id="cat-pricing-monthly-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; opacity: 0.5;">
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="cat-price-monthly-inr" style="font-size: 0.8rem;">Monthly Price (INR ₹/month)</label>
+                        <input type="number" id="cat-price-monthly-inr" class="form-control" placeholder="1200" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="cat-price-monthly-usd" style="font-size: 0.8rem;">Monthly Price (USD $/month)</label>
+                        <input type="number" id="cat-price-monthly-usd" class="form-control" placeholder="19" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Option 3: Annual Subscription -->
+                  <div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 700; color: var(--slate-900); margin-bottom: 0.75rem;">
+                      <input type="checkbox" id="cat-enable-annual" onchange="togglePricingInputs()">
+                      <span>3. Annual Subscription</span>
+                      <span class="pill pill-purple" style="font-size: 0.68rem; margin-left: auto;">Annual Recurring</span>
+                    </label>
+                    <div id="cat-pricing-annual-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; opacity: 0.5;">
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="cat-price-annual-inr" style="font-size: 0.8rem;">Annual Price (INR ₹/year)</label>
+                        <input type="number" id="cat-price-annual-inr" class="form-control" placeholder="12000" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                      </div>
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label for="cat-price-annual-usd" style="font-size: 0.8rem;">Annual Price (USD $/year)</label>
+                        <input type="number" id="cat-price-annual-usd" class="form-control" placeholder="169" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -262,9 +314,12 @@
                 <small style="color: var(--slate-500); font-size: 0.75rem;">Features will appear on official client proposals as standard deliverables.</small>
               </div>
 
-              <div style="text-align: right;">
-                <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-size: 0.95rem;">
-                  SAVE APPLICATION
+              <div style="display: flex; justify-content: flex-end; gap: 0.75rem; align-items: center;">
+                <button type="button" id="cat-cancel-btn" class="btn btn-secondary" style="display: none;" onclick="resetCategoryForm()">
+                  Cancel Edit
+                </button>
+                <button type="submit" id="cat-submit-btn" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-size: 0.95rem;">
+                  SAVE APPLICATION / BUNDLE
                 </button>
               </div>
             </form>
@@ -272,18 +327,17 @@
 
           <!-- Existing Categories Table -->
           <div class="section-header">
-            <h3>Registered Web Applications</h3>
+            <h3>Registered Web Applications & Bundles</h3>
           </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Application Name</th>
+                  <th>Application / Bundle Name</th>
                   <th>Classification</th>
-                  <th>Payment Type</th>
+                  <th>Payment Models Available</th>
+                  <th>Configured Pricing</th>
                   <th>Reference Website</th>
-                  <th>One-Time Price (INR ₹)</th>
-                  <th>One-Time Price (USD $)</th>
                   <th>Included Features</th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
@@ -1000,8 +1054,9 @@
               <div class="form-group" style="margin-bottom: 0;">
                 <label for="addon-billing-cycle">Billing Cycle *</label>
                 <select id="addon-billing-cycle" class="form-control" required>
-                  <option value="Monthly">Monthly</option>
-                  <option value="Annually">Annually</option>
+                  <option value="One-Time">One-Time Payment</option>
+                  <option value="Monthly">Monthly Recurring</option>
+                  <option value="Annually">Annual Recurring</option>
                 </select>
               </div>
             </div>
@@ -1392,8 +1447,83 @@
     }
 
     // -------------------------------------------------------------
-    // MAIN WEB APPLICATIONS WITH ONE-TIME PAYMENT & REFERENCES
+    // MAIN WEB APPLICATIONS & BUNDLES WITH MULTI-PAYMENT MODELS
     // -------------------------------------------------------------
+    function togglePricingInputs() {
+      const otEnabled = document.getElementById('cat-enable-onetime').checked;
+      const moEnabled = document.getElementById('cat-enable-monthly').checked;
+      const anEnabled = document.getElementById('cat-enable-annual').checked;
+
+      const otBox = document.getElementById('cat-pricing-onetime-box');
+      const moBox = document.getElementById('cat-pricing-monthly-box');
+      const anBox = document.getElementById('cat-pricing-annual-box');
+
+      if (otBox) {
+        otBox.style.opacity = otEnabled ? '1.0' : '0.45';
+        document.getElementById('cat-price-onetime-inr').disabled = !otEnabled;
+        document.getElementById('cat-price-onetime-usd').disabled = !otEnabled;
+      }
+      if (moBox) {
+        moBox.style.opacity = moEnabled ? '1.0' : '0.45';
+        document.getElementById('cat-price-monthly-inr').disabled = !moEnabled;
+        document.getElementById('cat-price-monthly-usd').disabled = !moEnabled;
+      }
+      if (anBox) {
+        anBox.style.opacity = anEnabled ? '1.0' : '0.45';
+        document.getElementById('cat-price-annual-inr').disabled = !anEnabled;
+        document.getElementById('cat-price-annual-usd').disabled = !anEnabled;
+      }
+    }
+
+    function resetCategoryForm() {
+      const form = document.getElementById('form-add-category');
+      if (form) form.reset();
+      document.getElementById('cat-edit-id').value = '';
+      document.getElementById('cat-enable-onetime').checked = true;
+      document.getElementById('cat-enable-monthly').checked = false;
+      document.getElementById('cat-enable-annual').checked = false;
+      document.getElementById('cat-form-title').innerText = 'Add New Web Application / Bundle';
+      const cancelBtn = document.getElementById('cat-cancel-btn');
+      if (cancelBtn) cancelBtn.style.display = 'none';
+      const submitBtn = document.getElementById('cat-submit-btn');
+      if (submitBtn) submitBtn.innerText = 'SAVE APPLICATION / BUNDLE';
+      togglePricingInputs();
+    }
+
+    function editCategory(id) {
+      const c = (API.state.categories || []).find(item => item.id === id);
+      if (!c) return;
+
+      document.getElementById('cat-edit-id').value = c.id;
+      document.getElementById('cat-name').value = c.name || '';
+      document.getElementById('cat-classification').value = c.classification || 'Website';
+      document.getElementById('cat-desc').value = c.desc || '';
+      document.getElementById('cat-ref-url').value = c.referenceUrl || '';
+
+      document.getElementById('cat-enable-onetime').checked = c.enableOneTime !== false;
+      document.getElementById('cat-enable-monthly').checked = !!c.enableMonthly;
+      document.getElementById('cat-enable-annual').checked = !!c.enableAnnual;
+
+      document.getElementById('cat-price-onetime-inr').value = c.priceOneTimeINR != null ? c.priceOneTimeINR : (c.basePriceINR || 0);
+      document.getElementById('cat-price-onetime-usd').value = c.priceOneTimeUSD != null ? c.priceOneTimeUSD : (c.basePriceUSD || 0);
+      document.getElementById('cat-price-monthly-inr').value = c.priceMonthlyINR != null ? c.priceMonthlyINR : '';
+      document.getElementById('cat-price-monthly-usd').value = c.priceMonthlyUSD != null ? c.priceMonthlyUSD : '';
+      document.getElementById('cat-price-annual-inr').value = c.priceAnnualINR != null ? c.priceAnnualINR : '';
+      document.getElementById('cat-price-annual-usd').value = c.priceAnnualUSD != null ? c.priceAnnualUSD : '';
+
+      document.getElementById('cat-features').value = (c.features || []).join('\n');
+
+      document.getElementById('cat-form-title').innerText = 'Edit Web Application / Bundle: ' + c.name;
+      const cancelBtn = document.getElementById('cat-cancel-btn');
+      if (cancelBtn) cancelBtn.style.display = 'inline-block';
+      const submitBtn = document.getElementById('cat-submit-btn');
+      if (submitBtn) submitBtn.innerText = 'UPDATE APPLICATION / BUNDLE';
+
+      togglePricingInputs();
+
+      document.getElementById('form-add-category').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function renderCategories() {
       const tbody = document.getElementById('table-categories-body');
       tbody.innerHTML = '';
@@ -1411,24 +1541,52 @@
       }
 
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem; color: var(--slate-400);">No web applications created yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--slate-400);">No web applications created yet.</td></tr>`;
         return;
       }
 
       list.forEach(c => {
         const tr = document.createElement('tr');
         const feats = (c.features || []).join(', ');
+
+        // Payment model badges
+        const modelBadges = [];
+        if (c.enableOneTime !== false) modelBadges.push('<span class="pill pill-active" style="font-size: 0.68rem; font-weight: 700;">One-Time</span>');
+        if (c.enableMonthly) modelBadges.push('<span class="pill pill-info" style="font-size: 0.68rem; font-weight: 700;">Monthly</span>');
+        if (c.enableAnnual) modelBadges.push('<span class="pill pill-purple" style="font-size: 0.68rem; font-weight: 700;">Annually</span>');
+
+        // Formatted pricing rows
+        const pricingRows = [];
+        if (c.enableOneTime !== false) {
+          const inr = Number(c.priceOneTimeINR != null ? c.priceOneTimeINR : (c.basePriceINR || 0)).toLocaleString();
+          const usd = Number(c.priceOneTimeUSD != null ? c.priceOneTimeUSD : (c.basePriceUSD || 0)).toLocaleString();
+          pricingRows.push(`<div style="font-size: 0.8rem; margin-bottom: 2px;"><span style="color: var(--slate-500); font-weight: 600;">One-Time:</span> <strong style="color: var(--slate-900);">₹${inr}</strong> / <strong style="color: var(--slate-900);">$${usd}</strong></div>`);
+        }
+        if (c.enableMonthly) {
+          const inr = Number(c.priceMonthlyINR || 0).toLocaleString();
+          const usd = Number(c.priceMonthlyUSD || 0).toLocaleString();
+          pricingRows.push(`<div style="font-size: 0.8rem; margin-bottom: 2px;"><span style="color: var(--slate-500); font-weight: 600;">Monthly:</span> <strong style="color: var(--primary);">₹${inr}</strong> / <strong style="color: var(--primary);">$${usd}</strong> <small style="color: var(--slate-400);">/mo</small></div>`);
+        }
+        if (c.enableAnnual) {
+          const inr = Number(c.priceAnnualINR || 0).toLocaleString();
+          const usd = Number(c.priceAnnualUSD || 0).toLocaleString();
+          pricingRows.push(`<div style="font-size: 0.8rem;"><span style="color: var(--slate-500); font-weight: 600;">Annual:</span> <strong style="color: var(--purple-600);">₹${inr}</strong> / <strong style="color: var(--purple-600);">$${usd}</strong> <small style="color: var(--slate-400);">/yr</small></div>`);
+        }
+
         tr.innerHTML = `
-          <td><strong>${API.escapeHtml(c.name)}</strong></td>
+          <td>
+            <strong>${API.escapeHtml(c.name)}</strong>
+            ${c.desc ? `<div style="font-size: 0.72rem; color: var(--slate-500); margin-top: 2px;">${API.escapeHtml(c.desc)}</div>` : ''}
+          </td>
           <td><span class="pill pill-info">${c.classification || 'Website'}</span></td>
-          <td><span class="pill pill-active" style="font-size: 0.72rem; font-weight: 700;">One-Time Payment</span></td>
+          <td><div style="display: flex; gap: 4px; flex-wrap: wrap;">${modelBadges.join('') || '<span class="pill pill-inactive">None</span>'}</div></td>
+          <td style="min-width: 170px;">${pricingRows.join('') || '<span style="color: var(--slate-400); font-size: 0.78rem;">No pricing configured</span>'}</td>
           <td>
             ${c.referenceUrl ? `<a href="${c.referenceUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">🔗 Preview Site</a>` : '<span style="color: var(--slate-400); font-size: 0.775rem;">None</span>'}
           </td>
-          <td class="price-tag">₹${Number(c.basePriceINR).toLocaleString()}</td>
-          <td class="price-tag">$${Number(c.basePriceUSD).toLocaleString()}</td>
-          <td style="max-width: 250px; font-size: 0.775rem; color: var(--slate-600);">${API.escapeHtml(feats)}</td>
+          <td style="max-width: 220px; font-size: 0.75rem; color: var(--slate-600);">${API.escapeHtml(feats)}</td>
           <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" style="margin-right: 0.35rem;" onclick="editCategory('${c.id}')">Edit</button>
             <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Delete</button>
           </td>
         `;
@@ -1438,21 +1596,53 @@
 
     async function saveNewCategory(e) {
       e.preventDefault();
+      const editId = document.getElementById('cat-edit-id').value.trim();
       const rawFeats = document.getElementById('cat-features').value.split('\n').map(s => s.trim()).filter(Boolean);
+
+      const enableOneTime = document.getElementById('cat-enable-onetime').checked;
+      const enableMonthly = document.getElementById('cat-enable-monthly').checked;
+      const enableAnnual = document.getElementById('cat-enable-annual').checked;
+
+      if (!enableOneTime && !enableMonthly && !enableAnnual) {
+        alert('Please enable at least one payment model (One-Time, Monthly, or Annual) for this application.');
+        return;
+      }
+
+      const pOneTimeINR = parseFloat(document.getElementById('cat-price-onetime-inr').value) || 0;
+      const pOneTimeUSD = parseFloat(document.getElementById('cat-price-onetime-usd').value) || 0;
+      const pMonthlyINR = parseFloat(document.getElementById('cat-price-monthly-inr').value) || 0;
+      const pMonthlyUSD = parseFloat(document.getElementById('cat-price-monthly-usd').value) || 0;
+      const pAnnualINR = parseFloat(document.getElementById('cat-price-annual-inr').value) || 0;
+      const pAnnualUSD = parseFloat(document.getElementById('cat-price-annual-usd').value) || 0;
+
       const payload = {
         name: document.getElementById('cat-name').value.trim(),
         classification: document.getElementById('cat-classification').value,
         desc: document.getElementById('cat-desc').value.trim(),
         referenceUrl: document.getElementById('cat-ref-url').value.trim(),
-        basePriceINR: parseInt(document.getElementById('cat-price-inr').value, 10) || 0,
-        basePriceUSD: parseInt(document.getElementById('cat-price-usd').value, 10) || 0,
+        enableOneTime: enableOneTime,
+        enableMonthly: enableMonthly,
+        enableAnnual: enableAnnual,
+        priceOneTimeINR: pOneTimeINR,
+        priceOneTimeUSD: pOneTimeUSD,
+        priceMonthlyINR: pMonthlyINR,
+        priceMonthlyUSD: pMonthlyUSD,
+        priceAnnualINR: pAnnualINR,
+        priceAnnualUSD: pAnnualUSD,
+        basePriceINR: pOneTimeINR,
+        basePriceUSD: pOneTimeUSD,
         features: rawFeats
       };
 
       try {
-        await API.request('/api/categories', 'POST', payload);
-        API.showToast('Category and Reference Website saved');
-        document.getElementById('form-add-category').reset();
+        if (editId) {
+          await API.request(`/api/categories/${editId}`, 'PUT', payload);
+          API.showToast('Web application / bundle updated successfully');
+        } else {
+          await API.request('/api/categories', 'POST', payload);
+          API.showToast('Web application / bundle saved successfully');
+        }
+        resetCategoryForm();
         await refreshAllData();
       } catch (err) {
         alert('Failed to save category: ' + err.message);
@@ -1505,7 +1695,7 @@
     }
 
     // -------------------------------------------------------------
-    // OPTIONAL ADD-ONS CONFIGURATION (Monthly / Annual Recurring)
+    // OPTIONAL ADD-ONS CONFIGURATION (One-Time, Monthly, Annual)
     // -------------------------------------------------------------
     function renderAddons() {
       const tbody = document.getElementById('table-addons-body');
@@ -1520,10 +1710,17 @@
 
       list.forEach(a => {
         const symbol = (a.currency || 'INR') === 'USD' ? '$' : '₹';
-        const formattedPrice = `${symbol}${Number(a.price || 0).toLocaleString()} / ${a.billingCycle || 'Monthly'}`;
-        const cyclePill = (a.billingCycle || 'Monthly') === 'Monthly' ? 
-          '<span class="pill pill-info" style="font-weight: 700;">Monthly</span>' : 
-          '<span class="pill pill-purple" style="font-weight: 700;">Annually</span>';
+        const isOneTime = a.billingCycle === 'One-Time';
+        const formattedPrice = isOneTime ? 
+          `${symbol}${Number(a.price || 0).toLocaleString()} (One-Time)` : 
+          `${symbol}${Number(a.price || 0).toLocaleString()} / ${a.billingCycle || 'Monthly'}`;
+        
+        let cyclePill = '<span class="pill pill-info" style="font-weight: 700;">Monthly</span>';
+        if (a.billingCycle === 'One-Time') {
+          cyclePill = '<span class="pill pill-active" style="font-weight: 700;">One-Time</span>';
+        } else if (a.billingCycle === 'Annually') {
+          cyclePill = '<span class="pill pill-purple" style="font-weight: 700;">Annually</span>';
+        }
         const statusPill = a.status === 'active' ? 
           '<span class="pill pill-active">Active</span>' : 
           '<span class="pill pill-inactive">Inactive</span>';

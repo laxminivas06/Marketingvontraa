@@ -500,13 +500,22 @@ class DatabaseManager:
     def get_full_state(self) -> Dict[str, Any]:
         """Compiles active state across JSON shards into memory structure"""
         with _DB_LOCK:
-            # First check if root database.json exists and is populated
-            root_json = os.path.join(self.base_dir, 'database.json')
-            if os.path.exists(root_json):
+            # First check if environment-specific mirror file exists and is populated
+            env_json_name = f"database_{self.env}.json" if self.env else "database.json"
+            env_json = os.path.join(self.base_dir, env_json_name)
+            if os.path.exists(env_json):
                 try:
-                    with open(root_json, 'r', encoding='utf-8') as f:
+                    with open(env_json, 'r', encoding='utf-8') as f:
                         data = json.load(f)
-                        if data and data.get("users"):
+                        if data and (data.get("users") or data.get("categories")):
+                            return data
+                except Exception:
+                    pass
+            elif os.path.exists(os.path.join(self.base_dir, 'database.json')) and self.env != 'development':
+                try:
+                    with open(os.path.join(self.base_dir, 'database.json'), 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        if data and (data.get("users") or data.get("categories")):
                             return data
                 except Exception:
                     pass

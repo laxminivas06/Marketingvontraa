@@ -100,10 +100,10 @@
             <!-- Payment structure indicators -->
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
               <span class="pill pill-primary" style="font-weight: 700; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-                Web Applications: One-Time Payment
+                Web Applications: One-Time, Monthly, or Annual
               </span>
               <span class="pill pill-purple" style="font-weight: 700; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-                Add-ons: Monthly or Annual Recurring
+                Add-ons: One-Time, Monthly, or Annual
               </span>
             </div>
           </div>
@@ -162,15 +162,26 @@
                 </div>
               </div>
 
-              <!-- Category Details Box with Reference Website Preview -->
+              <!-- Category Details Box with Reference Website Preview & Dynamic Payment Switcher -->
               <div class="card" id="calc-cat-details-card" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
                   <div>
                     <h4 id="cat-disp-name" style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900); display: inline-block; margin-right: 0.5rem;">-</h4>
-                    <span class="pill pill-active" style="font-size: 0.7rem; font-weight: 700;">One-Time Payment</span>
+                    <span id="cat-disp-payment-badge" class="pill pill-active" style="font-size: 0.7rem; font-weight: 700;">One-Time Payment</span>
                   </div>
                   <div id="cat-disp-price" style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 800; color: var(--primary);">₹0</div>
                 </div>
+
+                <!-- Dynamic Payment Model Switching Buttons (dynamically shows available options for the selected website) -->
+                <div id="cat-payment-period-wrapper" style="margin-bottom: 0.85rem; padding: 0.65rem 0.85rem; background: #ffffff; border: 1px solid var(--slate-200); border-radius: 8px;">
+                  <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500); margin-bottom: 0.4rem;">
+                    Select Payment Model:
+                  </div>
+                  <div id="cat-payment-period-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <!-- Injected dynamically via onCategoryChanged() -->
+                  </div>
+                </div>
+
                 <p id="cat-disp-desc" style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 0.75rem;">-</p>
 
                 <!-- Associated Reference Website -->
@@ -214,7 +225,7 @@
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900);">
                       3. Optional Add-ons
                     </h3>
-                    <p style="font-size: 0.775rem; color: var(--slate-500);">Select client add-ons or manually configure custom add-ons with monthly or annual billing</p>
+                    <p style="font-size: 0.775rem; color: var(--slate-500);">Select client add-ons or manually configure custom add-ons with one-time, monthly, or annual billing</p>
                   </div>
                   <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-addon-form" onclick="openManualAddonForm()">
                     + Add Custom Add-On
@@ -236,6 +247,7 @@
                     <div class="form-group" style="margin-bottom: 0;">
                       <label for="manual-addon-billing-cycle" style="font-size: 0.75rem; font-weight: 700;">Billing Cycle *</label>
                       <select id="manual-addon-billing-cycle" class="form-control form-control-sm">
+                        <option value="One-Time">One-Time Payment</option>
                         <option value="Monthly">Monthly</option>
                         <option value="Annually">Annually</option>
                       </select>
@@ -262,17 +274,6 @@
                 <div id="selected-addons-container">
                   <div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">Loading optional add-ons...</div>
                 </div>
-              </div>
-
-              <!-- Project Requirements Document Upload (.docx, .pdf, .zip <= 500 KB) -->
-              <div class="card">
-                <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 0.5rem;">
-                  4. Attach Requirements Document
-                </h3>
-                <p style="font-size: 0.775rem; color: var(--slate-500); margin-bottom: 0.75rem;">
-                  Upload specifications, wireframes, or branding assets (.docx, .pdf, .zip, max 500 KB). Directly accessible to developers after assignment.
-                </p>
-                <input type="file" id="calc-requirement-file" class="form-control" accept=".docx, .pdf, .zip">
               </div>
             </div>
 
@@ -780,6 +781,7 @@
   <script>
     let activeCurrency = 'INR';
     let currentBillingCadence = 'One-Time';
+    let selectedPaymentPeriod = 'One-Time';
     let selectedAddons = [];
     let selectedAddonIds = new Set();
     let customAddons = [];
@@ -896,16 +898,96 @@
       onCategoryChanged();
     }
 
+    function getWebsitePriceForPeriod(cat, period, currency) {
+      if (!cat) return 0;
+      if (period === 'Monthly') {
+        return currency === 'USD' ? Number(cat.priceMonthlyUSD || 0) : Number(cat.priceMonthlyINR || 0);
+      }
+      if (period === 'Annually') {
+        return currency === 'USD' ? Number(cat.priceAnnualUSD || 0) : Number(cat.priceAnnualINR || 0);
+      }
+      // One-Time
+      return currency === 'USD' ? 
+        Number(cat.priceOneTimeUSD != null ? cat.priceOneTimeUSD : (cat.basePriceUSD || 0)) : 
+        Number(cat.priceOneTimeINR != null ? cat.priceOneTimeINR : (cat.basePriceINR || 0));
+    }
+
+    function updateCategoryDisplayPrice() {
+      const catId = document.getElementById('calc-category').value;
+      const cat = (API.state.categories || []).find(c => c.id === catId);
+      if (!cat) return;
+
+      const price = getWebsitePriceForPeriod(cat, selectedPaymentPeriod, activeCurrency);
+      const badge = document.getElementById('cat-disp-payment-badge');
+      const priceElem = document.getElementById('cat-disp-price');
+
+      if (selectedPaymentPeriod === 'Monthly') {
+        if (badge) {
+          badge.className = 'pill pill-info';
+          badge.innerText = 'Monthly Subscription';
+        }
+        if (priceElem) priceElem.innerText = `${API.formatCurrency(price, activeCurrency)} / Month`;
+      } else if (selectedPaymentPeriod === 'Annually') {
+        if (badge) {
+          badge.className = 'pill pill-purple';
+          badge.innerText = 'Annual Subscription';
+        }
+        if (priceElem) priceElem.innerText = `${API.formatCurrency(price, activeCurrency)} / Year`;
+      } else {
+        if (badge) {
+          badge.className = 'pill pill-active';
+          badge.innerText = 'One-Time Payment';
+        }
+        if (priceElem) priceElem.innerText = `${API.formatCurrency(price, activeCurrency)} (One-Time)`;
+      }
+    }
+
+    function setPaymentPeriod(period) {
+      selectedPaymentPeriod = period;
+      const btns = document.querySelectorAll('#cat-payment-period-buttons button');
+      btns.forEach(b => {
+        if (b.innerText.includes(period)) {
+          b.className = 'btn btn-primary btn-sm';
+        } else {
+          b.className = 'btn btn-secondary btn-sm';
+        }
+      });
+      updateCategoryDisplayPrice();
+      calculateTotal();
+    }
+
     function onCategoryChanged() {
       const catId = document.getElementById('calc-category').value;
       const cat = (API.state.categories || []).find(c => c.id === catId);
       if (!cat) return;
 
-      const rawPrice = activeCurrency === 'USD' ? Number(cat.basePriceUSD || 0) : Number(cat.basePriceINR || 0);
+      // Determine available payment models for this category / bundle
+      const availablePeriods = [];
+      if (cat.enableOneTime !== false) availablePeriods.push('One-Time');
+      if (cat.enableMonthly) availablePeriods.push('Monthly');
+      if (cat.enableAnnual) availablePeriods.push('Annually');
+      if (availablePeriods.length === 0) availablePeriods.push('One-Time');
+
+      if (!availablePeriods.includes(selectedPaymentPeriod)) {
+        selectedPaymentPeriod = availablePeriods[0];
+      }
+
+      // Render payment buttons
+      const btnsContainer = document.getElementById('cat-payment-period-buttons');
+      if (btnsContainer) {
+        btnsContainer.innerHTML = availablePeriods.map(period => {
+          const isActive = selectedPaymentPeriod === period;
+          const btnClass = isActive ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+          let icon = '🏷️';
+          if (period === 'Monthly') icon = '🔄';
+          if (period === 'Annually') icon = '📅';
+          return `<button type="button" class="${btnClass}" style="font-weight: 700;" onclick="setPaymentPeriod('${period}')">${icon} ${period}</button>`;
+        }).join('');
+      }
 
       document.getElementById('cat-disp-name').innerText = cat.name;
-      document.getElementById('cat-disp-price').innerText = `${API.formatCurrency(rawPrice, activeCurrency)} (One-Time Payment)`;
       document.getElementById('cat-disp-desc').innerText = cat.desc || '';
+      updateCategoryDisplayPrice();
 
       const refBox = document.getElementById('cat-disp-ref-box');
       const refLink = document.getElementById('cat-disp-ref-link');
@@ -931,25 +1013,41 @@
     function calculateTotal() {
       const catId = document.getElementById('calc-category').value;
       const cat = (API.state.categories || []).find(c => c.id === catId);
-      const basePrice = cat ? (activeCurrency === 'USD' ? Number(cat.basePriceUSD || 0) : Number(cat.basePriceINR || 0)) : 0;
+      const websitePrice = getWebsitePriceForPeriod(cat, selectedPaymentPeriod, activeCurrency);
       const domainAmount = Number(document.getElementById('calc-domain-amount').value) || 0;
 
-      // 1. ONE-TIME APPLICATION COST
-      const oneTimeSubtotal = Math.round((basePrice + domainAmount) * 100) / 100;
+      // Segregate add-ons
+      const onetimeAddons = selectedAddons.filter(a => (a.billingCycle || '').toLowerCase() === 'one-time');
+      const monthlyAddons = selectedAddons.filter(a => (a.billingCycle || 'Monthly').toLowerCase().startsWith('month'));
+      const annualAddons = selectedAddons.filter(a => (a.billingCycle || '').toLowerCase().startsWith('annual'));
+
+      // 1. ONE-TIME APPLICATION & DELIVERABLES COST
+      const websiteOneTime = selectedPaymentPeriod === 'One-Time' ? websitePrice : 0;
+      let onetimeAddonsINR = 0, onetimeAddonsUSD = 0;
+      onetimeAddons.forEach(a => {
+        const p = Number(a.price) || 0;
+        if ((a.currency || '').toUpperCase() === 'USD') onetimeAddonsUSD += p;
+        else onetimeAddonsINR += p;
+      });
+      const onetimeAddonsActive = activeCurrency === 'USD' ? onetimeAddonsUSD : onetimeAddonsINR;
+
+      const oneTimeSubtotal = Math.round((websiteOneTime + domainAmount + onetimeAddonsActive) * 100) / 100;
       const oneTimeGST = activeCurrency === 'USD' ? Math.round(oneTimeSubtotal * 0.18 * 100) / 100 : Math.round(oneTimeSubtotal * 0.18);
       const oneTimeTotal = Math.round((oneTimeSubtotal + oneTimeGST) * 100) / 100;
 
-      document.getElementById('sum-base-price').innerText = API.formatCurrency(basePrice, activeCurrency);
+      document.getElementById('sum-base-price').innerText = selectedPaymentPeriod === 'One-Time' ? 
+        API.formatCurrency(websiteOneTime, activeCurrency) : 
+        `$0 (${selectedPaymentPeriod} selected)`.replace('$', activeCurrency === 'USD' ? '$' : '₹');
       document.getElementById('sum-domain-price').innerText = API.formatCurrency(domainAmount, activeCurrency);
       document.getElementById('sum-onetime-subtotal').innerText = API.formatCurrency(oneTimeSubtotal, activeCurrency);
       document.getElementById('sum-onetime-gst').innerText = API.formatCurrency(oneTimeGST, activeCurrency);
       document.getElementById('sum-onetime-total').innerText = `${API.formatCurrency(oneTimeTotal, activeCurrency)} (One-Time)`;
 
-      // 2. RECURRING ADD-ONS (MONTHLY & ANNUALLY INDEPENDENT)
-      const monthlyAddons = selectedAddons.filter(a => (a.billingCycle || 'Monthly').toLowerCase().startsWith('month'));
-      const annualAddons = selectedAddons.filter(a => (a.billingCycle || '').toLowerCase().startsWith('annual'));
+      // 2. MONTHLY RECURRING COST
+      const websiteMonthly = selectedPaymentPeriod === 'Monthly' ? websitePrice : 0;
+      let monthlyINR = (selectedPaymentPeriod === 'Monthly' && activeCurrency === 'INR') ? websiteMonthly : 0;
+      let monthlyUSD = (selectedPaymentPeriod === 'Monthly' && activeCurrency === 'USD') ? websiteMonthly : 0;
 
-      let monthlyINR = 0, monthlyUSD = 0;
       monthlyAddons.forEach(a => {
         const p = Number(a.price) || 0;
         if ((a.currency || '').toUpperCase() === 'USD') monthlyUSD += p;
@@ -958,27 +1056,26 @@
       monthlyINR = Math.round(monthlyINR * 100) / 100;
       monthlyUSD = Math.round(monthlyUSD * 100) / 100;
 
-      let annualINR = 0, annualUSD = 0;
-      annualAddons.forEach(a => {
-        const p = Number(a.price) || 0;
-        if ((a.currency || '').toUpperCase() === 'USD') annualUSD += p;
-        else annualINR += p;
-      });
-      annualINR = Math.round(annualINR * 100) / 100;
-      annualUSD = Math.round(annualUSD * 100) / 100;
-
-      // Render Monthly recurring summary
       const monthlyCont = document.getElementById('sum-monthly-items-container');
-      if (monthlyAddons.length === 0) {
-        monthlyCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No monthly add-ons selected</div>';
+      const monthlyItems = [];
+      if (selectedPaymentPeriod === 'Monthly' && websiteMonthly > 0) {
+        monthlyItems.push(`<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span style="font-weight: 700; color: var(--slate-800); max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• ${API.escapeHtml(cat.name)} (Sub)</span>
+          <strong style="font-family: var(--font-mono); color: #0284c7;">${API.formatCurrency(websiteMonthly, activeCurrency)} / mo</strong>
+        </div>`);
+      }
+      monthlyAddons.forEach(a => {
+        const sym = (a.currency || '').toUpperCase() === 'USD' ? '$' : '₹';
+        monthlyItems.push(`<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;" title="${API.escapeHtml(a.name)}">• ${API.escapeHtml(a.name)}</span>
+          <strong style="font-family: var(--font-mono);">${sym}${Number(a.price).toLocaleString()} / mo</strong>
+        </div>`);
+      });
+
+      if (monthlyItems.length === 0) {
+        monthlyCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No monthly costs</div>';
       } else {
-        monthlyCont.innerHTML = monthlyAddons.map(a => {
-          const sym = (a.currency || '').toUpperCase() === 'USD' ? '$' : '₹';
-          return `<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;" title="${API.escapeHtml(a.name)}">• ${API.escapeHtml(a.name)}</span>
-            <strong style="font-family: var(--font-mono);">${sym}${Number(a.price).toLocaleString()} / mo</strong>
-          </div>`;
-        }).join('');
+        monthlyCont.innerHTML = monthlyItems.join('');
       }
 
       let monthlyTotalStr = '';
@@ -993,18 +1090,39 @@
       }
       document.getElementById('sum-monthly-total').innerText = monthlyTotalStr;
 
-      // Render Annual recurring summary
+      // 3. ANNUAL RECURRING COST
+      const websiteAnnual = selectedPaymentPeriod === 'Annually' ? websitePrice : 0;
+      let annualINR = (selectedPaymentPeriod === 'Annually' && activeCurrency === 'INR') ? websiteAnnual : 0;
+      let annualUSD = (selectedPaymentPeriod === 'Annually' && activeCurrency === 'USD') ? websiteAnnual : 0;
+
+      annualAddons.forEach(a => {
+        const p = Number(a.price) || 0;
+        if ((a.currency || '').toUpperCase() === 'USD') annualUSD += p;
+        else annualINR += p;
+      });
+      annualINR = Math.round(annualINR * 100) / 100;
+      annualUSD = Math.round(annualUSD * 100) / 100;
+
       const annualCont = document.getElementById('sum-annual-items-container');
-      if (annualAddons.length === 0) {
-        annualCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No annual add-ons selected</div>';
+      const annualItems = [];
+      if (selectedPaymentPeriod === 'Annually' && websiteAnnual > 0) {
+        annualItems.push(`<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span style="font-weight: 700; color: var(--slate-800); max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• ${API.escapeHtml(cat.name)} (Sub)</span>
+          <strong style="font-family: var(--font-mono); color: #7c3aed;">${API.formatCurrency(websiteAnnual, activeCurrency)} / yr</strong>
+        </div>`);
+      }
+      annualAddons.forEach(a => {
+        const sym = (a.currency || '').toUpperCase() === 'USD' ? '$' : '₹';
+        annualItems.push(`<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;" title="${API.escapeHtml(a.name)}">• ${API.escapeHtml(a.name)}</span>
+          <strong style="font-family: var(--font-mono);">${sym}${Number(a.price).toLocaleString()} / yr</strong>
+        </div>`);
+      });
+
+      if (annualItems.length === 0) {
+        annualCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No annual costs</div>';
       } else {
-        annualCont.innerHTML = annualAddons.map(a => {
-          const sym = (a.currency || '').toUpperCase() === 'USD' ? '$' : '₹';
-          return `<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;" title="${API.escapeHtml(a.name)}">• ${API.escapeHtml(a.name)}</span>
-            <strong style="font-family: var(--font-mono);">${sym}${Number(a.price).toLocaleString()} / yr</strong>
-          </div>`;
-        }).join('');
+        annualCont.innerHTML = annualItems.join('');
       }
 
       let annualTotalStr = '';
@@ -1019,18 +1137,20 @@
       }
       document.getElementById('sum-annual-total').innerText = annualTotalStr;
 
-      // Internal Commission (Calculated on one-time application contract value)
-      const comm = API.calculateCommission(basePrice, activeCurrency);
+      // Internal Commission (Calculated on website price)
+      const comm = API.calculateCommission(websitePrice, activeCurrency);
       document.getElementById('sum-comm-rate').innerText = `${comm.rate}%`;
       document.getElementById('sum-comm-slab-title').innerText = comm.slabTitle;
       document.getElementById('sum-comm-amount').innerText = comm.formattedCommission;
 
       currentCalculatedQuote = {
-        basePrice,
+        selectedPaymentPeriod,
+        basePrice: websitePrice,
         domainAmount,
         oneTimeSubtotal,
         oneTimeGST,
         oneTimeTotal,
+        onetimeAddons,
         monthlyAddons,
         monthlyINR,
         monthlyUSD,
@@ -1044,7 +1164,7 @@
         gstAmount: oneTimeGST,
         totalPrice: oneTimeTotal,
         currency: activeCurrency,
-        billingCadence: 'One-Time Payment',
+        billingCadence: selectedPaymentPeriod,
         cat
       };
     }
@@ -1172,11 +1292,23 @@
         const isSelected = selectedAddonIds.has(a.id);
         const curr = (a.currency || 'INR').toUpperCase();
         const sym = curr === 'USD' ? '$' : '₹';
-        const isMonthly = (a.billingCycle || 'Monthly').toLowerCase().startsWith('month');
-        const cycleBadge = isMonthly ?
-          '<span class="pill pill-info" style="font-size: 0.7rem; font-weight: 700;">Monthly</span>' :
-          '<span class="pill pill-purple" style="font-size: 0.7rem; font-weight: 700;">Annually</span>';
-        const priceFormatted = `${sym}${Number(a.price).toLocaleString()} / ${isMonthly ? 'Month' : 'Year'}`;
+        const cycle = a.billingCycle || 'Monthly';
+        const isOneTime = cycle.toLowerCase() === 'one-time';
+        const isMonthly = cycle.toLowerCase().startsWith('month');
+
+        let cycleBadge = '<span class="pill pill-purple" style="font-size: 0.7rem; font-weight: 700;">Annually</span>';
+        let priceColor = '#7c3aed';
+        if (isOneTime) {
+          cycleBadge = '<span class="pill pill-active" style="font-size: 0.7rem; font-weight: 700;">One-Time</span>';
+          priceColor = 'var(--primary)';
+        } else if (isMonthly) {
+          cycleBadge = '<span class="pill pill-info" style="font-size: 0.7rem; font-weight: 700;">Monthly</span>';
+          priceColor = '#0284c7';
+        }
+
+        const priceFormatted = isOneTime ? 
+          `${sym}${Number(a.price).toLocaleString()} (One-Time)` : 
+          `${sym}${Number(a.price).toLocaleString()} / ${isMonthly ? 'Month' : 'Year'}`;
         const isCustom = !!a.isCustom;
 
         return `
@@ -1194,7 +1326,7 @@
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <strong class="price-tag" style="font-size: 0.95rem; color: ${isMonthly ? '#0284c7' : '#7c3aed'}; font-family: var(--font-mono);">${priceFormatted}</strong>
+              <strong class="price-tag" style="font-size: 0.95rem; color: ${priceColor}; font-family: var(--font-mono);">${priceFormatted}</strong>
               ${isCustom ? `
                 <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" onclick="editCustomAddon('${a.id}')">Edit</button>
                 <button type="button" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" onclick="deleteCustomAddon('${a.id}')">Delete</button>
@@ -1346,12 +1478,14 @@
         categoryId: cat.id,
         categoryName: cat.name,
         currency: activeCurrency,
+        selectedPaymentPeriod: selectedPaymentPeriod,
         basePrice: currentCalculatedQuote.basePrice,
         domainAmount: currentCalculatedQuote.domainAmount,
         oneTimeSubtotal: currentCalculatedQuote.oneTimeSubtotal,
         oneTimeGST: currentCalculatedQuote.oneTimeGST,
         oneTimeTotal: currentCalculatedQuote.oneTimeTotal,
         addons: selectedAddons,
+        onetimeAddons: currentCalculatedQuote.onetimeAddons,
         monthlyAddons: currentCalculatedQuote.monthlyAddons,
         monthlyINR: currentCalculatedQuote.monthlyINR,
         monthlyUSD: currentCalculatedQuote.monthlyUSD,
@@ -1363,7 +1497,7 @@
         subtotal: currentCalculatedQuote.oneTimeSubtotal,
         gstAmount: currentCalculatedQuote.oneTimeGST,
         totalPrice: currentCalculatedQuote.oneTimeTotal,
-        billingCadence: 'One-Time Payment',
+        billingCadence: selectedPaymentPeriod,
         commExecutiveName: commExec,
         docCoordinatorName: docCoord,
         status: 'Generated'
@@ -1372,18 +1506,6 @@
       try {
         const res = await API.request('/api/quotations', 'POST', payload);
         API.showToast('Quotation successfully generated');
-
-        // Check if requirements file was attached
-        const fileInput = document.getElementById('calc-requirement-file');
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-          try {
-            await API.uploadRequirementDocument(res.quotation.id, fileInput.files[0], commExec);
-            API.showToast('Requirements document attached to quotation');
-          } catch(e) {
-            console.warn('Doc upload warning:', e.message);
-          }
-        }
-
         await API.syncState();
         displayGeneratedQuotation(res.quotation, cat, domainName);
       } catch (err) {
@@ -1415,32 +1537,42 @@
         featsUl.innerHTML += `<li>${API.escapeHtml(f)}</li>`;
       });
 
+      const quoteCurr = quote.currency || activeCurrency;
+      const paymentPeriod = quote.selectedPaymentPeriod || quote.billingCadence || 'One-Time';
       const basePrice = quote.basePrice !== undefined ? quote.basePrice : currentCalculatedQuote.basePrice;
       const domainAmount = quote.domainAmount !== undefined ? quote.domainAmount : currentCalculatedQuote.domainAmount;
-      const quoteCurr = quote.currency || activeCurrency;
-      const oneTimeSubtotal = quote.oneTimeSubtotal !== undefined ? quote.oneTimeSubtotal : (basePrice + domainAmount);
-      const oneTimeGST = quote.oneTimeGST !== undefined ? quote.oneTimeGST : (quoteCurr === 'USD' ? Math.round(oneTimeSubtotal * 0.18 * 100) / 100 : Math.round(oneTimeSubtotal * 0.18));
-      const oneTimeTotal = quote.oneTimeTotal !== undefined ? quote.oneTimeTotal : (oneTimeSubtotal + oneTimeGST);
+      const oneTimeSubtotal = quote.oneTimeSubtotal !== undefined ? quote.oneTimeSubtotal : currentCalculatedQuote.oneTimeSubtotal;
+      const oneTimeGST = quote.oneTimeGST !== undefined ? quote.oneTimeGST : currentCalculatedQuote.oneTimeGST;
+      const oneTimeTotal = quote.oneTimeTotal !== undefined ? quote.oneTimeTotal : currentCalculatedQuote.oneTimeTotal;
 
       const quoteAddons = quote.addons || selectedAddons || [];
+      const onetimeAddons = quoteAddons.filter(a => (a.billingCycle || '').toLowerCase() === 'one-time');
       const monthlyAddons = quoteAddons.filter(a => (a.billingCycle || 'Monthly').toLowerCase().startsWith('month'));
       const annualAddons = quoteAddons.filter(a => (a.billingCycle || '').toLowerCase().startsWith('annual'));
 
       const tbody = document.getElementById('doc-items-tbody');
-      let html = `
+      let html = '';
+
+      // Section 1: One-Time Investments
+      html += `
         <tr style="background: var(--slate-100);">
           <th colspan="2" style="padding: 0.6rem 1rem; font-size: 0.775rem; text-transform: uppercase; color: var(--primary); font-weight: 800; letter-spacing: 0.05em;">
-            1. Main Web Application – One-Time Investment
+            1. One-Time Application Investment & Deliverables
           </th>
         </tr>
-        <tr>
-          <td style="padding: 0.75rem 1rem;">
-            <strong>${API.escapeHtml(cat.name)}</strong>
-            <div style="font-size: 0.75rem; color: var(--slate-500);">${cat.classification} Core Architecture & Implementation (One-Time Payment)</div>
-          </td>
-          <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(basePrice, quoteCurr)}</td>
-        </tr>
       `;
+
+      if (paymentPeriod === 'One-Time') {
+        html += `
+          <tr>
+            <td style="padding: 0.75rem 1rem;">
+              <strong>${API.escapeHtml(cat.name)}</strong>
+              <div style="font-size: 0.75rem; color: var(--slate-500);">${cat.classification} Core Architecture & Implementation (One-Time Payment)</div>
+            </td>
+            <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(basePrice, quoteCurr)}</td>
+          </tr>
+        `;
+      }
 
       if (domainAmount > 0) {
         const domName = domainName || document.getElementById('calc-domain-name').value.trim() || 'Custom Domain';
@@ -1455,14 +1587,51 @@
         `;
       }
 
-      if (monthlyAddons.length > 0) {
+      if (onetimeAddons.length > 0) {
+        onetimeAddons.forEach(a => {
+          const sym = (a.currency || quoteCurr).toUpperCase() === 'USD' ? '$' : '₹';
+          html += `
+            <tr>
+              <td style="padding: 0.75rem 1rem;">
+                <strong>${API.escapeHtml(a.name)}</strong>
+                <div style="font-size: 0.75rem; color: var(--slate-500);">${API.escapeHtml(a.desc || 'Optional Deliverable')} • One-Time Deliverable</div>
+              </td>
+              <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${sym}${Number(a.price).toLocaleString()}</td>
+            </tr>
+          `;
+        });
+      }
+
+      if (paymentPeriod !== 'One-Time' && domainAmount === 0 && onetimeAddons.length === 0) {
+        html += `
+          <tr>
+            <td colspan="2" style="padding: 0.6rem 1rem; color: var(--slate-500); font-style: italic; font-size: 0.8rem;">
+              No one-time fees (${paymentPeriod} Subscription model selected).
+            </td>
+          </tr>
+        `;
+      }
+
+      // Section 2: Monthly Recurring Costs
+      if (paymentPeriod === 'Monthly' || monthlyAddons.length > 0) {
         html += `
           <tr style="background: #e0f2fe;">
             <th colspan="2" style="padding: 0.6rem 1rem; font-size: 0.775rem; text-transform: uppercase; color: #0284c7; font-weight: 800; letter-spacing: 0.05em;">
-              2. Optional Add-ons – Monthly Recurring
+              2. Monthly Recurring Costs
             </th>
           </tr>
         `;
+        if (paymentPeriod === 'Monthly') {
+          html += `
+            <tr>
+              <td style="padding: 0.75rem 1rem;">
+                <strong>${API.escapeHtml(cat.name)} (Monthly Subscription)</strong>
+                <div style="font-size: 0.75rem; color: var(--slate-500);">${cat.classification} Core Platform Access & Support • Billed Monthly</div>
+              </td>
+              <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(basePrice, quoteCurr)} / Month</td>
+            </tr>
+          `;
+        }
         monthlyAddons.forEach(a => {
           const sym = (a.currency || quoteCurr).toUpperCase() === 'USD' ? '$' : '₹';
           html += `
@@ -1477,14 +1646,26 @@
         });
       }
 
-      if (annualAddons.length > 0) {
+      // Section 3: Annual Recurring Costs
+      if (paymentPeriod === 'Annually' || annualAddons.length > 0) {
         html += `
           <tr style="background: #f3e8ff;">
             <th colspan="2" style="padding: 0.6rem 1rem; font-size: 0.775rem; text-transform: uppercase; color: #7c3aed; font-weight: 800; letter-spacing: 0.05em;">
-              3. Optional Add-ons – Annual Recurring
+              3. Annual Recurring Costs
             </th>
           </tr>
         `;
+        if (paymentPeriod === 'Annually') {
+          html += `
+            <tr>
+              <td style="padding: 0.75rem 1rem;">
+                <strong>${API.escapeHtml(cat.name)} (Annual Subscription)</strong>
+                <div style="font-size: 0.75rem; color: var(--slate-500);">${cat.classification} Core Platform Access & Support • Billed Annually</div>
+              </td>
+              <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(basePrice, quoteCurr)} / Year</td>
+            </tr>
+          `;
+        }
         annualAddons.forEach(a => {
           const sym = (a.currency || quoteCurr).toUpperCase() === 'USD' ? '$' : '₹';
           html += `
@@ -1501,7 +1682,7 @@
 
       tbody.innerHTML = html;
 
-      // Update Subtotal, GST, and 3 distinct categories in footer
+      // Update Subtotal, GST, and distinct categories in footer
       document.getElementById('doc-subtotal-price').innerText = API.formatCurrency(oneTimeSubtotal, quoteCurr);
       document.getElementById('doc-gst-price').innerText = API.formatCurrency(oneTimeGST, quoteCurr);
       document.getElementById('doc-total-price').innerText = API.formatCurrency(oneTimeTotal, quoteCurr);
@@ -1535,8 +1716,10 @@
       const monthly = document.getElementById('doc-monthly-total')?.innerText;
       const annual = document.getElementById('doc-annual-total')?.innerText;
 
-      let text = `Hello ${cName},\n\nYour official project proposal (${qNum}) from Aivontraa Automation Pvt. Ltd. has been prepared:\n\n` +
-        `• One-Time Application Investment: ${oneTime} (inclusive of 18% GST)\n`;
+      let text = `Hello ${cName},\n\nYour official project proposal (${qNum}) from Aivontraa Automation Pvt. Ltd. has been prepared:\n\n`;
+      if (oneTime && oneTime !== '₹0' && oneTime !== '$0') {
+        text += `• One-Time Application Investment: ${oneTime} (inclusive of 18% GST)\n`;
+      }
       if (monthly && monthly !== '$0 / Month' && monthly !== '₹0 / Month') {
         text += `• Monthly Recurring Cost: ${monthly}\n`;
       }

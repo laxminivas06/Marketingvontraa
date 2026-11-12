@@ -700,6 +700,9 @@ def api_categories():
             item['basePriceINR'] = item['priceOneTimeINR']
             item['basePriceUSD'] = item['priceOneTimeUSD']
             normalized.append(item)
+        if any('enableOneTime' not in c for c in cats):
+            db['categories'] = normalized
+            save_db(db)
         return jsonify(normalized)
 
     payload = request.get_json() or {}
@@ -1159,66 +1162,8 @@ def api_user_toggle_status(user_id):
 
 
 # -------------------------------------------------------------
-# OPTIONAL ADD-ONS CONFIGURATION (Monthly & Annual Recurring)
+# OPTIONAL ADD-ONS CONFIGURATION (One-Time, Monthly & Annual Recurring)
 # -------------------------------------------------------------
-DEFAULT_ADDONS = [
-    {
-        "id": "add-ai-voice",
-        "name": "AI Voice Assistant",
-        "desc": "Voice interactive AI assistant module with natural language comprehension.",
-        "categoryId": "all",
-        "categoryName": "All Web Applications",
-        "currency": "USD",
-        "price": 20.0,
-        "billingCycle": "Monthly",
-        "status": "active"
-    },
-    {
-        "id": "add-analytics",
-        "name": "Advanced Analytics",
-        "desc": "Deep conversion metrics, custom event tracking, and scheduled executive reports.",
-        "categoryId": "all",
-        "categoryName": "All Web Applications",
-        "currency": "USD",
-        "price": 100.0,
-        "billingCycle": "Annually",
-        "status": "active"
-    },
-    {
-        "id": "add-attendance",
-        "name": "Automated Attendance",
-        "desc": "Biometric and mobile attendance syncing system with automated reporting.",
-        "categoryId": "all",
-        "categoryName": "All Web Applications",
-        "currency": "INR",
-        "price": 2000.0,
-        "billingCycle": "Monthly",
-        "status": "active"
-    },
-    {
-        "id": "add-whatsapp",
-        "name": "WhatsApp Automation Suite",
-        "desc": "Automated notifications, alerts, and customer lead engagement via official API.",
-        "categoryId": "all",
-        "categoryName": "All Web Applications",
-        "currency": "INR",
-        "price": 1500.0,
-        "billingCycle": "Monthly",
-        "status": "active"
-    },
-    {
-        "id": "add-priority-sla",
-        "name": "Dedicated Priority Support & SLA",
-        "desc": "24/7 priority incident response with guaranteed 1-hour resolution turnaround.",
-        "categoryId": "all",
-        "categoryName": "All Web Applications",
-        "currency": "USD",
-        "price": 300.0,
-        "billingCycle": "Annually",
-        "status": "active"
-    }
-]
-
 @app.route('/api/addons', methods=['GET', 'POST'])
 def api_addons():
     db = load_db()
