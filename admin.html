@@ -271,18 +271,18 @@
                   <!-- Option 2: Monthly Subscription -->
                   <div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 1rem;">
                     <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 700; color: var(--slate-900); margin-bottom: 0.75rem;">
-                      <input type="checkbox" id="cat-enable-monthly" onchange="togglePricingInputs()">
+                      <input type="checkbox" id="cat-enable-monthly" checked onchange="togglePricingInputs()">
                       <span>2. Monthly Subscription</span>
                       <span class="pill pill-info" style="font-size: 0.68rem; margin-left: auto;">Monthly Recurring</span>
                     </label>
-                    <div id="cat-pricing-monthly-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; opacity: 0.5;">
+                    <div id="cat-pricing-monthly-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                       <div class="form-group" style="margin-bottom: 0;">
                         <label for="cat-price-monthly-inr" style="font-size: 0.8rem;">Monthly Price (INR ₹/month)</label>
-                        <input type="number" id="cat-price-monthly-inr" class="form-control" placeholder="1200" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                        <input type="number" id="cat-price-monthly-inr" class="form-control" placeholder="1200" min="0" style="font-family: var(--font-mono); font-weight: 700;">
                       </div>
                       <div class="form-group" style="margin-bottom: 0;">
                         <label for="cat-price-monthly-usd" style="font-size: 0.8rem;">Monthly Price (USD $/month)</label>
-                        <input type="number" id="cat-price-monthly-usd" class="form-control" placeholder="19" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                        <input type="number" id="cat-price-monthly-usd" class="form-control" placeholder="19" min="0" style="font-family: var(--font-mono); font-weight: 700;">
                       </div>
                     </div>
                   </div>
@@ -290,18 +290,18 @@
                   <!-- Option 3: Annual Subscription -->
                   <div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 1rem;">
                     <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 700; color: var(--slate-900); margin-bottom: 0.75rem;">
-                      <input type="checkbox" id="cat-enable-annual" onchange="togglePricingInputs()">
+                      <input type="checkbox" id="cat-enable-annual" checked onchange="togglePricingInputs()">
                       <span>3. Annual Subscription</span>
                       <span class="pill pill-purple" style="font-size: 0.68rem; margin-left: auto;">Annual Recurring</span>
                     </label>
-                    <div id="cat-pricing-annual-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; opacity: 0.5;">
+                    <div id="cat-pricing-annual-box" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                       <div class="form-group" style="margin-bottom: 0;">
                         <label for="cat-price-annual-inr" style="font-size: 0.8rem;">Annual Price (INR ₹/year)</label>
-                        <input type="number" id="cat-price-annual-inr" class="form-control" placeholder="12000" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                        <input type="number" id="cat-price-annual-inr" class="form-control" placeholder="12000" min="0" style="font-family: var(--font-mono); font-weight: 700;">
                       </div>
                       <div class="form-group" style="margin-bottom: 0;">
                         <label for="cat-price-annual-usd" style="font-size: 0.8rem;">Annual Price (USD $/year)</label>
-                        <input type="number" id="cat-price-annual-usd" class="form-control" placeholder="169" min="0" disabled style="font-family: var(--font-mono); font-weight: 700;">
+                        <input type="number" id="cat-price-annual-usd" class="form-control" placeholder="169" min="0" style="font-family: var(--font-mono); font-weight: 700;">
                       </div>
                     </div>
                   </div>
@@ -1480,8 +1480,8 @@
       if (form) form.reset();
       document.getElementById('cat-edit-id').value = '';
       document.getElementById('cat-enable-onetime').checked = true;
-      document.getElementById('cat-enable-monthly').checked = false;
-      document.getElementById('cat-enable-annual').checked = false;
+      document.getElementById('cat-enable-monthly').checked = true;
+      document.getElementById('cat-enable-annual').checked = true;
       document.getElementById('cat-form-title').innerText = 'Add New Web Application / Bundle';
       const cancelBtn = document.getElementById('cat-cancel-btn');
       if (cancelBtn) cancelBtn.style.display = 'none';
@@ -2372,6 +2372,29 @@
           commText = `${q.commissionRate || 7}% (${API.formatCurrency(q.commissionAmount || 0, q.currency)})`;
         }
 
+        const paymentPeriod = q.selectedPaymentPeriod || q.billingCadence || 'One-Time';
+        let paymentBadge = '<span class="pill pill-active" style="font-size: 0.65rem;">One-Time</span>';
+        if (paymentPeriod === 'Monthly') {
+          paymentBadge = '<span class="pill pill-info" style="font-size: 0.65rem;">Monthly</span>';
+        } else if (paymentPeriod === 'Annually' || paymentPeriod === 'Annual') {
+          paymentBadge = '<span class="pill pill-purple" style="font-size: 0.65rem;">Annual</span>';
+        }
+
+        let displayTotalCol = totalText;
+        if (paymentPeriod === 'Monthly') {
+          displayTotalCol = `<strong style="color: #0284c7;">${q.monthlyTotalStr || (API.formatCurrency(q.basePrice, q.currency) + ' / mo')}</strong>`;
+          if (q.oneTimeTotal && q.oneTimeTotal > 0) {
+            displayTotalCol += ` <span style="font-size: 0.7rem; color: var(--slate-500); display: block;">+ ${API.formatCurrency(q.oneTimeTotal, q.currency)} One-Time</span>`;
+          }
+        } else if (paymentPeriod === 'Annually' || paymentPeriod === 'Annual') {
+          displayTotalCol = `<strong style="color: #7c3aed;">${q.annualTotalStr || (API.formatCurrency(q.basePrice, q.currency) + ' / yr')}</strong>`;
+          if (q.oneTimeTotal && q.oneTimeTotal > 0) {
+            displayTotalCol += ` <span style="font-size: 0.7rem; color: var(--slate-500); display: block;">+ ${API.formatCurrency(q.oneTimeTotal, q.currency)} One-Time</span>`;
+          }
+        } else {
+          displayTotalCol = `<strong style="color: var(--primary);">${totalText}</strong> <span style="font-size: 0.7rem; font-weight: 600; color: var(--slate-500); display: block;">One-Time</span>`;
+        }
+
         const badgeClass = API.getLifecycleBadgeClass(normStatus);
         const addonCount = (q.addons || []).length;
         const recurringNote = (q.monthlyTotalStr && q.monthlyTotalStr !== '$0 / Month' && q.monthlyTotalStr !== '₹0 / Month') ? q.monthlyTotalStr : (q.annualTotalStr && q.annualTotalStr !== '$0 / Year' && q.annualTotalStr !== '₹0 / Year' ? q.annualTotalStr : null);
@@ -2382,12 +2405,15 @@
           <td><strong>${API.escapeHtml(q.clientName)}</strong></td>
           <td><span style="font-size: 0.8rem; color: var(--slate-700);">${API.escapeHtml(q.commExecutiveName || q.executiveName || 'Executive')}</span></td>
           <td>
-            <span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.categoryName || 'Solution')}</span>
+            <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--slate-800);">${API.escapeHtml(q.categoryName || 'Solution')}</span>
+              ${paymentBadge}
+            </div>
             ${addonCount > 0 ? `<div style="font-size: 0.72rem; color: #0284c7; font-weight: 600;">+ ${addonCount} Add-on${addonCount > 1 ? 's' : ''}${recurringNote ? ` (${recurringNote})` : ''}</div>` : ''}
           </td>
           <td class="price-tag">${subtotalText}</td>
           <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${gstText}</td>
-          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${totalText} <span style="font-size: 0.7rem; font-weight: 600; color: var(--slate-500); display: block;">One-Time</span></td>
+          <td class="price-tag">${displayTotalCol}</td>
           <td><span class="pill pill-active" style="font-size: 0.775rem;">${commText}</span></td>
           <td style="font-size: 0.8rem; color: var(--slate-500);">${q.createdAt}</td>
           <td><span class="badge-lifecycle ${badgeClass}">${normStatus}</span></td>

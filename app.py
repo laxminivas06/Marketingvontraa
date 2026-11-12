@@ -100,7 +100,7 @@ DEFAULT_CATEGORIES = [
         "desc": "A professional multi-page website for companies, agencies, and organizations.",
         "referenceUrl": "https://squarespace.com",
         "enableOneTime": True,
-        "enableMonthly": False,
+        "enableMonthly": True,
         "enableAnnual": True,
         "priceOneTimeINR": 19000,
         "priceOneTimeUSD": 350,
@@ -131,8 +131,8 @@ DEFAULT_CATEGORIES = [
         "desc": "A modern portfolio for creators, designers, developers, photographers, and consultants.",
         "referenceUrl": "https://webflow.com",
         "enableOneTime": True,
-        "enableMonthly": False,
-        "enableAnnual": False,
+        "enableMonthly": True,
+        "enableAnnual": True,
         "priceOneTimeINR": 8000,
         "priceOneTimeUSD": 119,
         "priceMonthlyINR": 800,
@@ -157,7 +157,7 @@ DEFAULT_CATEGORIES = [
         "classification": "Website – E-Commerce",
         "desc": "Online digital shopping store with catalog, cart, and payment gateway readiness.",
         "referenceUrl": "https://shopify.com",
-        "enableOneTime": False,
+        "enableOneTime": True,
         "enableMonthly": True,
         "enableAnnual": True,
         "priceOneTimeINR": 28000,
@@ -213,7 +213,7 @@ DEFAULT_CATEGORIES = [
         "referenceUrl": "https://edmodo.com",
         "enableOneTime": True,
         "enableMonthly": True,
-        "enableAnnual": False,
+        "enableAnnual": True,
         "priceOneTimeINR": 45000,
         "priceOneTimeUSD": 600,
         "priceMonthlyINR": 4500,
@@ -675,32 +675,24 @@ def api_categories():
         normalized = []
         for c in cats:
             item = dict(c)
-            # Default payment model enablement if missing
-            if 'enableOneTime' not in item and 'enableMonthly' not in item and 'enableAnnual' not in item:
-                item['enableOneTime'] = True
-                item['enableMonthly'] = False
-                item['enableAnnual'] = False
-                if item.get('name') == 'Basic Business Website':
-                    item['enableMonthly'] = True
-                    item['enableAnnual'] = True
-            else:
-                item['enableOneTime'] = bool(item.get('enableOneTime', True))
-                item['enableMonthly'] = bool(item.get('enableMonthly', False))
-                item['enableAnnual'] = bool(item.get('enableAnnual', False))
+            # Every website supports all three payment options: One-Time, Monthly, Annual
+            item['enableOneTime'] = True
+            item['enableMonthly'] = True
+            item['enableAnnual'] = True
 
             base_inr = int(item.get('basePriceINR', 0))
             base_usd = int(item.get('basePriceUSD', 0))
 
             item['priceOneTimeINR'] = int(item.get('priceOneTimeINR') or base_inr)
             item['priceOneTimeUSD'] = int(item.get('priceOneTimeUSD') or base_usd)
-            item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') or (round(base_inr / 10) if base_inr else 0))
-            item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') or (round(base_usd / 10) if base_usd else 0))
-            item['priceAnnualINR'] = int(item.get('priceAnnualINR') or base_inr)
-            item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') or base_usd)
+            item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') or (round(item['priceOneTimeINR'] / 10) if item['priceOneTimeINR'] else 0))
+            item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') or (round(item['priceOneTimeUSD'] / 10) if item['priceOneTimeUSD'] else 0))
+            item['priceAnnualINR'] = int(item.get('priceAnnualINR') or item['priceOneTimeINR'] or 0)
+            item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') or item['priceOneTimeUSD'] or 0)
             item['basePriceINR'] = item['priceOneTimeINR']
             item['basePriceUSD'] = item['priceOneTimeUSD']
             normalized.append(item)
-        if any('enableOneTime' not in c for c in cats):
+        if any(not c.get('enableMonthly') or not c.get('enableAnnual') or 'enableOneTime' not in c for c in cats):
             db['categories'] = normalized
             save_db(db)
         return jsonify(normalized)

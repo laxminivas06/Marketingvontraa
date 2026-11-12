@@ -38,7 +38,7 @@
         </a>
         <a href="/marketing/references" class="nav-item" data-tab="references" onclick="handleNavClick('references', event, this)">
           <span class="nav-icon">🌐</span>
-          <span>Website References</span>
+          <span>Website Catalog</span>
         </a>
         <a href="/marketing/tracking" class="nav-item" data-tab="tracking" onclick="handleNavClick('tracking', event, this)">
           <span class="nav-icon">📊</span>
@@ -375,21 +375,25 @@
           </div>
         </section>
 
-        <!-- 2. WEBSITE REFERENCES PAGE -->
+        <!-- 2. WEBSITE CATALOG PAGE -->
         <section id="tab-references" class="tab-pane" style="display: none;">
           <div class="section-header">
             <div>
-              <h2>Website References Benchmarks</h2>
-              <p>Explore live reference websites configured by administration. Open live examples in a new browser tab for client discussions.</p>
+              <h2>Website Catalog</h2>
+              <p>Explore all available web applications with dynamic payment method options (One-Time, Monthly, or Annual) and real-time pricing updates.</p>
             </div>
             <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-              <input type="text" id="ref-search-input" class="form-control form-control-sm" placeholder="🔍 Search references or features..." style="width: 240px;" oninput="filterReferences()">
+              <input type="text" id="ref-search-input" class="form-control form-control-sm" placeholder="🔍 Search catalog or features..." style="width: 240px;" oninput="filterReferences()">
               <select id="ref-filter-type" class="form-control form-control-sm" style="width: 180px;" onchange="filterReferences()">
                 <option value="All">All Classifications</option>
                 <option value="Website">Website</option>
                 <option value="Software Application">Software Application</option>
                 <option value="Mobile Application">Mobile Application</option>
                 <option value="Other">Other</option>
+              </select>
+              <select id="ref-filter-currency" class="form-control form-control-sm" style="width: 110px;" onchange="setCatalogCurrency(this.value)">
+                <option value="INR" selected>₹ INR</option>
+                <option value="USD">$ USD</option>
               </select>
             </div>
           </div>
@@ -830,7 +834,7 @@
 
       const headings = {
         'calculator': 'Price Calculator & Proposal',
-        'references': 'Website References',
+        'references': 'Website Catalog',
         'quotation-view': 'Official Proposal Document',
         'tracking': 'Customer Acceptance Tracking',
         'requirements': 'Project Requirements Documents',
@@ -895,7 +899,12 @@
       if (domLabel) {
         domLabel.innerText = `Domain Amount (${activeCurrency} ${activeCurrency === 'INR' ? '₹' : '$'})`;
       }
+      const refCurr = document.getElementById('ref-filter-currency');
+      if (refCurr) {
+        refCurr.value = activeCurrency;
+      }
       onCategoryChanged();
+      renderReferences();
     }
 
     function getWebsitePriceForPeriod(cat, period, currency) {
@@ -1170,8 +1179,126 @@
     }
 
     // -------------------------------------------------------------
-    // WEBSITE REFERENCES PAGE
+    // WEBSITE CATALOG PAGE (DYNAMIC MULTI-PAYMENT MODEL PRICING)
     // -------------------------------------------------------------
+    window.catalogCardPaymentMethods = window.catalogCardPaymentMethods || {};
+
+    function getCatalogPriceFormatted(c, method, currency) {
+      if (!c) return { primary: '₹0', secondary: '$0', badgeHtml: '', sublabel: 'One-Time', color: 'var(--slate-900)' };
+      const cur = currency || activeCurrency || 'INR';
+      let inr = 0, usd = 0;
+      let badgeHtml = '';
+      let sublabel = '';
+      let periodSuffix = '';
+
+      if (method === 'Monthly') {
+        inr = Number(c.priceMonthlyINR != null ? c.priceMonthlyINR : 0);
+        usd = Number(c.priceMonthlyUSD != null ? c.priceMonthlyUSD : 0);
+        badgeHtml = '<span class="pill pill-info" style="font-size: 0.65rem; margin-left: 0.25rem;">Monthly</span>';
+        sublabel = 'Monthly Subscription';
+        periodSuffix = '/month';
+      } else if (method === 'Annually' || method === 'Annual') {
+        inr = Number(c.priceAnnualINR != null ? c.priceAnnualINR : 0);
+        usd = Number(c.priceAnnualUSD != null ? c.priceAnnualUSD : 0);
+        badgeHtml = '<span class="pill pill-purple" style="font-size: 0.65rem; margin-left: 0.25rem;">Annual</span>';
+        sublabel = 'Annual Subscription';
+        periodSuffix = '/year';
+      } else {
+        inr = Number(c.priceOneTimeINR != null ? c.priceOneTimeINR : (c.basePriceINR || 0));
+        usd = Number(c.priceOneTimeUSD != null ? c.priceOneTimeUSD : (c.basePriceUSD || 0));
+        badgeHtml = '<span class="pill pill-active" style="font-size: 0.65rem; margin-left: 0.25rem;">One-Time</span>';
+        sublabel = 'One-Time Payment';
+        periodSuffix = '';
+      }
+
+      const inrStr = `₹${Number(inr).toLocaleString()}${periodSuffix ? ' ' + periodSuffix : ''}`;
+      const usdStr = `$${Number(usd).toLocaleString()}${periodSuffix ? ' ' + periodSuffix : ''}`;
+
+      return {
+        primary: cur === 'USD' ? usdStr : inrStr,
+        secondary: cur === 'USD' ? `(${inrStr})` : `(${usdStr})`,
+        badgeHtml: badgeHtml,
+        sublabel: sublabel,
+        color: method === 'Monthly' ? '#0284c7' : (method === 'Annually' || method === 'Annual' ? '#7c3aed' : 'var(--slate-900)')
+      };
+    }
+
+    function setCatalogCardPayment(catId, method) {
+      window.catalogCardPaymentMethods[catId] = method;
+      const cats = API.state.categories || [];
+      const c = cats.find(item => item.id === catId);
+      if (!c) return;
+
+      // Update button active state
+      const selBox = document.getElementById(`pay-sel-${catId}`);
+      if (selBox) {
+        const btns = selBox.querySelectorAll('.btn-catalog-pay');
+        btns.forEach(btn => {
+          const btnMethod = btn.getAttribute('data-method');
+          if (btnMethod === method) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      // Update dynamic price element
+      const priceBox = document.getElementById(`cat-card-price-${catId}`);
+      if (priceBox) {
+        const info = getCatalogPriceFormatted(c, method, activeCurrency);
+        priceBox.innerHTML = `
+          <div style="font-size: 0.95rem; font-weight: 800; color: ${info.color}; font-family: var(--font-mono); line-height: 1.2;">
+            ${info.primary}
+          </div>
+          <div style="font-size: 0.72rem; color: var(--slate-500); font-weight: 600; margin-top: 2px;">
+            ${info.secondary} • ${info.sublabel}
+          </div>
+        `;
+      }
+    }
+
+    function setCatalogCurrency(curr) {
+      activeCurrency = curr;
+      const calcCurr = document.getElementById('calc-currency');
+      if (calcCurr) calcCurr.value = curr;
+      renderReferences();
+      if (document.getElementById('tab-calculator').style.display !== 'none') {
+        onCurrencyChanged();
+      }
+    }
+
+    function selectWebsiteFromCatalog(catId) {
+      const cats = API.state.categories || [];
+      const cat = cats.find(c => c.id === catId);
+      if (!cat) return;
+
+      const method = window.catalogCardPaymentMethods[catId] || (cat.enableOneTime !== false ? 'One-Time' : (cat.enableMonthly ? 'Monthly' : 'Annually'));
+
+      // Switch to calculator tab
+      switchTab('calculator', true);
+
+      // Select category in dropdown
+      const catSelect = document.getElementById('calc-category');
+      if (catSelect) {
+        catSelect.value = catId;
+      }
+
+      // Set payment period
+      selectedPaymentPeriod = method;
+
+      // Trigger change and calculate
+      onCategoryChanged();
+      setPaymentPeriod(method);
+
+      API.showToast(`Selected "${cat.name}" with ${method} Payment Model`);
+      
+      const calcTab = document.getElementById('tab-calculator');
+      if (calcTab) {
+        calcTab.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
     function renderReferences() {
       const container = document.getElementById('references-cards-container');
       if (!container) return;
@@ -1190,7 +1317,7 @@
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--slate-400);">No reference websites matching your search.</div>`;
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--slate-400);">No web applications matching your search.</div>`;
         return;
       }
 
@@ -1201,23 +1328,47 @@
           domain = new URL(url).hostname;
         } catch(e) {}
 
+        const activeMethod = window.catalogCardPaymentMethods[c.id] || (c.enableOneTime !== false ? 'One-Time' : (c.enableMonthly ? 'Monthly' : 'Annually'));
+        const priceInfo = getCatalogPriceFormatted(c, activeMethod, activeCurrency);
+
         return `
-          <div class="ref-card">
-            <div class="ref-card-header">
-              <div>
+          <div class="ref-card" id="ref-card-${c.id}">
+            <div class="ref-card-header" style="align-items: flex-start; gap: 0.75rem;">
+              <div style="flex: 1; min-width: 0;">
                 <span class="pill pill-info" style="font-size: 0.7rem; margin-bottom: 0.35rem;">${API.escapeHtml(c.classification || 'Website')}</span>
-                <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900);">${API.escapeHtml(c.name)}</h3>
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900); margin: 0; line-height: 1.3;">${API.escapeHtml(c.name)}</h3>
               </div>
-              <div style="text-align: right; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: var(--slate-700);">
-                ₹${Number(c.basePriceINR).toLocaleString()} / $${Number(c.basePriceUSD).toLocaleString()}
+              <div id="cat-card-price-${c.id}" style="text-align: right; flex-shrink: 0;">
+                <div style="font-size: 0.95rem; font-weight: 800; color: ${priceInfo.color}; font-family: var(--font-mono); line-height: 1.2;">
+                  ${priceInfo.primary}
+                </div>
+                <div style="font-size: 0.72rem; color: var(--slate-500); font-weight: 600; margin-top: 2px;">
+                  ${priceInfo.secondary} • ${priceInfo.sublabel}
+                </div>
               </div>
             </div>
-            <div class="ref-card-body">
-              <p style="font-size: 0.825rem; color: var(--slate-600); margin-bottom: 1rem; line-height: 1.45;">
+
+            <!-- DYNAMIC PAYMENT METHOD SELECTOR -->
+            <div style="padding: 0 1.25rem;">
+              <div class="catalog-payment-selector" id="pay-sel-${c.id}">
+                <button type="button" class="btn-catalog-pay ${activeMethod === 'One-Time' ? 'active' : ''}" data-method="One-Time" onclick="setCatalogCardPayment('${c.id}', 'One-Time')">
+                  🏷️ One-Time
+                </button>
+                <button type="button" class="btn-catalog-pay ${activeMethod === 'Monthly' ? 'active' : ''}" data-method="Monthly" onclick="setCatalogCardPayment('${c.id}', 'Monthly')">
+                  🔄 Monthly
+                </button>
+                <button type="button" class="btn-catalog-pay ${activeMethod === 'Annually' ? 'active' : ''}" data-method="Annually" onclick="setCatalogCardPayment('${c.id}', 'Annually')">
+                  📅 Annual
+                </button>
+              </div>
+            </div>
+
+            <div class="ref-card-body" style="padding-top: 0.5rem;">
+              <p style="font-size: 0.825rem; color: var(--slate-600); margin-bottom: 0.75rem; line-height: 1.45;">
                 ${API.escapeHtml(c.desc || 'Comprehensive digital solution designed for high performance.')}
               </p>
 
-              <div class="ref-preview-box">
+              <div class="ref-preview-box" style="margin-bottom: 0.75rem;">
                 <span class="ref-browser-dot" style="background: #ef4444;"></span>
                 <span class="ref-browser-dot" style="background: #f59e0b;"></span>
                 <span class="ref-browser-dot" style="background: #10b981;"></span>
@@ -1226,20 +1377,21 @@
                 </span>
               </div>
 
-              <div style="font-size: 0.725rem; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.4rem;">
+              <div style="font-size: 0.725rem; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.35rem;">
                 Core Deliverables:
               </div>
               <ul class="features-list" style="margin: 0; padding: 0;">
                 ${(c.features || []).slice(0, 3).map(f => `<li style="font-size: 0.775rem;">${API.escapeHtml(f)}</li>`).join('')}
               </ul>
             </div>
-            <div class="ref-card-footer">
-              <span style="font-size: 0.75rem; color: var(--slate-400); font-family: var(--font-mono);">
-                ${c.referenceUrl ? 'Configured URL' : 'Default benchmark'}
-              </span>
-              <a href="${c.referenceUrl || '#'}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-weight: 700;">
-                OPEN WEBSITE ↗
+
+            <div class="ref-card-footer" style="gap: 0.5rem; justify-content: space-between;">
+              <a href="${c.referenceUrl || '#'}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="font-weight: 700; font-size: 0.75rem;">
+                🔗 Preview Demo ↗
               </a>
+              <button type="button" class="btn btn-primary btn-sm" style="font-weight: 700; font-size: 0.75rem;" onclick="selectWebsiteFromCatalog('${c.id}')">
+                Select for Quotation →
+              </button>
             </div>
           </div>
         `;
@@ -1772,6 +1924,29 @@
           totalText = API.formatCurrency(total, q.currency);
         }
 
+        const paymentPeriod = q.selectedPaymentPeriod || q.billingCadence || 'One-Time';
+        let paymentBadge = '<span class="pill pill-active" style="font-size: 0.65rem;">One-Time</span>';
+        if (paymentPeriod === 'Monthly') {
+          paymentBadge = '<span class="pill pill-info" style="font-size: 0.65rem;">Monthly</span>';
+        } else if (paymentPeriod === 'Annually' || paymentPeriod === 'Annual') {
+          paymentBadge = '<span class="pill pill-purple" style="font-size: 0.65rem;">Annual</span>';
+        }
+
+        let displayTotalCol = totalText;
+        if (paymentPeriod === 'Monthly') {
+          displayTotalCol = `<strong style="color: #0284c7;">${q.monthlyTotalStr || (API.formatCurrency(q.basePrice, q.currency) + ' / mo')}</strong>`;
+          if (q.oneTimeTotal && q.oneTimeTotal > 0) {
+            displayTotalCol += ` <span style="font-size: 0.7rem; color: var(--slate-500); display: block;">+ ${API.formatCurrency(q.oneTimeTotal, q.currency)} One-Time</span>`;
+          }
+        } else if (paymentPeriod === 'Annually' || paymentPeriod === 'Annual') {
+          displayTotalCol = `<strong style="color: #7c3aed;">${q.annualTotalStr || (API.formatCurrency(q.basePrice, q.currency) + ' / yr')}</strong>`;
+          if (q.oneTimeTotal && q.oneTimeTotal > 0) {
+            displayTotalCol += ` <span style="font-size: 0.7rem; color: var(--slate-500); display: block;">+ ${API.formatCurrency(q.oneTimeTotal, q.currency)} One-Time</span>`;
+          }
+        } else {
+          displayTotalCol = `<strong style="color: var(--primary);">${totalText}</strong> <span style="font-size: 0.7rem; font-weight: 600; color: var(--slate-500); display: block;">One-Time</span>`;
+        }
+
         const addonCount = (q.addons || []).length;
         const recurringNote = (q.monthlyTotalStr && q.monthlyTotalStr !== '$0 / Month' && q.monthlyTotalStr !== '₹0 / Month') ? q.monthlyTotalStr : (q.annualTotalStr && q.annualTotalStr !== '$0 / Year' && q.annualTotalStr !== '₹0 / Year' ? q.annualTotalStr : null);
 
@@ -1780,12 +1955,15 @@
           <td><strong style="font-family: var(--font-mono); color: var(--primary);">${API.escapeHtml(q.quoteNumber)}</strong></td>
           <td><strong>${API.escapeHtml(q.clientName)}</strong></td>
           <td>
-            <div>${API.escapeHtml(q.categoryName || 'Solution')}</div>
+            <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+              <span style="font-size: 0.85rem; font-weight: 700; color: var(--slate-800);">${API.escapeHtml(q.categoryName || 'Solution')}</span>
+              ${paymentBadge}
+            </div>
             ${addonCount > 0 ? `<div style="font-size: 0.72rem; color: #0284c7; font-weight: 600;">+ ${addonCount} Add-on${addonCount > 1 ? 's' : ''}${recurringNote ? ` (${recurringNote})` : ''}</div>` : ''}
           </td>
           <td class="price-tag">${subtotalText}</td>
           <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${gstText}</td>
-          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${totalText} <span style="font-size: 0.7rem; font-weight: 600; color: var(--slate-500); display: block;">One-Time</span></td>
+          <td class="price-tag">${displayTotalCol}</td>
           <td><span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.commExecutiveName || 'Exec')}</span></td>
           <td><span class="badge-lifecycle ${badgeClass}">${normStatus}</span></td>
           <td>
