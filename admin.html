@@ -486,38 +486,6 @@
           </div>
         </section>
 
-        <!-- 7. ADD-ONS CONFIGURATION -->
-        <section id="tab-addons" class="tab-pane" style="display: none;">
-          <div class="section-header">
-            <div>
-              <h2>Add-ons Configuration</h2>
-              <p>Configure monthly and yearly rates for optional client add-ons in INR and USD.</p>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="openAddAddonModal()">
-              + Add New Add-on
-            </button>
-          </div>
-
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Add-on Name</th>
-                  <th>Monthly (INR ₹)</th>
-                  <th>Yearly (INR ₹)</th>
-                  <th>Monthly (USD $)</th>
-                  <th>Yearly (USD $)</th>
-                  <th>Status</th>
-                  <th style="text-align: right;">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="table-addons-body">
-                <!-- Injected via JS -->
-              </tbody>
-            </table>
-          </div>
-        </section>
-
         <!-- 8. ALL QUOTATIONS -->
         <section id="tab-quotations" class="tab-pane" style="display: none;">
           <div class="section-header">
@@ -947,61 +915,6 @@
     </div>
   </div>
 
-  <!-- 3. ADD-ON MODAL -->
-  <div class="modal-backdrop" id="modal-addon">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modal-addon-title">Configure Add-on</h3>
-        <button class="modal-close-btn" onclick="API.closeModal('modal-addon')">&times;</button>
-      </div>
-      <form id="form-addon" onsubmit="saveAddon(event)">
-        <input type="hidden" id="addon-edit-id">
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="addon-name">Add-on Name *</label>
-            <input type="text" id="addon-name" class="form-control" placeholder="e.g. WhatsApp Integration" required>
-          </div>
-          <div class="form-group">
-            <label for="addon-desc">Description</label>
-            <textarea id="addon-desc" class="form-control" rows="2" placeholder="Brief technical deliverables..."></textarea>
-          </div>
-          
-          <div style="background: var(--slate-50); padding: 1rem; border-radius: 8px; border: 1px solid var(--slate-200); margin-bottom: 1rem;">
-            <div style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.5rem;">Indian Pricing (INR ₹)</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label for="addon-m-inr">Monthly Price (INR) *</label>
-                <input type="number" id="addon-m-inr" class="form-control" required placeholder="500">
-              </div>
-              <div class="form-group" style="margin-bottom: 0;">
-                <label for="addon-y-inr">Yearly Price (INR) *</label>
-                <input type="number" id="addon-y-inr" class="form-control" required placeholder="5000">
-              </div>
-            </div>
-          </div>
-
-          <div style="background: var(--slate-50); padding: 1rem; border-radius: 8px; border: 1px solid var(--slate-200); margin-bottom: 1rem;">
-            <div style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.5rem;">Foreign Pricing (USD $)</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label for="addon-m-usd">Monthly Price (USD) *</label>
-                <input type="number" id="addon-m-usd" class="form-control" required placeholder="10">
-              </div>
-              <div class="form-group" style="margin-bottom: 0;">
-                <label for="addon-y-usd">Yearly Price (USD) *</label>
-                <input type="number" id="addon-y-usd" class="form-control" required placeholder="100">
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-addon')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Add-on</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- 4. DEVELOPER ASSIGNMENT MODAL (With Active Project Count & Availability) -->
   <div class="modal-backdrop" id="modal-assign">
     <div class="modal-content" style="max-width: 650px;">
@@ -1307,7 +1220,6 @@
         'slabs': 'Commission Slabs – Side-by-Side Layout',
         'marketing-users': 'Marketing Team Management',
         'dev-users': 'Developer Team Management',
-        'addons': 'Add-ons Configuration (Monthly & Yearly)',
         'quotations': 'All Customer Quotations',
         'projects': 'Project Management & Review',
         'payments': 'Project Payment Details & Verification',
@@ -1335,7 +1247,6 @@
       renderAdminUsers();
       renderMarketingUsers();
       renderDeveloperUsers();
-      renderAddons();
       renderQuotations();
       renderProjects();
       renderPayments();
@@ -1958,72 +1869,6 @@
         }
       };
       reader.readAsArrayBuffer(file);
-    }
-
-    // -------------------------------------------------------------
-    // ADD-ONS CONFIGURATION
-    // -------------------------------------------------------------
-    function renderAddons() {
-      const tbody = document.getElementById('table-addons-body');
-      tbody.innerHTML = '';
-      const list = API.state.addons || [];
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--slate-400);">No add-ons configured yet. Click "+ Create Add-on" above to add one.</td></tr>`;
-        return;
-      }
-      list.forEach(a => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>
-            <strong>${API.escapeHtml(a.name)}</strong>
-            <div style="font-size: 0.75rem; color: var(--slate-500);">${API.escapeHtml(a.desc || '')}</div>
-          </td>
-          <td class="price-tag">₹${Number(a.monthlyINR).toLocaleString()}</td>
-          <td class="price-tag">₹${Number(a.yearlyINR).toLocaleString()}</td>
-          <td class="price-tag">$${Number(a.monthlyUSD).toLocaleString()}</td>
-          <td class="price-tag">$${Number(a.yearlyUSD).toLocaleString()}</td>
-          <td><span class="pill ${a.status === 'active' ? 'pill-active' : 'pill-inactive'}">${a.status}</span></td>
-          <td style="text-align: right;">
-            <button class="btn btn-danger btn-sm" onclick="deleteAddon('${a.id}')">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function openAddAddonModal() {
-      document.getElementById('addon-edit-id').value = '';
-      document.getElementById('addon-name').value = '';
-      document.getElementById('addon-desc').value = '';
-      document.getElementById('addon-m-inr').value = '500';
-      document.getElementById('addon-y-inr').value = '5000';
-      document.getElementById('addon-m-usd').value = '10';
-      document.getElementById('addon-y-usd').value = '100';
-      API.openModal('modal-addon');
-    }
-
-    async function saveAddon(e) {
-      e.preventDefault();
-      const payload = {
-        name: document.getElementById('addon-name').value.trim(),
-        desc: document.getElementById('addon-desc').value.trim(),
-        monthlyINR: parseInt(document.getElementById('addon-m-inr').value, 10) || 0,
-        yearlyINR: parseInt(document.getElementById('addon-y-inr').value, 10) || 0,
-        monthlyUSD: parseInt(document.getElementById('addon-m-usd').value, 10) || 0,
-        yearlyUSD: parseInt(document.getElementById('addon-y-usd').value, 10) || 0
-      };
-      try {
-        await API.request('/api/addons', 'POST', payload);
-        API.closeModal('modal-addon');
-        API.showToast('Add-on configuration saved');
-        await refreshAllData();
-      } catch (err) { alert(err.message); }
-    }
-
-    async function deleteAddon(id) {
-      if (!confirm('Delete add-on?')) return;
-      await API.request(`/api/addons/${id}`, 'DELETE');
-      await refreshAllData();
     }
 
     // -------------------------------------------------------------
