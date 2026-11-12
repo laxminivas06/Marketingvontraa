@@ -307,6 +307,51 @@
   ],
   "quotations": [
     {
+      "id": "qt-0fc687",
+      "quoteNumber": "AIV-QT-2026-5BC9",
+      "clientName": "Test Global Enterprises",
+      "classification": "Website",
+      "categoryId": "cat-1",
+      "categoryName": "Basic Business Website",
+      "referenceUrl": "https://stripe.com",
+      "currency": "INR",
+      "billingCadence": "annual",
+      "basePrice": 25000.0,
+      "domainAmount": 1500.0,
+      "addons": [
+        {
+          "billing": "yearly",
+          "name": "SSL & CDN",
+          "price": 3500
+        }
+      ],
+      "subtotal": 30000.0,
+      "gstRate": 18.0,
+      "gstAmount": 5400.0,
+      "totalPrice": 35400.0,
+      "commissionRate": 10.0,
+      "commissionAmount": 3000.0,
+      "commExecutiveName": "Client Communication Exec",
+      "docCoordinatorName": "Project Documentation Coordinator",
+      "assignedMarketing": [],
+      "requirementsFiles": [
+        {
+          "id": "doc-17e09e",
+          "filename": "quote_qt-0fc687_9fb19a_project_scope.docx",
+          "originalName": "project_scope.docx",
+          "sizeKb": 0.0,
+          "uploadedAt": "2026-11-12 16:08",
+          "uploadedBy": "Priya Sharma",
+          "url": "/uploads/documents/quote_qt-0fc687_9fb19a_project_scope.docx"
+        }
+      ],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "50% advance on kickoff, 50% upon deployment. 30 days post-launch support included. All prices subject to 18% GST.",
+      "createdAt": "2026-11-12",
+      "updatedAt": "2026-11-12"
+    },
+    {
       "id": "qt-5533f9",
       "quoteNumber": "AIV-QT-2026-8B02",
       "clientName": "Test Global Enterprises",
@@ -1065,6 +1110,25 @@
       "zipFiles": [],
       "changeRequests": [
         {
+          "id": "cr-2860f7",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_bc1634_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_bc1634_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
           "id": "cr-b7386d",
           "title": "Update Header Layout",
           "desc": "Add phone number to top bar",
@@ -1159,10 +1223,10 @@
       },
       "lastUpdated": "2026-11-12",
       "signoffDocument": {
-        "filename": "signoff_proj-aiv-2_21553e_client_signoff_certificate.pdf",
+        "filename": "signoff_proj-aiv-2_ef6bba_client_signoff_certificate.pdf",
         "originalName": "client_signoff_certificate.pdf",
-        "url": "/uploads/signoffs/signoff_proj-aiv-2_21553e_client_signoff_certificate.pdf",
-        "uploadedAt": "2026-11-12 15:53",
+        "url": "/uploads/signoffs/signoff_proj-aiv-2_ef6bba_client_signoff_certificate.pdf",
+        "uploadedAt": "2026-11-12 16:08",
         "uploadedBy": "Administrator"
       }
     },
