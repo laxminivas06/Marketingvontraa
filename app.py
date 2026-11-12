@@ -258,6 +258,36 @@ DEFAULT_CATEGORIES = [
             "Promo Codes & Discounts Engine",
             "Kitchen Display View"
         ]
+    },
+    {
+        "id": "bnd-starter-suite",
+        "name": "Startup Business & Dashboard Bundle",
+        "classification": "Website Bundle",
+        "isBundle": True,
+        "desc": "Complete online presence package combining a responsive Basic Business Website with a centralized Admin Dashboard.",
+        "referenceUrl": "https://aivontraa.com",
+        "bundleApps": [
+            "cat-84f130",
+            "cat-503caf"
+        ],
+        "enableOneTime": True,
+        "enableMonthly": True,
+        "enableAnnual": True,
+        "priceOneTimeINR": 37000,
+        "priceOneTimeUSD": 868,
+        "priceMonthlyINR": 3700,
+        "priceMonthlyUSD": 87,
+        "priceAnnualINR": 37000,
+        "priceAnnualUSD": 868,
+        "basePriceINR": 37000,
+        "basePriceUSD": 868,
+        "features": [
+            "Responsive Business Website with Contact & Lead Capture",
+            "Interactive Admin Dashboard with Metrics & Analytics",
+            "Integrated User Authentication & Role Management",
+            "Google Maps, WhatsApp Integration & SEO Optimization",
+            "Cross-Platform Compatible & Mobile Responsive"
+        ]
     }
 ]
 
@@ -665,7 +695,7 @@ def api_state():
 
 
 # -------------------------------------------------------------
-# CATEGORIES API (Preserve 7 Categories & Reference Websites)
+# WEB APPLICATIONS & BUNDLES API (Full Editing & Synchronization)
 # -------------------------------------------------------------
 @app.route('/api/categories', methods=['GET', 'POST'])
 def api_categories():
@@ -675,26 +705,36 @@ def api_categories():
         normalized = []
         for c in cats:
             item = dict(c)
-            # Every website supports all three payment options: One-Time, Monthly, Annual
-            item['enableOneTime'] = True
-            item['enableMonthly'] = True
-            item['enableAnnual'] = True
+            # Default payment frequencies only if completely missing
+            if 'enableOneTime' not in item and 'enableMonthly' not in item and 'enableAnnual' not in item:
+                item['enableOneTime'] = True
+                item['enableMonthly'] = True
+                item['enableAnnual'] = True
+            else:
+                item['enableOneTime'] = bool(item.get('enableOneTime', True))
+                item['enableMonthly'] = bool(item.get('enableMonthly', False))
+                item['enableAnnual'] = bool(item.get('enableAnnual', False))
+                if not (item['enableOneTime'] or item['enableMonthly'] or item['enableAnnual']):
+                    item['enableOneTime'] = True
 
             base_inr = int(item.get('basePriceINR', 0))
             base_usd = int(item.get('basePriceUSD', 0))
 
-            item['priceOneTimeINR'] = int(item.get('priceOneTimeINR') or base_inr)
-            item['priceOneTimeUSD'] = int(item.get('priceOneTimeUSD') or base_usd)
-            item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') or (round(item['priceOneTimeINR'] / 10) if item['priceOneTimeINR'] else 0))
-            item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') or (round(item['priceOneTimeUSD'] / 10) if item['priceOneTimeUSD'] else 0))
-            item['priceAnnualINR'] = int(item.get('priceAnnualINR') or item['priceOneTimeINR'] or 0)
-            item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') or item['priceOneTimeUSD'] or 0)
+            item['priceOneTimeINR'] = int(item.get('priceOneTimeINR') if item.get('priceOneTimeINR') is not None else base_inr)
+            item['priceOneTimeUSD'] = int(item.get('priceOneTimeUSD') if item.get('priceOneTimeUSD') is not None else base_usd)
+            item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') if item.get('priceMonthlyINR') is not None else (round(item['priceOneTimeINR'] / 10) if item['priceOneTimeINR'] else 0))
+            item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') if item.get('priceMonthlyUSD') is not None else (round(item['priceOneTimeUSD'] / 10) if item['priceOneTimeUSD'] else 0))
+            item['priceAnnualINR'] = int(item.get('priceAnnualINR') if item.get('priceAnnualINR') is not None else (item['priceOneTimeINR'] or 0))
+            item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') if item.get('priceAnnualUSD') is not None else (item['priceOneTimeUSD'] or 0))
             item['basePriceINR'] = item['priceOneTimeINR']
             item['basePriceUSD'] = item['priceOneTimeUSD']
+            
+            # Explicit bundle metadata
+            is_bundle = bool(item.get('isBundle', False) or item.get('classification') == 'Website Bundle')
+            item['isBundle'] = is_bundle
+            item['bundleApps'] = item.get('bundleApps', []) if is_bundle else []
+            item['features'] = item.get('features', [])
             normalized.append(item)
-        if any(not c.get('enableMonthly') or not c.get('enableAnnual') or 'enableOneTime' not in c for c in cats):
-            db['categories'] = normalized
-            save_db(db)
         return jsonify(normalized)
 
     payload = request.get_json() or {}
@@ -702,6 +742,8 @@ def api_categories():
     classification = payload.get('classification', 'Website').strip()
     desc = payload.get('desc', '').strip()
     ref_url = payload.get('referenceUrl', '').strip()
+    is_bundle = bool(payload.get('isBundle', False) or classification == 'Website Bundle')
+    bundle_apps = payload.get('bundleApps', []) if is_bundle else []
 
     enable_onetime = bool(payload.get('enableOneTime', True))
     enable_monthly = bool(payload.get('enableMonthly', False))
@@ -718,18 +760,21 @@ def api_categories():
     features = payload.get('features') or []
 
     if not name:
-        return jsonify({"success": False, "message": "Category Name is required"}), 400
+        return jsonify({"success": False, "message": "Name is required"}), 400
 
     categories = db.setdefault('categories', [])
     if any(c.get('name', '').lower() == name.lower() for c in categories):
-        return jsonify({"success": False, "message": f"Category '{name}' already exists"}), 400
+        return jsonify({"success": False, "message": f"An application or bundle named '{name}' already exists"}), 400
 
+    prefix = "bnd-" if is_bundle else "cat-"
     new_cat = {
-        "id": f"cat-{uuid.uuid4().hex[:6]}",
+        "id": f"{prefix}{uuid.uuid4().hex[:6]}",
         "name": name,
         "classification": classification,
         "desc": desc,
         "referenceUrl": ref_url,
+        "isBundle": is_bundle,
+        "bundleApps": bundle_apps,
         "enableOneTime": enable_onetime,
         "enableMonthly": enable_monthly,
         "enableAnnual": enable_annual,
@@ -741,30 +786,53 @@ def api_categories():
         "priceAnnualUSD": price_annual_usd,
         "basePriceINR": price_onetime_inr,
         "basePriceUSD": price_onetime_usd,
-        "features": features
+        "features": features,
+        "createdAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
     categories.append(new_cat)
     save_db(db)
     return jsonify({"success": True, "category": new_cat})
 
-@app.route('/api/categories/<cat_id>', methods=['PUT', 'DELETE'])
+@app.route('/api/categories/<cat_id>', methods=['GET', 'PUT', 'DELETE'])
 def api_category_item(cat_id):
     db = load_db()
     categories = db.get('categories', [])
     idx = next((i for i, c in enumerate(categories) if c['id'] == cat_id), None)
 
     if idx is None:
-        return jsonify({"success": False, "message": "Category not found"}), 404
+        return jsonify({"success": False, "message": "Record not found"}), 404
+
+    if request.method == 'GET':
+        return jsonify(categories[idx])
 
     if request.method == 'PUT':
         payload = request.get_json() or {}
         cat = categories[idx]
-        cat['name'] = payload.get('name', cat['name']).strip()
-        cat['classification'] = payload.get('classification', cat.get('classification', 'Website'))
-        cat['desc'] = payload.get('desc', cat.get('desc', '')).strip()
+
+        new_name = payload.get('name', cat.get('name', '')).strip()
+        if not new_name:
+            return jsonify({"success": False, "message": "Name cannot be empty"}), 400
+
+        # Collision check with another record
+        if any(c['id'] != cat_id and c.get('name', '').lower() == new_name.lower() for c in categories):
+            return jsonify({"success": False, "message": f"Another application or bundle named '{new_name}' already exists"}), 400
+
+        cat['name'] = new_name
+        if 'classification' in payload:
+            cat['classification'] = payload.get('classification', cat.get('classification', 'Website')).strip()
+        if 'desc' in payload:
+            cat['desc'] = payload.get('desc', '').strip()
         if 'referenceUrl' in payload:
             cat['referenceUrl'] = payload.get('referenceUrl', '').strip()
+
+        # Bundle flags and associations
+        is_bundle = bool(payload.get('isBundle', cat.get('isBundle') or cat.get('classification') == 'Website Bundle'))
+        cat['isBundle'] = is_bundle
+        if 'bundleApps' in payload:
+            cat['bundleApps'] = payload.get('bundleApps', [])
+        elif is_bundle and 'bundleApps' not in cat:
+            cat['bundleApps'] = []
 
         if 'enableOneTime' in payload or 'enableMonthly' in payload or 'enableAnnual' in payload:
             cat['enableOneTime'] = bool(payload.get('enableOneTime', cat.get('enableOneTime', True)))
@@ -774,10 +842,10 @@ def api_category_item(cat_id):
                 cat['enableOneTime'] = True
 
         if 'priceOneTimeINR' in payload or 'basePriceINR' in payload:
-            cat['priceOneTimeINR'] = int(payload.get('priceOneTimeINR') or payload.get('basePriceINR') or 0)
+            cat['priceOneTimeINR'] = int(payload.get('priceOneTimeINR') if payload.get('priceOneTimeINR') is not None else (payload.get('basePriceINR') or 0))
             cat['basePriceINR'] = cat['priceOneTimeINR']
         if 'priceOneTimeUSD' in payload or 'basePriceUSD' in payload:
-            cat['priceOneTimeUSD'] = int(payload.get('priceOneTimeUSD') or payload.get('basePriceUSD') or 0)
+            cat['priceOneTimeUSD'] = int(payload.get('priceOneTimeUSD') if payload.get('priceOneTimeUSD') is not None else (payload.get('basePriceUSD') or 0))
             cat['basePriceUSD'] = cat['priceOneTimeUSD']
         if 'priceMonthlyINR' in payload:
             cat['priceMonthlyINR'] = int(payload.get('priceMonthlyINR', 0))
@@ -790,6 +858,10 @@ def api_category_item(cat_id):
 
         if 'features' in payload:
             cat['features'] = payload['features']
+
+        cat['updatedAt'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # In-place update: database record updated, no duplicates created
         save_db(db)
         return jsonify({"success": True, "category": cat})
 
@@ -797,6 +869,83 @@ def api_category_item(cat_id):
         deleted = categories.pop(idx)
         save_db(db)
         return jsonify({"success": True, "deleted": deleted})
+
+# -------------------------------------------------------------
+# DEDICATED BUNDLES ENDPOINTS (Linked to Categories Data Store)
+# -------------------------------------------------------------
+@app.route('/api/bundles', methods=['GET', 'POST'])
+def api_bundles():
+    if request.method == 'GET':
+        db = load_db()
+        cats = db.get('categories', [])
+        bundles = [c for c in cats if c.get('isBundle') or c.get('classification') == 'Website Bundle']
+        return jsonify(bundles)
+    return api_categories()
+
+@app.route('/api/bundles/<bundle_id>', methods=['GET', 'PUT', 'DELETE'])
+def api_bundle_item(bundle_id):
+    return api_category_item(bundle_id)
+
+@app.route('/api/bundles/recalculate', methods=['POST'])
+def api_bundle_recalculate():
+    """Recalculates bundle pricing dynamically from a given list of application IDs."""
+    payload = request.get_json() or {}
+    app_ids = payload.get('bundleApps', [])
+    if not isinstance(app_ids, list):
+        return jsonify({"success": False, "message": "bundleApps must be a list of IDs"}), 400
+
+    db = load_db()
+    all_cats = db.get('categories', [])
+    app_map = {c['id']: c for c in all_cats}
+
+    resolved_apps = []
+    tot_ot_inr = 0
+    tot_ot_usd = 0
+    tot_mo_inr = 0
+    tot_mo_usd = 0
+    tot_an_inr = 0
+    tot_an_usd = 0
+
+    for aid in app_ids:
+        app_obj = app_map.get(aid)
+        if app_obj:
+            ot_inr = int(app_obj.get('priceOneTimeINR') or app_obj.get('basePriceINR') or 0)
+            ot_usd = int(app_obj.get('priceOneTimeUSD') or app_obj.get('basePriceUSD') or 0)
+            mo_inr = int(app_obj.get('priceMonthlyINR') or (round(ot_inr / 10) if ot_inr else 0))
+            mo_usd = int(app_obj.get('priceMonthlyUSD') or (round(ot_usd / 10) if ot_usd else 0))
+            an_inr = int(app_obj.get('priceAnnualINR') or ot_inr)
+            an_usd = int(app_obj.get('priceAnnualUSD') or ot_usd)
+
+            tot_ot_inr += ot_inr
+            tot_ot_usd += ot_usd
+            tot_mo_inr += mo_inr
+            tot_mo_usd += mo_usd
+            tot_an_inr += an_inr
+            tot_an_usd += an_usd
+
+            resolved_apps.append({
+                "id": app_obj['id'],
+                "name": app_obj.get('name', ''),
+                "classification": app_obj.get('classification', 'Website'),
+                "priceOneTimeINR": ot_inr,
+                "priceOneTimeUSD": ot_usd,
+                "priceMonthlyINR": mo_inr,
+                "priceMonthlyUSD": mo_usd,
+                "priceAnnualINR": an_inr,
+                "priceAnnualUSD": an_usd
+            })
+
+    return jsonify({
+        "success": True,
+        "appCount": len(resolved_apps),
+        "apps": resolved_apps,
+        "priceOneTimeINR": tot_ot_inr,
+        "priceOneTimeUSD": tot_ot_usd,
+        "priceMonthlyINR": tot_mo_inr,
+        "priceMonthlyUSD": tot_mo_usd,
+        "priceAnnualINR": tot_an_inr,
+        "priceAnnualUSD": tot_an_usd
+    })
 
 @app.route('/api/categories/template', methods=['GET'])
 def api_categories_template():

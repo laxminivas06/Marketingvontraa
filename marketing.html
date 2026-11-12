@@ -139,6 +139,7 @@
                     <select id="calc-classification" class="form-control" onchange="filterCategoriesByClassification()">
                       <option value="All">All Types</option>
                       <option value="Website">Website</option>
+                      <option value="Website Bundle">Website Bundle</option>
                       <option value="Software Application">Software Application</option>
                       <option value="Mobile Application">Mobile Application</option>
                       <option value="Other">Other</option>
@@ -183,6 +184,14 @@
                 </div>
 
                 <p id="cat-disp-desc" style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 0.75rem;">-</p>
+
+                <!-- If Bundle: Included Applications in Marketing Calculator -->
+                <div id="cat-disp-bundle-box" style="display: none; margin-bottom: 0.85rem; padding: 0.6rem 0.85rem; background: #faf5ff; border: 1px solid #d8b4fe; border-radius: 8px;">
+                  <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #7e22ce; margin-bottom: 0.35rem;">
+                    📦 Included Web Applications in Bundle:
+                  </div>
+                  <div id="cat-disp-bundle-apps" style="display: flex; flex-wrap: wrap; gap: 0.35rem;"></div>
+                </div>
 
                 <!-- Associated Reference Website -->
                 <div id="cat-disp-ref-box" style="display: none; margin-bottom: 0.85rem; padding: 0.6rem 0.85rem; background: #ffffff; border: 1px solid var(--slate-200); border-radius: 8px; align-items: center; justify-content: space-between;">
@@ -879,15 +888,20 @@
       select.innerHTML = '';
 
       const cats = API.state.categories || [];
-      const filtered = cls === 'All' ? cats : cats.filter(c => c.classification === cls);
+      const filtered = cls === 'All' ? cats : (
+        cls === 'Website Bundle' ? cats.filter(c => c.isBundle || c.classification === 'Website Bundle') :
+        cats.filter(c => c.classification === cls)
+      );
 
       if (filtered.length === 0) {
-        select.innerHTML = '<option value="">No categories in this classification</option>';
+        select.innerHTML = '<option value="">No solutions in this classification</option>';
         return;
       }
 
       filtered.forEach(c => {
-        select.innerHTML += `<option value="${c.id}">${API.escapeHtml(c.name)} (${c.classification})</option>`;
+        const isBundle = Boolean(c.isBundle || c.classification === 'Website Bundle');
+        const icon = isBundle ? '📦 ' : '';
+        select.innerHTML += `<option value="${c.id}">${icon}${API.escapeHtml(c.name)} (${c.classification || (isBundle ? 'Website Bundle' : 'Website')})</option>`;
       });
 
       onCategoryChanged();
@@ -997,6 +1011,27 @@
       document.getElementById('cat-disp-name').innerText = cat.name;
       document.getElementById('cat-disp-desc').innerText = cat.desc || '';
       updateCategoryDisplayPrice();
+
+      // Show included applications for bundles
+      const isBundle = Boolean(cat.isBundle || cat.classification === 'Website Bundle');
+      const bndBox = document.getElementById('cat-disp-bundle-box');
+      const bndAppsList = document.getElementById('cat-disp-bundle-apps');
+      if (isBundle && bndBox && bndAppsList) {
+        bndBox.style.display = 'block';
+        bndAppsList.innerHTML = '';
+        const allCats = API.state.categories || [];
+        const appIds = cat.bundleApps || [];
+        if (appIds.length === 0) {
+          bndAppsList.innerHTML = '<span style="font-size: 0.78rem; color: var(--slate-500); font-style: italic;">Custom bundle configuration</span>';
+        } else {
+          appIds.forEach(aid => {
+            const a = allCats.find(x => x.id === aid);
+            bndAppsList.innerHTML += `<span class="pill pill-purple" style="font-size: 0.72rem; font-weight: 700;">${API.escapeHtml(a ? a.name : aid)}</span>`;
+          });
+        }
+      } else if (bndBox) {
+        bndBox.style.display = 'none';
+      }
 
       const refBox = document.getElementById('cat-disp-ref-box');
       const refLink = document.getElementById('cat-disp-ref-link');

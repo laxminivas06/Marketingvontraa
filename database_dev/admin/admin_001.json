@@ -5,9 +5,9 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 20:26:01",
-    "record_count": 26,
-    "checksum": "41baf0611711b2a5eb07f464f19e7dfda0f40f1ca991ec81004e7838cbd1c7a1"
+    "updated_at": "2026-11-12 21:21:24",
+    "record_count": 27,
+    "checksum": "9f90c49a9edec8f3ca794abed5dec77b754169868794bf7146716ef9b39a49c3"
   },
   "records": [
     {
@@ -15,7 +15,7 @@
       "name": "Basic Business Website",
       "classification": "Website – Basic",
       "desc": "A simple website for startups, small businesses, and local service providers.",
-      "referenceUrl": "Wix",
+      "referenceUrl": "https://wix.com",
       "basePriceINR": 12000,
       "basePriceUSD": 169,
       "features": [
@@ -39,6 +39,8 @@
       "priceMonthlyUSD": 17,
       "priceAnnualINR": 12000,
       "priceAnnualUSD": 169,
+      "isBundle": false,
+      "updatedAt": "2026-11-12 21:21:23",
       "_entity_type": "categories"
     },
     {
@@ -575,6 +577,38 @@
       "priceMonthlyUSD": 120,
       "priceAnnualINR": 45000,
       "priceAnnualUSD": 1199,
+      "_entity_type": "categories"
+    },
+    {
+      "id": "bnd-starter-suite",
+      "name": "Startup Business & Dashboard Bundle",
+      "classification": "Website Bundle",
+      "isBundle": true,
+      "desc": "Complete online presence package combining a responsive Basic Business Website with a centralized Admin Dashboard.",
+      "referenceUrl": "https://aivontraa.com",
+      "bundleApps": [
+        "cat-84f130",
+        "cat-503caf"
+      ],
+      "enableOneTime": true,
+      "enableMonthly": true,
+      "enableAnnual": true,
+      "priceOneTimeINR": 37000,
+      "priceOneTimeUSD": 868,
+      "priceMonthlyINR": 3700,
+      "priceMonthlyUSD": 87,
+      "priceAnnualINR": 37000,
+      "priceAnnualUSD": 868,
+      "basePriceINR": 37000,
+      "basePriceUSD": 868,
+      "features": [
+        "Responsive Business Website with Contact & Lead Capture",
+        "Interactive Admin Dashboard with Metrics & Analytics",
+        "Integrated User Authentication & Role Management",
+        "Google Maps, WhatsApp Integration & SEO Optimization",
+        "Cross-Platform Compatible & Mobile Responsive"
+      ],
+      "updatedAt": "2026-11-12 21:21:24",
       "_entity_type": "categories"
     },
     {

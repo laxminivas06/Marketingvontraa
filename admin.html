@@ -218,7 +218,7 @@
 
                 <div class="form-group">
                   <label for="cat-classification">Classification *</label>
-                  <select id="cat-classification" class="form-control" required>
+                  <select id="cat-classification" class="form-control" required onchange="handleClassificationChange()">
                     <option value="Website">Website</option>
                     <option value="Website Bundle">Website Bundle</option>
                     <option value="Software Application">Software Application</option>
@@ -237,6 +237,46 @@
                 <label for="cat-ref-url">Reference Website URL</label>
                 <input type="url" id="cat-ref-url" class="form-control" placeholder="https://example.com" style="font-family: var(--font-mono);">
                 <small style="color: var(--slate-500); font-size: 0.75rem;">This reference website URL will be accessible to marketing executives during customer discussions.</small>
+              </div>
+
+              <!-- DYNAMIC BUNDLE CONFIGURATION SECTION (Visible when Classification is 'Website Bundle' or editing bundle) -->
+              <div id="bundle-config-section" style="display: none; background: #faf5ff; border: 1.5px solid #d8b4fe; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <div style="font-size: 0.85rem; font-weight: 800; color: #6b21a8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem;">
+                      <span>📦 Included Web Applications in Bundle</span>
+                      <span id="bundle-apps-count-badge" class="pill pill-purple" style="font-size: 0.68rem;">0 Applications</span>
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--slate-600); margin: 0.25rem 0 0 0;">
+                      Add, remove, or replace web applications in this bundle. Bundle pricing will automatically recalculate.
+                    </p>
+                  </div>
+                  <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="recalculateBundlePrices(true)" title="Recalculate prices from applications">
+                      🔄 Recalculate Prices
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="importFeaturesFromBundleApps()" title="Extract deliverables from applications">
+                      ✨ Import Features
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Included Apps Cards Container -->
+                <div id="bundle-included-apps-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <!-- Injected dynamically via JS -->
+                </div>
+
+                <!-- Add Application Selector Control -->
+                <div style="display: flex; gap: 0.5rem; align-items: center; background: #ffffff; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm); border: 1px dashed #c084fc;">
+                  <div style="flex: 1;">
+                    <select id="bundle-add-app-select" class="form-control" style="font-size: 0.85rem;">
+                      <option value="">-- Select Web Application to Add to Bundle --</option>
+                    </select>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" onclick="addAppToBundle()" style="white-space: nowrap; background: #7e22ce; border-color: #7e22ce;">
+                    + Add Application
+                  </button>
+                </div>
               </div>
 
               <!-- Multi-Payment Model Pricing Section -->
@@ -315,7 +355,7 @@
               </div>
 
               <div style="display: flex; justify-content: flex-end; gap: 0.75rem; align-items: center;">
-                <button type="button" id="cat-cancel-btn" class="btn btn-secondary" style="display: none;" onclick="resetCategoryForm()">
+                <button type="button" id="cat-cancel-btn" class="btn btn-secondary" style="display: none;" onclick="cancelCategoryEdit()">
                   Cancel Edit
                 </button>
                 <button type="submit" id="cat-submit-btn" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-size: 0.95rem;">
@@ -325,9 +365,26 @@
             </form>
           </div>
 
-          <!-- Existing Categories Table -->
-          <div class="section-header">
-            <h3>Registered Web Applications & Bundles</h3>
+          <!-- Existing Categories Table Header & Filter Tabs -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; margin-bottom: 1rem;">
+            <div>
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--slate-900);">Registered Web Applications & Bundles</h3>
+              <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0.2rem 0 0 0;">View, edit, or configure registered web applications and custom bundles.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <div style="display: flex; gap: 0.25rem;">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-filter-cat-all" onclick="setCategoryFilter('all')">
+                  All (<span id="count-cat-all">0</span>)
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-filter-cat-apps" onclick="setCategoryFilter('apps')">
+                  🌐 Applications (<span id="count-cat-apps">0</span>)
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-filter-cat-bundles" onclick="setCategoryFilter('bundles')">
+                  📦 Bundles (<span id="count-cat-bundles">0</span>)
+                </button>
+              </div>
+              <input type="text" id="cat-search-input" class="form-control" placeholder="🔍 Search by name or feature..." oninput="renderCategories()" style="font-size: 0.825rem; width: 220px; padding: 0.4rem 0.65rem;">
+            </div>
           </div>
           <div class="table-responsive">
             <table>
@@ -887,6 +944,123 @@
 
   <!-- MODALS -->
 
+  <!-- 0. VIEW WEB APPLICATION / BUNDLE MODAL -->
+  <div class="modal-backdrop" id="modal-view-category">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <h3 id="view-cat-title" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--slate-900);">Web Application Details</h3>
+          <span id="view-cat-badge" class="pill pill-primary">Website</span>
+        </div>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-view-category')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem;">
+        <!-- Description -->
+        <div style="margin-bottom: 1.25rem;">
+          <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.25rem;">Description</div>
+          <div id="view-cat-desc" style="font-size: 0.9rem; color: var(--slate-700); line-height: 1.5;"></div>
+        </div>
+
+        <!-- Reference Website -->
+        <div id="view-cat-ref-box" style="margin-bottom: 1.25rem; background: var(--slate-50); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500);">Reference Website</div>
+            <a id="view-cat-ref-link" href="#" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700; font-size: 0.875rem; text-decoration: none;">
+              🔗 Visit Reference
+            </a>
+          </div>
+          <span class="pill pill-info" style="font-size: 0.7rem;">Live Reference</span>
+        </div>
+
+        <!-- If Bundle: Included Applications List -->
+        <div id="view-bundle-apps-box" style="display: none; margin-bottom: 1.25rem; background: #faf5ff; border: 1px solid #d8b4fe; border-radius: var(--radius-sm); padding: 1rem;">
+          <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: #6b21a8; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <span>📦 Included Web Applications (<span id="view-bundle-apps-count">0</span>)</span>
+            <span class="pill pill-purple" style="font-size: 0.68rem;">Bundle Components</span>
+          </div>
+          <div id="view-bundle-apps-list" style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Multi-Payment Pricing Models -->
+        <div style="margin-bottom: 1.25rem;">
+          <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.5rem;">
+            Configured Payment Models & Pricing
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+            <!-- One Time -->
+            <div id="view-box-onetime" style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--slate-700);">One-Time</span>
+                <span id="view-status-onetime" class="pill pill-active" style="font-size: 0.65rem;">Active</span>
+              </div>
+              <div id="view-price-onetime" style="font-size: 0.95rem; font-weight: 800; color: var(--slate-900);">₹0 / $0</div>
+            </div>
+            <!-- Monthly -->
+            <div id="view-box-monthly" style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--slate-700);">Monthly</span>
+                <span id="view-status-monthly" class="pill pill-info" style="font-size: 0.65rem;">Active</span>
+              </div>
+              <div id="view-price-monthly" style="font-size: 0.95rem; font-weight: 800; color: var(--primary);">₹0 / $0 <small style="font-size: 0.7rem; color: var(--slate-500);">/mo</small></div>
+            </div>
+            <!-- Annual -->
+            <div id="view-box-annual" style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); padding: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--slate-700);">Annually</span>
+                <span id="view-status-annual" class="pill pill-purple" style="font-size: 0.65rem;">Active</span>
+              </div>
+              <div id="view-price-annual" style="font-size: 0.95rem; font-weight: 800; color: #7e22ce;">₹0 / $0 <small style="font-size: 0.7rem; color: var(--slate-500);">/yr</small></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deliverables / Features -->
+        <div>
+          <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.4rem;">
+            Included Features & Deliverables
+          </div>
+          <ul id="view-cat-features" style="padding-left: 1.25rem; margin: 0; font-size: 0.85rem; color: var(--slate-700); line-height: 1.6;">
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-view-category')">Close</button>
+        <button type="button" class="btn btn-primary" id="view-cat-edit-btn" onclick="openEditFromView()">
+          ✏️ Edit This Application / Bundle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0B. REPLACE BUNDLE APPLICATION MODAL -->
+  <div class="modal-backdrop" id="modal-replace-bundle-app">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--slate-900);">Replace Application in Bundle</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-replace-bundle-app')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="replace-target-app-id">
+        <p style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 1rem;">
+          Select a registered web application to replace <strong id="replace-target-app-name" style="color: var(--slate-900);"></strong>.
+          The bundle price will recalculate automatically.
+        </p>
+        <div class="form-group">
+          <label for="replace-new-app-select">Replacement Web Application *</label>
+          <select id="replace-new-app-select" class="form-control" style="font-size: 0.875rem;">
+            <!-- Options populated dynamically -->
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-replace-bundle-app')">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="confirmReplaceBundleApp()">Confirm Replace</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 1. SLAB MODAL (UNLIMITED SLABS) -->
   <div class="modal-backdrop" id="modal-slab">
     <div class="modal-content">
@@ -1358,6 +1532,13 @@
     }
 
     function switchTab(tabId, pushHistory = true) {
+      if (currentActiveTab === 'categories' && tabId !== 'categories' && typeof isCategoryFormDirty === 'function' && isCategoryFormDirty()) {
+        if (!confirm('You have unsaved changes in the Web Application / Bundle editor. Are you sure you want to navigate away?')) {
+          return;
+        }
+        resetCategoryForm(true);
+      }
+
       currentActiveTab = tabId;
       document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1447,8 +1628,60 @@
     }
 
     // -------------------------------------------------------------
-    // MAIN WEB APPLICATIONS & BUNDLES WITH MULTI-PAYMENT MODELS
     // -------------------------------------------------------------
+    // MAIN WEB APPLICATIONS & BUNDLES MANAGEMENT (EDITING & BUNDLES)
+    // -------------------------------------------------------------
+    let currentCategoryFilter = 'all'; // 'all', 'apps', 'bundles'
+    let currentBundleApps = []; // Application IDs included in bundle being configured
+    let categoryFormInitialSnapshot = null; // Snapshot to prevent accidental data loss
+    let viewingCategoryId = null; // ID currently viewed in modal
+
+    // Prevent accidental data loss on browser unload
+    window.addEventListener('beforeunload', (e) => {
+      if (typeof isCategoryFormDirty === 'function' && isCategoryFormDirty()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    function getCategoryFormSnapshot() {
+      const editId = document.getElementById('cat-edit-id') ? document.getElementById('cat-edit-id').value : '';
+      const name = document.getElementById('cat-name') ? document.getElementById('cat-name').value.trim() : '';
+      const classification = document.getElementById('cat-classification') ? document.getElementById('cat-classification').value : '';
+      const desc = document.getElementById('cat-desc') ? document.getElementById('cat-desc').value.trim() : '';
+      const refUrl = document.getElementById('cat-ref-url') ? document.getElementById('cat-ref-url').value.trim() : '';
+      const onetime = document.getElementById('cat-enable-onetime') ? document.getElementById('cat-enable-onetime').checked : true;
+      const monthly = document.getElementById('cat-enable-monthly') ? document.getElementById('cat-enable-monthly').checked : true;
+      const annual = document.getElementById('cat-enable-annual') ? document.getElementById('cat-enable-annual').checked : true;
+      const pOneTimeINR = document.getElementById('cat-price-onetime-inr') ? document.getElementById('cat-price-onetime-inr').value : '';
+      const pOneTimeUSD = document.getElementById('cat-price-onetime-usd') ? document.getElementById('cat-price-onetime-usd').value : '';
+      const pMonthlyINR = document.getElementById('cat-price-monthly-inr') ? document.getElementById('cat-price-monthly-inr').value : '';
+      const pMonthlyUSD = document.getElementById('cat-price-monthly-usd') ? document.getElementById('cat-price-monthly-usd').value : '';
+      const pAnnualINR = document.getElementById('cat-price-annual-inr') ? document.getElementById('cat-price-annual-inr').value : '';
+      const pAnnualUSD = document.getElementById('cat-price-annual-usd') ? document.getElementById('cat-price-annual-usd').value : '';
+      const features = document.getElementById('cat-features') ? document.getElementById('cat-features').value.trim() : '';
+
+      return JSON.stringify({
+        editId, name, classification, desc, refUrl,
+        onetime, monthly, annual,
+        pOneTimeINR, pOneTimeUSD, pMonthlyINR, pMonthlyUSD, pAnnualINR, pAnnualUSD,
+        features,
+        bundleApps: currentBundleApps.slice()
+      });
+    }
+
+    function isCategoryFormDirty() {
+      const editId = document.getElementById('cat-edit-id') ? document.getElementById('cat-edit-id').value.trim() : '';
+      if (!editId) {
+        // In Add-new mode: check if user started typing or adding bundle items
+        const name = document.getElementById('cat-name') ? document.getElementById('cat-name').value.trim() : '';
+        const desc = document.getElementById('cat-desc') ? document.getElementById('cat-desc').value.trim() : '';
+        return Boolean(name || desc || currentBundleApps.length > 0);
+      }
+      if (!categoryFormInitialSnapshot) return false;
+      return getCategoryFormSnapshot() !== categoryFormInitialSnapshot;
+    }
+
     function togglePricingInputs() {
       const otEnabled = document.getElementById('cat-enable-onetime').checked;
       const moEnabled = document.getElementById('cat-enable-monthly').checked;
@@ -1475,28 +1708,406 @@
       }
     }
 
-    function resetCategoryForm() {
-      const form = document.getElementById('form-add-category');
-      if (form) form.reset();
-      document.getElementById('cat-edit-id').value = '';
-      document.getElementById('cat-enable-onetime').checked = true;
-      document.getElementById('cat-enable-monthly').checked = true;
-      document.getElementById('cat-enable-annual').checked = true;
-      document.getElementById('cat-form-title').innerText = 'Add New Web Application / Bundle';
-      const cancelBtn = document.getElementById('cat-cancel-btn');
-      if (cancelBtn) cancelBtn.style.display = 'none';
-      const submitBtn = document.getElementById('cat-submit-btn');
-      if (submitBtn) submitBtn.innerText = 'SAVE APPLICATION / BUNDLE';
+    function handleClassificationChange() {
+      const cls = document.getElementById('cat-classification').value;
+      const bundleSection = document.getElementById('bundle-config-section');
+      if (cls === 'Website Bundle') {
+        if (bundleSection) bundleSection.style.display = 'block';
+        renderBundleAppsList();
+      } else {
+        if (bundleSection) bundleSection.style.display = 'none';
+      }
+    }
+
+    function renderBundleAppsList() {
+      const container = document.getElementById('bundle-included-apps-container');
+      const countBadge = document.getElementById('bundle-apps-count-badge');
+      const select = document.getElementById('bundle-add-app-select');
+      const allCats = API.state.categories || [];
+
+      if (countBadge) {
+        countBadge.innerText = `${currentBundleApps.length} Application${currentBundleApps.length === 1 ? '' : 's'}`;
+      }
+
+      if (container) {
+        container.innerHTML = '';
+        if (currentBundleApps.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 1rem; color: var(--slate-400); font-size: 0.825rem; font-style: italic;">
+              No web applications added to this bundle yet. Select an application below to include it.
+            </div>
+          `;
+        } else {
+          currentBundleApps.forEach((aid, idx) => {
+            const app = allCats.find(c => c.id === aid);
+            const row = document.createElement('div');
+            row.style.cssText = 'background: #ffffff; border: 1px solid #e9d5ff; border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;';
+            
+            if (app) {
+              const otInr = Number(app.priceOneTimeINR != null ? app.priceOneTimeINR : (app.basePriceINR || 0)).toLocaleString();
+              const otUsd = Number(app.priceOneTimeUSD != null ? app.priceOneTimeUSD : (app.basePriceUSD || 0)).toLocaleString();
+              const moInr = Number(app.priceMonthlyINR || 0).toLocaleString();
+              const moUsd = Number(app.priceMonthlyUSD || 0).toLocaleString();
+
+              row.innerHTML = `
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <strong style="font-size: 0.875rem; color: var(--slate-900);">${API.escapeHtml(app.name)}</strong>
+                    <span class="pill pill-info" style="font-size: 0.65rem;">${app.classification || 'Website'}</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 2px;">
+                    One-Time: <strong style="color: var(--slate-800);">₹${otInr} / $${otUsd}</strong>
+                    ${app.enableMonthly ? ` | Monthly: <strong style="color: var(--primary);">₹${moInr} / $${moUsd}</strong>` : ''}
+                  </div>
+                </div>
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                  <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" onclick="openReplaceBundleAppModal('${aid}')" title="Replace with another application">
+                    🔄 Replace
+                  </button>
+                  <button type="button" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.55rem; font-size: 0.75rem;" onclick="removeAppFromBundle('${aid}')" title="Remove application from bundle">
+                    ✕ Remove
+                  </button>
+                </div>
+              `;
+            } else {
+              row.innerHTML = `
+                <div style="flex: 1;">
+                  <strong style="color: var(--slate-700); font-size: 0.85rem;">Unknown Application (${aid})</strong>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeAppFromBundle('${aid}')">✕ Remove</button>
+              `;
+            }
+            container.appendChild(row);
+          });
+        }
+      }
+
+      // Populate "+ Add Application to Bundle" dropdown (only applications, excluding already included ones)
+      if (select) {
+        select.innerHTML = '<option value="">-- Select Web Application to Add to Bundle --</option>';
+        const availableApps = allCats.filter(c => !c.isBundle && c.classification !== 'Website Bundle');
+        availableApps.forEach(a => {
+          const isAlreadyAdded = currentBundleApps.includes(a.id);
+          const inr = Number(a.priceOneTimeINR != null ? a.priceOneTimeINR : (a.basePriceINR || 0)).toLocaleString();
+          const usd = Number(a.priceOneTimeUSD != null ? a.priceOneTimeUSD : (a.basePriceUSD || 0)).toLocaleString();
+          select.innerHTML += `
+            <option value="${a.id}" ${isAlreadyAdded ? 'disabled style="color: #94a3b8;"' : ''}>
+              ${API.escapeHtml(a.name)} (${a.classification || 'Website'}) — ₹${inr} / $${usd}${isAlreadyAdded ? ' (Already Included)' : ''}
+            </option>
+          `;
+        });
+      }
+    }
+
+    function addAppToBundle() {
+      const select = document.getElementById('bundle-add-app-select');
+      const aid = select ? select.value : '';
+      if (!aid) {
+        alert('Please select a web application to add to this bundle.');
+        return;
+      }
+      if (currentBundleApps.includes(aid)) {
+        alert('This web application is already included in the bundle.');
+        return;
+      }
+      currentBundleApps.push(aid);
+      select.value = '';
+      recalculateBundlePrices(false);
+      renderBundleAppsList();
+      API.showToast('Application added to bundle. Bundle prices recalculated.');
+    }
+
+    function removeAppFromBundle(aid) {
+      currentBundleApps = currentBundleApps.filter(id => id !== aid);
+      recalculateBundlePrices(false);
+      renderBundleAppsList();
+      API.showToast('Application removed from bundle. Bundle prices recalculated.');
+    }
+
+    function openReplaceBundleAppModal(targetAid) {
+      const allCats = API.state.categories || [];
+      const targetApp = allCats.find(c => c.id === targetAid);
+      const nameEl = document.getElementById('replace-target-app-name');
+      const idEl = document.getElementById('replace-target-app-id');
+      const select = document.getElementById('replace-new-app-select');
+
+      if (nameEl) nameEl.innerText = targetApp ? targetApp.name : targetAid;
+      if (idEl) idEl.value = targetAid;
+
+      if (select) {
+        select.innerHTML = '<option value="">-- Select Replacement Application --</option>';
+        const availableApps = allCats.filter(c => !c.isBundle && c.classification !== 'Website Bundle' && c.id !== targetAid);
+        availableApps.forEach(a => {
+          const isAlreadyIn = currentBundleApps.includes(a.id);
+          const inr = Number(a.priceOneTimeINR != null ? a.priceOneTimeINR : (a.basePriceINR || 0)).toLocaleString();
+          const usd = Number(a.priceOneTimeUSD != null ? a.priceOneTimeUSD : (a.basePriceUSD || 0)).toLocaleString();
+          select.innerHTML += `
+            <option value="${a.id}" ${isAlreadyIn ? 'disabled style="color: #94a3b8;"' : ''}>
+              ${API.escapeHtml(a.name)} (${a.classification || 'Website'}) — ₹${inr} / $${usd}${isAlreadyIn ? ' (In Bundle)' : ''}
+            </option>
+          `;
+        });
+      }
+
+      API.openModal('modal-replace-bundle-app');
+    }
+
+    function confirmReplaceBundleApp() {
+      const oldId = document.getElementById('replace-target-app-id').value;
+      const newId = document.getElementById('replace-new-app-select').value;
+      if (!newId) {
+        alert('Please choose a replacement application from the dropdown.');
+        return;
+      }
+      currentBundleApps = currentBundleApps.map(id => id === oldId ? newId : id);
+      API.closeModal('modal-replace-bundle-app');
+      recalculateBundlePrices(false);
+      renderBundleAppsList();
+      API.showToast('Application replaced successfully. Bundle prices recalculated.');
+    }
+
+    function recalculateBundlePrices(isManual = false) {
+      const allCats = API.state.categories || [];
+      let totOtINR = 0, totOtUSD = 0;
+      let totMoINR = 0, totMoUSD = 0;
+      let totAnINR = 0, totAnUSD = 0;
+
+      currentBundleApps.forEach(aid => {
+        const app = allCats.find(c => c.id === aid);
+        if (app) {
+          const otINR = Number(app.priceOneTimeINR != null ? app.priceOneTimeINR : (app.basePriceINR || 0));
+          const otUSD = Number(app.priceOneTimeUSD != null ? app.priceOneTimeUSD : (app.basePriceUSD || 0));
+          const moINR = Number(app.priceMonthlyINR || (round(otINR / 10) || 0));
+          const moUSD = Number(app.priceMonthlyUSD || (round(otUSD / 10) || 0));
+          const anINR = Number(app.priceAnnualINR || otINR);
+          const anUSD = Number(app.priceAnnualUSD || otUSD);
+
+          totOtINR += otINR;
+          totOtUSD += otUSD;
+          totMoINR += moINR;
+          totMoUSD += moUSD;
+          totAnINR += anINR;
+          totAnUSD += anUSD;
+        }
+      });
+
+      // Update input fields
+      const pOtINR = document.getElementById('cat-price-onetime-inr');
+      const pOtUSD = document.getElementById('cat-price-onetime-usd');
+      const pMoINR = document.getElementById('cat-price-monthly-inr');
+      const pMoUSD = document.getElementById('cat-price-monthly-usd');
+      const pAnINR = document.getElementById('cat-price-annual-inr');
+      const pAnUSD = document.getElementById('cat-price-annual-usd');
+
+      if (pOtINR) pOtINR.value = totOtINR;
+      if (pOtUSD) pOtUSD.value = totOtUSD;
+      if (pMoINR) pMoINR.value = totMoINR;
+      if (pMoUSD) pMoUSD.value = totMoUSD;
+      if (pAnINR) pAnINR.value = totAnINR;
+      if (pAnUSD) pAnUSD.value = totAnUSD;
+
+      // Enable checkboxes if prices are non-zero
+      if (totOtINR > 0) document.getElementById('cat-enable-onetime').checked = true;
+      if (totMoINR > 0) document.getElementById('cat-enable-monthly').checked = true;
+      if (totAnINR > 0) document.getElementById('cat-enable-annual').checked = true;
+
       togglePricingInputs();
+
+      if (isManual) {
+        API.showToast(`Bundle prices recalculated from ${currentBundleApps.length} application${currentBundleApps.length === 1 ? '' : 's'}`);
+      }
+    }
+
+    function importFeaturesFromBundleApps() {
+      const allCats = API.state.categories || [];
+      const featureSet = new Set();
+
+      currentBundleApps.forEach(aid => {
+        const app = allCats.find(c => c.id === aid);
+        if (app && Array.isArray(app.features)) {
+          app.features.forEach(f => {
+            const trimmed = String(f).trim();
+            if (trimmed) featureSet.add(trimmed);
+          });
+        }
+      });
+
+      if (featureSet.size === 0) {
+        alert('No deliverables found in the currently included applications.');
+        return;
+      }
+
+      const existingText = document.getElementById('cat-features').value.trim();
+      const existingLines = existingText ? existingText.split('\n').map(l => l.trim()).filter(Boolean) : [];
+      existingLines.forEach(l => featureSet.add(l));
+
+      document.getElementById('cat-features').value = Array.from(featureSet).join('\n');
+      API.showToast(`Imported deliverables from included applications (${featureSet.size} total)`);
+    }
+
+    function setCategoryFilter(filter) {
+      currentCategoryFilter = filter;
+      const btnAll = document.getElementById('btn-filter-cat-all');
+      const btnApps = document.getElementById('btn-filter-cat-apps');
+      const btnBundles = document.getElementById('btn-filter-cat-bundles');
+
+      if (btnAll) btnAll.className = filter === 'all' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+      if (btnApps) btnApps.className = filter === 'apps' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+      if (btnBundles) btnBundles.className = filter === 'bundles' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+
+      renderCategories();
+    }
+
+    function viewCategory(id) {
+      const c = (API.state.categories || []).find(item => item.id === id);
+      if (!c) return;
+      viewingCategoryId = id;
+
+      const isBundle = Boolean(c.isBundle || c.classification === 'Website Bundle');
+
+      document.getElementById('view-cat-title').innerText = c.name || 'Application Details';
+      const badge = document.getElementById('view-cat-badge');
+      if (badge) {
+        badge.className = isBundle ? 'pill pill-purple' : 'pill pill-primary';
+        badge.innerText = isBundle ? `📦 Bundle (${(c.bundleApps || []).length} Apps)` : (c.classification || 'Website');
+      }
+
+      document.getElementById('view-cat-desc').innerText = c.desc || 'No description provided.';
+
+      const refBox = document.getElementById('view-cat-ref-box');
+      const refLink = document.getElementById('view-cat-ref-link');
+      if (c.referenceUrl) {
+        if (refBox) refBox.style.display = 'flex';
+        if (refLink) {
+          refLink.href = c.referenceUrl;
+          refLink.innerText = `🔗 Open Reference: ${c.referenceUrl}`;
+        }
+      } else {
+        if (refBox) refBox.style.display = 'none';
+      }
+
+      // If bundle: display included web applications
+      const bundleBox = document.getElementById('view-bundle-apps-box');
+      const bundleList = document.getElementById('view-bundle-apps-list');
+      const bundleCount = document.getElementById('view-bundle-apps-count');
+
+      if (isBundle && bundleBox && bundleList) {
+        bundleBox.style.display = 'block';
+        const apps = c.bundleApps || [];
+        if (bundleCount) bundleCount.innerText = apps.length;
+        bundleList.innerHTML = '';
+        if (apps.length === 0) {
+          bundleList.innerHTML = '<div style="color: var(--slate-400); font-size: 0.8rem; font-style: italic;">No specific applications configured in this bundle.</div>';
+        } else {
+          apps.forEach(aid => {
+            const app = (API.state.categories || []).find(item => item.id === aid);
+            const itemDiv = document.createElement('div');
+            itemDiv.style.cssText = 'background: #ffffff; border: 1px solid #e9d5ff; border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center;';
+            if (app) {
+              const otInr = Number(app.priceOneTimeINR != null ? app.priceOneTimeINR : (app.basePriceINR || 0)).toLocaleString();
+              const otUsd = Number(app.priceOneTimeUSD != null ? app.priceOneTimeUSD : (app.basePriceUSD || 0)).toLocaleString();
+              itemDiv.innerHTML = `
+                <div>
+                  <strong style="font-size: 0.85rem; color: var(--slate-900);">${API.escapeHtml(app.name)}</strong>
+                  <span class="pill pill-info" style="font-size: 0.65rem; margin-left: 4px;">${app.classification || 'Website'}</span>
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--slate-700);">
+                  ₹${otInr} / $${otUsd}
+                </div>
+              `;
+            } else {
+              itemDiv.innerHTML = `<span style="font-size: 0.8rem; color: var(--slate-500);">Application ID: ${aid}</span>`;
+            }
+            bundleList.appendChild(itemDiv);
+          });
+        }
+      } else if (bundleBox) {
+        bundleBox.style.display = 'none';
+      }
+
+      // Configured Multi-payment prices
+      const otEnabled = c.enableOneTime !== false;
+      const moEnabled = Boolean(c.enableMonthly);
+      const anEnabled = Boolean(c.enableAnnual);
+
+      const boxOt = document.getElementById('view-box-onetime');
+      const boxMo = document.getElementById('view-box-monthly');
+      const boxAn = document.getElementById('view-box-annual');
+
+      const stOt = document.getElementById('view-status-onetime');
+      const stMo = document.getElementById('view-status-monthly');
+      const stAn = document.getElementById('view-status-annual');
+
+      const prOt = document.getElementById('view-price-onetime');
+      const prMo = document.getElementById('view-price-monthly');
+      const prAn = document.getElementById('view-price-annual');
+
+      if (boxOt && stOt && prOt) {
+        stOt.className = otEnabled ? 'pill pill-active' : 'pill pill-inactive';
+        stOt.innerText = otEnabled ? 'Enabled' : 'Disabled';
+        const inr = Number(c.priceOneTimeINR != null ? c.priceOneTimeINR : (c.basePriceINR || 0)).toLocaleString();
+        const usd = Number(c.priceOneTimeUSD != null ? c.priceOneTimeUSD : (c.basePriceUSD || 0)).toLocaleString();
+        prOt.innerText = otEnabled ? `₹${inr} / $${usd}` : 'Not Offered';
+        prOt.style.color = otEnabled ? 'var(--slate-900)' : 'var(--slate-400)';
+      }
+
+      if (boxMo && stMo && prMo) {
+        stMo.className = moEnabled ? 'pill pill-info' : 'pill pill-inactive';
+        stMo.innerText = moEnabled ? 'Enabled' : 'Disabled';
+        const inr = Number(c.priceMonthlyINR || 0).toLocaleString();
+        const usd = Number(c.priceMonthlyUSD || 0).toLocaleString();
+        prMo.innerHTML = moEnabled ? `₹${inr} / $${usd} <small style="font-size: 0.7rem; color: var(--slate-500);">/mo</small>` : 'Not Offered';
+        prMo.style.color = moEnabled ? 'var(--primary)' : 'var(--slate-400)';
+      }
+
+      if (boxAn && stAn && prAn) {
+        stAn.className = anEnabled ? 'pill pill-purple' : 'pill pill-inactive';
+        stAn.innerText = anEnabled ? 'Enabled' : 'Disabled';
+        const inr = Number(c.priceAnnualINR || 0).toLocaleString();
+        const usd = Number(c.priceAnnualUSD || 0).toLocaleString();
+        prAn.innerHTML = anEnabled ? `₹${inr} / $${usd} <small style="font-size: 0.7rem; color: var(--slate-500);">/yr</small>` : 'Not Offered';
+        prAn.style.color = anEnabled ? '#7e22ce' : 'var(--slate-400)';
+      }
+
+      // Features list
+      const featsList = document.getElementById('view-cat-features');
+      if (featsList) {
+        featsList.innerHTML = '';
+        const features = Array.isArray(c.features) ? c.features : [];
+        if (features.length === 0) {
+          featsList.innerHTML = '<li style="color: var(--slate-400); font-style: italic;">No specific deliverables listed.</li>';
+        } else {
+          features.forEach(f => {
+            featsList.innerHTML += `<li>${API.escapeHtml(f)}</li>`;
+          });
+        }
+      }
+
+      API.openModal('modal-view-category');
+    }
+
+    function openEditFromView() {
+      API.closeModal('modal-view-category');
+      if (viewingCategoryId) {
+        editCategory(viewingCategoryId);
+      }
     }
 
     function editCategory(id) {
       const c = (API.state.categories || []).find(item => item.id === id);
       if (!c) return;
 
+      if (isCategoryFormDirty()) {
+        if (!confirm(`You have unsaved changes. Discard changes and edit "${c.name}"?`)) {
+          return;
+        }
+      }
+
+      const isBundle = Boolean(c.isBundle || c.classification === 'Website Bundle');
+
       document.getElementById('cat-edit-id').value = c.id;
       document.getElementById('cat-name').value = c.name || '';
-      document.getElementById('cat-classification').value = c.classification || 'Website';
+      document.getElementById('cat-classification').value = c.classification || (isBundle ? 'Website Bundle' : 'Website');
       document.getElementById('cat-desc').value = c.desc || '';
       document.getElementById('cat-ref-url').value = c.referenceUrl || '';
 
@@ -1513,19 +2124,80 @@
 
       document.getElementById('cat-features').value = (c.features || []).join('\n');
 
-      document.getElementById('cat-form-title').innerText = 'Edit Web Application / Bundle: ' + c.name;
+      // Bundle configuration handling
+      const bundleSection = document.getElementById('bundle-config-section');
+      if (isBundle) {
+        currentBundleApps = Array.isArray(c.bundleApps) ? c.bundleApps.slice() : [];
+        if (bundleSection) bundleSection.style.display = 'block';
+        renderBundleAppsList();
+        document.getElementById('cat-form-title').innerText = 'Edit Bundle: ' + c.name;
+        document.getElementById('cat-form-badge').className = 'pill pill-purple';
+        document.getElementById('cat-form-badge').innerText = `Bundle (${currentBundleApps.length} Apps)`;
+      } else {
+        currentBundleApps = [];
+        if (bundleSection) bundleSection.style.display = 'none';
+        document.getElementById('cat-form-title').innerText = 'Edit Web Application: ' + c.name;
+        document.getElementById('cat-form-badge').className = 'pill pill-primary';
+        document.getElementById('cat-form-badge').innerText = 'Editing Web Application';
+      }
+
       const cancelBtn = document.getElementById('cat-cancel-btn');
       if (cancelBtn) cancelBtn.style.display = 'inline-block';
       const submitBtn = document.getElementById('cat-submit-btn');
-      if (submitBtn) submitBtn.innerText = 'UPDATE APPLICATION / BUNDLE';
+      if (submitBtn) submitBtn.innerText = isBundle ? 'SAVE BUNDLE CHANGES' : 'SAVE CHANGES';
 
       togglePricingInputs();
+
+      // Store initial state snapshot to catch unsaved changes
+      categoryFormInitialSnapshot = getCategoryFormSnapshot();
 
       document.getElementById('form-add-category').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    function cancelCategoryEdit() {
+      if (isCategoryFormDirty()) {
+        if (!confirm('You have unsaved changes. Discard your modifications and cancel editing?')) {
+          return;
+        }
+      }
+      resetCategoryForm(true);
+    }
+
+    function resetCategoryForm(force = false) {
+      if (!force && isCategoryFormDirty()) {
+        if (!confirm('You have unsaved changes. Discard changes and reset form?')) {
+          return;
+        }
+      }
+
+      const form = document.getElementById('form-add-category');
+      if (form) form.reset();
+      document.getElementById('cat-edit-id').value = '';
+      currentBundleApps = [];
+
+      const bundleSection = document.getElementById('bundle-config-section');
+      if (bundleSection) bundleSection.style.display = 'none';
+
+      document.getElementById('cat-enable-onetime').checked = true;
+      document.getElementById('cat-enable-monthly').checked = true;
+      document.getElementById('cat-enable-annual').checked = true;
+
+      document.getElementById('cat-form-title').innerText = 'Add New Web Application / Bundle';
+      document.getElementById('cat-form-badge').className = 'pill pill-primary';
+      document.getElementById('cat-form-badge').innerText = 'Configurable Payment Models';
+
+      const cancelBtn = document.getElementById('cat-cancel-btn');
+      if (cancelBtn) cancelBtn.style.display = 'none';
+      const submitBtn = document.getElementById('cat-submit-btn');
+      if (submitBtn) submitBtn.innerText = 'SAVE APPLICATION / BUNDLE';
+
+      togglePricingInputs();
+      categoryFormInitialSnapshot = null;
+    }
+
     function renderCategories() {
       const tbody = document.getElementById('table-categories-body');
+      if (!tbody) return;
       tbody.innerHTML = '';
       const list = API.state.categories || [];
 
@@ -1540,14 +2212,44 @@
         if (curVal) addonCatSelect.value = curVal;
       }
 
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--slate-400);">No web applications created yet.</td></tr>`;
+      // Update category & bundle counts
+      const countAll = list.length;
+      const countBundles = list.filter(c => c.isBundle || c.classification === 'Website Bundle').length;
+      const countApps = countAll - countBundles;
+
+      const elAll = document.getElementById('count-cat-all');
+      const elApps = document.getElementById('count-cat-apps');
+      const elBundles = document.getElementById('count-cat-bundles');
+      if (elAll) elAll.innerText = countAll;
+      if (elApps) elApps.innerText = countApps;
+      if (elBundles) elBundles.innerText = countBundles;
+
+      // Filter list based on active filter and search query
+      const searchQuery = (document.getElementById('cat-search-input') ? document.getElementById('cat-search-input').value : '').toLowerCase().trim();
+
+      let filteredList = list.filter(c => {
+        const isBundle = Boolean(c.isBundle || c.classification === 'Website Bundle');
+        if (currentCategoryFilter === 'apps' && isBundle) return false;
+        if (currentCategoryFilter === 'bundles' && !isBundle) return false;
+        if (searchQuery) {
+          const matchName = (c.name || '').toLowerCase().includes(searchQuery);
+          const matchClass = (c.classification || '').toLowerCase().includes(searchQuery);
+          const matchDesc = (c.desc || '').toLowerCase().includes(searchQuery);
+          const matchFeats = (c.features || []).some(f => String(f).toLowerCase().includes(searchQuery));
+          return matchName || matchClass || matchDesc || matchFeats;
+        }
+        return true;
+      });
+
+      if (filteredList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2.5rem; color: var(--slate-400);">No ${currentCategoryFilter === 'bundles' ? 'bundles' : 'web applications'} found matching your criteria.</td></tr>`;
         return;
       }
 
-      list.forEach(c => {
+      filteredList.forEach(c => {
         const tr = document.createElement('tr');
         const feats = (c.features || []).join(', ');
+        const isBundle = Boolean(c.isBundle || c.classification === 'Website Bundle');
 
         // Payment model badges
         const modelBadges = [];
@@ -1573,12 +2275,33 @@
           pricingRows.push(`<div style="font-size: 0.8rem;"><span style="color: var(--slate-500); font-weight: 600;">Annual:</span> <strong style="color: var(--purple-600);">₹${inr}</strong> / <strong style="color: var(--purple-600);">$${usd}</strong> <small style="color: var(--slate-400);">/yr</small></div>`);
         }
 
+        // Subtitle for bundle with names of included applications
+        let bundleAppsSubtitle = '';
+        if (isBundle && Array.isArray(c.bundleApps) && c.bundleApps.length > 0) {
+          const names = c.bundleApps.map(aid => {
+            const app = list.find(x => x.id === aid);
+            return app ? app.name : aid;
+          });
+          bundleAppsSubtitle = `
+            <div style="font-size: 0.72rem; color: #7e22ce; font-weight: 600; margin-top: 3px; display: flex; align-items: center; gap: 0.25rem;">
+              <span>📦 Includes:</span>
+              <span>${API.escapeHtml(names.join(' + '))}</span>
+            </div>
+          `;
+        }
+
         tr.innerHTML = `
           <td>
-            <strong>${API.escapeHtml(c.name)}</strong>
-            ${c.desc ? `<div style="font-size: 0.72rem; color: var(--slate-500); margin-top: 2px;">${API.escapeHtml(c.desc)}</div>` : ''}
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+              <strong style="color: var(--slate-900); font-size: 0.9rem;">${API.escapeHtml(c.name)}</strong>
+              ${isBundle ? `<span class="pill pill-purple" style="font-size: 0.65rem; font-weight: 800;">📦 Bundle (${(c.bundleApps || []).length} Apps)</span>` : ''}
+            </div>
+            ${c.desc ? `<div style="font-size: 0.73rem; color: var(--slate-500); margin-top: 2px;">${API.escapeHtml(c.desc)}</div>` : ''}
+            ${bundleAppsSubtitle}
           </td>
-          <td><span class="pill pill-info">${c.classification || 'Website'}</span></td>
+          <td>
+            <span class="pill ${isBundle ? 'pill-purple' : 'pill-info'}" style="font-size: 0.72rem;">${API.escapeHtml(c.classification || (isBundle ? 'Website Bundle' : 'Website'))}</span>
+          </td>
           <td><div style="display: flex; gap: 4px; flex-wrap: wrap;">${modelBadges.join('') || '<span class="pill pill-inactive">None</span>'}</div></td>
           <td style="min-width: 170px;">${pricingRows.join('') || '<span style="color: var(--slate-400); font-size: 0.78rem;">No pricing configured</span>'}</td>
           <td>
@@ -1586,8 +2309,15 @@
           </td>
           <td style="max-width: 220px; font-size: 0.75rem; color: var(--slate-600);">${API.escapeHtml(feats)}</td>
           <td style="text-align: right; white-space: nowrap;">
-            <button class="btn btn-secondary btn-sm" style="margin-right: 0.35rem;" onclick="editCategory('${c.id}')">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Delete</button>
+            <button class="btn btn-secondary btn-sm" style="margin-right: 0.3rem;" onclick="viewCategory('${c.id}')" title="View complete details">
+              👁️ View
+            </button>
+            <button class="btn btn-primary btn-sm" style="margin-right: 0.3rem;" onclick="editCategory('${c.id}')" title="Edit this application or bundle">
+              ✏️ Edit
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')" title="Delete record">
+              🗑️ Delete
+            </button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1604,9 +2334,12 @@
       const enableAnnual = document.getElementById('cat-enable-annual').checked;
 
       if (!enableOneTime && !enableMonthly && !enableAnnual) {
-        alert('Please enable at least one payment model (One-Time, Monthly, or Annual) for this application.');
+        alert('Please enable at least one payment model (One-Time, Monthly, or Annual) for this application or bundle.');
         return;
       }
+
+      const classification = document.getElementById('cat-classification').value;
+      const isBundle = (classification === 'Website Bundle') || (currentBundleApps.length > 0);
 
       const pOneTimeINR = parseFloat(document.getElementById('cat-price-onetime-inr').value) || 0;
       const pOneTimeUSD = parseFloat(document.getElementById('cat-price-onetime-usd').value) || 0;
@@ -1617,9 +2350,11 @@
 
       const payload = {
         name: document.getElementById('cat-name').value.trim(),
-        classification: document.getElementById('cat-classification').value,
+        classification: classification,
         desc: document.getElementById('cat-desc').value.trim(),
         referenceUrl: document.getElementById('cat-ref-url').value.trim(),
+        isBundle: isBundle,
+        bundleApps: isBundle ? currentBundleApps.slice() : [],
         enableOneTime: enableOneTime,
         enableMonthly: enableMonthly,
         enableAnnual: enableAnnual,
@@ -1637,23 +2372,28 @@
       try {
         if (editId) {
           await API.request(`/api/categories/${editId}`, 'PUT', payload);
-          API.showToast('Web application / bundle updated successfully');
+          API.showToast(isBundle ? 'Bundle updated successfully' : 'Web application updated successfully');
         } else {
           await API.request('/api/categories', 'POST', payload);
-          API.showToast('Web application / bundle saved successfully');
+          API.showToast(isBundle ? 'Bundle created successfully' : 'Web application saved successfully');
         }
-        resetCategoryForm();
+        categoryFormInitialSnapshot = null;
+        resetCategoryForm(true);
         await refreshAllData();
       } catch (err) {
-        alert('Failed to save category: ' + err.message);
+        alert('Failed to save: ' + (err.message || 'Server error'));
       }
     }
 
     async function deleteCategory(id) {
-      if (!confirm('Are you sure you want to delete this category?')) return;
+      const c = (API.state.categories || []).find(item => item.id === id);
+      const isBundle = Boolean(c && (c.isBundle || c.classification === 'Website Bundle'));
+      const label = isBundle ? 'bundle' : 'web application';
+
+      if (!confirm(`Are you sure you want to delete this ${label} "${c ? c.name : id}"?`)) return;
       try {
         await API.request(`/api/categories/${id}`, 'DELETE');
-        API.showToast('Category removed');
+        API.showToast(`${isBundle ? 'Bundle' : 'Web application'} removed successfully`);
         await refreshAllData();
       } catch (err) {
         alert('Delete failed: ' + err.message);

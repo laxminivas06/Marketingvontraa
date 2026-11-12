@@ -504,6 +504,36 @@
         "Database Integration",
         "Search & Filters"
       ]
+    },
+    {
+      "id": "bnd-starter-suite",
+      "name": "Startup Business & Dashboard Bundle",
+      "classification": "Website Bundle",
+      "isBundle": true,
+      "desc": "Complete online presence package combining a responsive Basic Business Website with a centralized Admin Dashboard.",
+      "referenceUrl": "https://aivontraa.com",
+      "bundleApps": [
+        "cat-84f130",
+        "cat-503caf"
+      ],
+      "enableOneTime": true,
+      "enableMonthly": true,
+      "enableAnnual": true,
+      "priceOneTimeINR": 37000,
+      "priceOneTimeUSD": 868,
+      "priceMonthlyINR": 3700,
+      "priceMonthlyUSD": 87,
+      "priceAnnualINR": 37000,
+      "priceAnnualUSD": 868,
+      "basePriceINR": 37000,
+      "basePriceUSD": 868,
+      "features": [
+        "Responsive Business Website with Contact & Lead Capture",
+        "Interactive Admin Dashboard with Metrics & Analytics",
+        "Integrated User Authentication & Role Management",
+        "Google Maps, WhatsApp Integration & SEO Optimization",
+        "Cross-Platform Compatible & Mobile Responsive"
+      ]
     }
   ],
   "commissionSlabsINR": [
