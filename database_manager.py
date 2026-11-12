@@ -32,22 +32,11 @@ SOFT_LIMIT_BYTES = 70 * 1024 * 1024   # 70 MiB: trigger automatic rotation
 HARD_LIMIT_BYTES = 100 * 1024 * 1024  # 100 MiB: strict hard limit per file
 
 MODULES = [
-    "admin",
     "users",
-    "customers",
-    "leads",
+    "marketing",
+    "admin",
     "quotations",
     "projects",
-    "marketing",
-    "engineering",
-    "assignments",
-    "payments",
-    "invoices",
-    "change_requests",
-    "documents",
-    "notifications",
-    "audit_logs",
-    "backups",
     "system"
 ]
 
