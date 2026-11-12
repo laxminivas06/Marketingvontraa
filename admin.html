@@ -2166,9 +2166,9 @@
           totalText = `₹${(q.totalINR || 0).toLocaleString()} & $${(q.totalUSD || 0).toLocaleString()}`;
           commText = `₹${(q.commissionAmountINR || 0).toLocaleString()} & $${(q.commissionAmountUSD || 0).toLocaleString()}`;
         } else {
-          const subtotal = q.subtotal || Math.round((q.totalPrice || 0) / 1.18);
-          const gst = q.gstAmount || Math.round(subtotal * 0.18);
-          const total = q.totalPrice || 0;
+          const subtotal = q.oneTimeSubtotal !== undefined ? q.oneTimeSubtotal : (q.subtotal || Math.round((q.totalPrice || 0) / 1.18));
+          const gst = q.oneTimeGST !== undefined ? q.oneTimeGST : (q.gstAmount || Math.round(subtotal * 0.18));
+          const total = q.oneTimeTotal !== undefined ? q.oneTimeTotal : (q.totalPrice || 0);
           subtotalText = API.formatCurrency(subtotal, q.currency);
           gstText = API.formatCurrency(gst, q.currency);
           totalText = API.formatCurrency(total, q.currency);
@@ -2176,16 +2176,21 @@
         }
 
         const badgeClass = API.getLifecycleBadgeClass(normStatus);
+        const addonCount = (q.addons || []).length;
+        const recurringNote = (q.monthlyTotalStr && q.monthlyTotalStr !== '$0 / Month' && q.monthlyTotalStr !== '₹0 / Month') ? q.monthlyTotalStr : (q.annualTotalStr && q.annualTotalStr !== '$0 / Year' && q.annualTotalStr !== '₹0 / Year' ? q.annualTotalStr : null);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong style="color: var(--primary); font-family: var(--font-mono);">${API.escapeHtml(q.quoteNumber)}</strong></td>
           <td><strong>${API.escapeHtml(q.clientName)}</strong></td>
           <td><span style="font-size: 0.8rem; color: var(--slate-700);">${API.escapeHtml(q.commExecutiveName || q.executiveName || 'Executive')}</span></td>
-          <td><span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.categoryName || 'Solution')}</span></td>
+          <td>
+            <span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.categoryName || 'Solution')}</span>
+            ${addonCount > 0 ? `<div style="font-size: 0.72rem; color: #0284c7; font-weight: 600;">+ ${addonCount} Add-on${addonCount > 1 ? 's' : ''}${recurringNote ? ` (${recurringNote})` : ''}</div>` : ''}
+          </td>
           <td class="price-tag">${subtotalText}</td>
           <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${gstText}</td>
-          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${totalText}</td>
+          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${totalText} <span style="font-size: 0.7rem; font-weight: 600; color: var(--slate-500); display: block;">One-Time</span></td>
           <td><span class="pill pill-active" style="font-size: 0.775rem;">${commText}</span></td>
           <td style="font-size: 0.8rem; color: var(--slate-500);">${q.createdAt}</td>
           <td><span class="badge-lifecycle ${badgeClass}">${normStatus}</span></td>

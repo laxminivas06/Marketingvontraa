@@ -1584,3 +1584,22 @@ tbody tr:hover {
     font-size: 0.75rem;
   }
 }
+
+/* Optional Add-on Form Responsive Grid */
+.addon-form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .addon-form-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .addon-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

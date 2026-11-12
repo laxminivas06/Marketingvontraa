@@ -970,6 +970,30 @@ def api_quotations():
     cat = next((c for c in db.get('categories', []) if c['id'] == cat_id), None)
     reference_url = cat.get('referenceUrl', '') if cat else payload.get('referenceUrl', '')
 
+    # Monthly formatted string
+    monthly_total_str = payload.get('monthlyTotalStr')
+    if not monthly_total_str:
+        if monthly_usd > 0 and monthly_inr > 0:
+            monthly_total_str = f"${monthly_usd:,.2f} + ₹{monthly_inr:,.2f} / Month"
+        elif monthly_usd > 0:
+            monthly_total_str = f"${monthly_usd:,.2f} / Month"
+        elif monthly_inr > 0:
+            monthly_total_str = f"₹{monthly_inr:,.2f} / Month"
+        else:
+            monthly_total_str = "$0 / Month" if currency == 'USD' else "₹0 / Month"
+
+    # Annual formatted string
+    annual_total_str = payload.get('annualTotalStr')
+    if not annual_total_str:
+        if annual_usd > 0 and annual_inr > 0:
+            annual_total_str = f"${annual_usd:,.2f} + ₹{annual_inr:,.2f} / Year"
+        elif annual_usd > 0:
+            annual_total_str = f"${annual_usd:,.2f} / Year"
+        elif annual_inr > 0:
+            annual_total_str = f"₹{annual_inr:,.2f} / Year"
+        else:
+            annual_total_str = "$0 / Year" if currency == 'USD' else "₹0 / Year"
+
     new_quote = {
         "id": f"qt-{uuid.uuid4().hex[:6]}",
         "quoteNumber": quote_num,
@@ -996,6 +1020,7 @@ def api_quotations():
         "monthlyGST_USD": monthly_gst_usd,
         "monthlyTotal_INR": monthly_total_inr,
         "monthlyTotal_USD": monthly_total_usd,
+        "monthlyTotalStr": monthly_total_str,
         
         # 3. Annual Recurring
         "annualAddons": annual_addons,
@@ -1005,6 +1030,7 @@ def api_quotations():
         "annualGST_USD": annual_gst_usd,
         "annualTotal_INR": annual_total_inr,
         "annualTotal_USD": annual_total_usd,
+        "annualTotalStr": annual_total_str,
 
         # Full Addons array
         "addons": addons,
