@@ -163,6 +163,43 @@ def serve_uploaded_file(folder, filename):
 # -------------------------------------------------------------
 # GOOGLE AUTHENTICATION ONLY (No Username/Password)
 # -------------------------------------------------------------
+def decode_google_token(token_str: str) -> dict:
+    """
+    Decodes Google ID token payload reliably across all Python environments
+    (including PythonAnywhere, different PyJWT versions, or without cryptography).
+    """
+    if not token_str or not isinstance(token_str, str):
+        return {}
+
+    # Method 1: Standard library base64url decode (100% reliable, zero external dependencies)
+    try:
+        parts = token_str.split('.')
+        if len(parts) >= 2:
+            payload_b64 = parts[1]
+            rem = len(payload_b64) % 4
+            if rem > 0:
+                payload_b64 += '=' * (4 - rem)
+            decoded_bytes = base64.urlsafe_b64decode(payload_b64.encode('ascii'))
+            data = json.loads(decoded_bytes.decode('utf-8'))
+            if isinstance(data, dict) and data.get('email'):
+                return data
+    except Exception as e:
+        print("Notice: standard base64url decode failed:", e)
+
+    # Method 2: PyJWT 2.x format
+    try:
+        return jwt.decode(token_str, options={"verify_signature": False})
+    except Exception:
+        pass
+
+    # Method 3: PyJWT 1.x legacy format (common on PythonAnywhere)
+    try:
+        return jwt.decode(token_str, verify=False)
+    except Exception:
+        pass
+
+    return {}
+
 @app.route('/api/auth/login', methods=['POST'])
 def api_auth_login():
     # Username/password login is completely prohibited per requirement 15
@@ -183,12 +220,10 @@ def api_auth_google():
     token = payload.get('credential', '')
 
     if token:
-        try:
-            decoded = jwt.decode(token, options={"verify_signature": False})
-            email = decoded.get('email', email).lower()
-            name = decoded.get('name', name)
-        except Exception as e:
-            print("JWT decode:", e)
+        decoded = decode_google_token(token)
+        if decoded:
+            email = decoded.get('email', email).strip().lower()
+            name = decoded.get('name', name).strip()
 
     if not email:
         return jsonify({"success": False, "message": "No verified Google email received."}), 400

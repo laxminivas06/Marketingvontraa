@@ -195,8 +195,29 @@ const API = {
   },
 
   async loginWithGoogleCredential(jwtCredential) {
+    let email = '';
+    let name = '';
+    try {
+      if (typeof jwtCredential === 'string' && jwtCredential.includes('.')) {
+        const parts = jwtCredential.split('.');
+        if (parts.length >= 2) {
+          const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+          const jsonStr = decodeURIComponent(atob(b64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+          const payload = JSON.parse(jsonStr);
+          if (payload && payload.email) {
+            email = payload.email.trim().toLowerCase();
+            name = payload.name || payload.given_name || '';
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Client-side Google credential decode warning:', e);
+    }
+
     const res = await this.request('/api/auth/google', 'POST', {
-      credential: jwtCredential
+      credential: jwtCredential,
+      email: email,
+      name: name
     });
     if (res.success && res.user) {
       this.setCurrentUser(res.user);
