@@ -368,6 +368,8 @@ input, select, textarea {
   font-size: 0.9rem;
   line-height: 1;
 }
+
+.signout-text {
   font-weight: 700;
   font-size: 0.85rem;
 }
@@ -905,17 +907,30 @@ tbody tr:hover {
 }
 
 @media (max-width: 520px) {
+  .topbar {
+    padding: 0 0.65rem;
+    height: 58px;
+  }
   .page-title {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+    max-width: 100px;
+  }
+  .user-name {
+    display: none;
   }
   .user-email {
-    display: none;
+    display: block;
+    max-width: 125px;
+    font-size: 0.68rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .signout-text {
-    display: none;
+    display: inline;
+    font-size: 0.75rem;
   }
   .btn-header-signout {
-    padding: 0.4rem 0.55rem;
+    padding: 0.35rem 0.55rem;
   }
 }
 
