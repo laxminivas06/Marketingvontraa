@@ -1755,8 +1755,14 @@ def api_stats():
     active_projs = len([p for p in projs if p.get('status') not in ['Project Completed', 'Completed']])
     completed_projs = len([p for p in projs if p.get('status') in ['Project Completed', 'Completed']])
 
-    total_comm_inr = sum(q.get('commissionAmount', 0) for q in quotes if q.get('currency') == 'INR')
-    total_comm_usd = sum(q.get('commissionAmount', 0) for q in quotes if q.get('currency') == 'USD')
+    total_comm_inr = sum(
+        q.get('commissionAmountINR', q.get('commissionAmount', 0)) if (q.get('currency') == 'INR' or q.get('commissionAmountINR')) else 0
+        for q in quotes
+    )
+    total_comm_usd = sum(
+        q.get('commissionAmountUSD', q.get('commissionAmount', 0)) if (q.get('currency') == 'USD' or q.get('commissionAmountUSD')) else 0
+        for q in quotes
+    )
 
     pending_assignments = len([p for p in projs if p.get('assignmentStatus') == 'pending_assignment' or not p.get('assignedDevId')])
     payment_pending_count = len([p for p in projs if p.get('payment', {}).get('status') != 'Payment Verified'])

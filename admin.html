@@ -1900,9 +1900,22 @@
         const isAccepted = normStatus === 'Accepted';
         const proj = (API.state.projects || []).find(p => p.quoteId === q.id || p.quoteNumber === q.quoteNumber);
 
-        const subtotal = q.subtotal || Math.round(q.totalPrice / 1.18);
-        const gst = q.gstAmount || Math.round(subtotal * 0.18);
-        const total = q.totalPrice;
+        const isMixed = q.isMixedCurrency || (q.subtotalINR > 0 && q.subtotalUSD > 0);
+        let subtotalText, gstText, totalText, commText;
+        if (isMixed) {
+          subtotalText = `₹${(q.subtotalINR || 0).toLocaleString()} & $${(q.subtotalUSD || 0).toLocaleString()}`;
+          gstText = `₹${(q.gstINR || 0).toLocaleString()} & $${(q.gstUSD || 0).toLocaleString()}`;
+          totalText = `₹${(q.totalINR || 0).toLocaleString()} & $${(q.totalUSD || 0).toLocaleString()}`;
+          commText = `₹${(q.commissionAmountINR || 0).toLocaleString()} & $${(q.commissionAmountUSD || 0).toLocaleString()}`;
+        } else {
+          const subtotal = q.subtotal || Math.round((q.totalPrice || 0) / 1.18);
+          const gst = q.gstAmount || Math.round(subtotal * 0.18);
+          const total = q.totalPrice || 0;
+          subtotalText = API.formatCurrency(subtotal, q.currency);
+          gstText = API.formatCurrency(gst, q.currency);
+          totalText = API.formatCurrency(total, q.currency);
+          commText = `${q.commissionRate || 7}% (${API.formatCurrency(q.commissionAmount || 0, q.currency)})`;
+        }
 
         const badgeClass = API.getLifecycleBadgeClass(normStatus);
 
@@ -1912,10 +1925,10 @@
           <td><strong>${API.escapeHtml(q.clientName)}</strong></td>
           <td><span style="font-size: 0.8rem; color: var(--slate-700);">${API.escapeHtml(q.commExecutiveName || q.executiveName || 'Executive')}</span></td>
           <td><span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.categoryName || 'Solution')}</span></td>
-          <td class="price-tag">${API.formatCurrency(subtotal, q.currency)}</td>
-          <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${API.formatCurrency(gst, q.currency)}</td>
-          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${API.formatCurrency(total, q.currency)}</td>
-          <td><span class="pill pill-active" style="font-size: 0.775rem;">${q.commissionRate}% (${API.formatCurrency(q.commissionAmount, q.currency)})</span></td>
+          <td class="price-tag">${subtotalText}</td>
+          <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${gstText}</td>
+          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${totalText}</td>
+          <td><span class="pill pill-active" style="font-size: 0.775rem;">${commText}</span></td>
           <td style="font-size: 0.8rem; color: var(--slate-500);">${q.createdAt}</td>
           <td><span class="badge-lifecycle ${badgeClass}">${normStatus}</span></td>
           <td style="text-align: right; white-space: nowrap;">

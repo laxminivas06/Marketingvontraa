@@ -211,15 +211,45 @@
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900);">
                       3. Optional Add-ons
                     </h3>
-                    <p style="font-size: 0.775rem; color: var(--slate-500);">Select add-ons with monthly or annual billing</p>
+                    <p style="font-size: 0.775rem; color: var(--slate-500);">Manually configure custom client add-ons in INR (₹) or USD ($)</p>
                   </div>
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="openAddonsSelectorModal()">
-                    + ADD ADD-ON
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-addon-form" onclick="openManualAddonForm()">
+                    + Add Optional Add-On
                   </button>
                 </div>
 
+                <!-- Form to manually enter an add-on (displays when clicking + Add Optional Add-On) -->
+                <div id="manual-addon-form-panel" style="display: none; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <strong style="font-size: 0.85rem; color: var(--slate-800);" id="manual-addon-form-header">Add Optional Add-On</strong>
+                    <button type="button" class="modal-close-btn" style="font-size: 1.1rem; line-height: 1;" onclick="closeManualAddonForm()">&times;</button>
+                  </div>
+                  <input type="hidden" id="manual-addon-edit-index" value="-1">
+                  <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.75rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="manual-addon-name" style="font-size: 0.75rem; font-weight: 700;">Add-On Name *</label>
+                      <input type="text" id="manual-addon-name" class="form-control form-control-sm" placeholder="e.g. Google Sign-In Integration">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="manual-addon-currency" style="font-size: 0.75rem; font-weight: 700;">Price Currency *</label>
+                      <select id="manual-addon-currency" class="form-control form-control-sm">
+                        <option value="INR">INR (₹)</option>
+                        <option value="USD">USD ($)</option>
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="manual-addon-price" style="font-size: 0.75rem; font-weight: 700;">Add-On Price *</label>
+                      <input type="number" id="manual-addon-price" class="form-control form-control-sm" placeholder="2000" min="0" step="any">
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeManualAddonForm()">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btn-save-manual-addon" onclick="saveManualAddon()">Save Add-On</button>
+                  </div>
+                </div>
+
                 <div id="selected-addons-container">
-                  <div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">No add-ons selected yet. Click "+ ADD ADD-ON" above.</div>
+                  <div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">No optional add-ons added yet. Click "+ Add Optional Add-On" above.</div>
                 </div>
               </div>
 
@@ -637,27 +667,6 @@
 
   <!-- MODALS -->
 
-  <!-- Add-ons Selection Modal -->
-  <div class="modal-backdrop" id="modal-addons-picker">
-    <div class="modal-content" style="max-width: 600px;">
-      <div class="modal-header">
-        <h3>Select Optional Add-ons</h3>
-        <button class="modal-close-btn" onclick="API.closeModal('modal-addons-picker')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 1rem;">
-          Choose add-on modules and specify billing cadence (Monthly or Yearly) according to client preference.
-        </p>
-        <div id="available-addons-list">
-          <!-- Populated dynamically -->
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-addons-picker')">Done</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Change Request Modal with .docx, .pdf, .zip Upload <= 500 KB -->
   <div class="modal-backdrop" id="modal-change-request">
     <div class="modal-content">
@@ -886,37 +895,118 @@
       const basePrice = currentBillingCadence === 'Monthly' ? Math.round(rawBase / 10) : rawBase;
       const domainAmount = Number(document.getElementById('calc-domain-amount').value) || 0;
 
-      let addonsTotal = 0;
+      // Group add-on prices strictly by their selected currency (INR / USD)
+      let addonsINR = 0;
+      let addonsUSD = 0;
       selectedAddons.forEach(a => {
-        addonsTotal += Number(a.price) || 0;
+        const p = Number(a.price) || 0;
+        if ((a.currency || '').toUpperCase() === 'USD') {
+          addonsUSD += p;
+        } else {
+          addonsINR += p;
+        }
       });
+      addonsINR = Math.round(addonsINR * 100) / 100;
+      addonsUSD = Math.round(addonsUSD * 100) / 100;
 
-      const subtotal = basePrice + domainAmount + addonsTotal;
-      const gstCalc = API.calculateGST(subtotal);
+      // Base price and domain belong to the active category currency
+      const baseINR = activeCurrency === 'INR' ? (basePrice + domainAmount) : 0;
+      const baseUSD = activeCurrency === 'USD' ? (basePrice + domainAmount) : 0;
 
-      // Proposal Summary
+      const subtotalINR = Math.round((baseINR + addonsINR) * 100) / 100;
+      const subtotalUSD = Math.round((baseUSD + addonsUSD) * 100) / 100;
+
+      const gstINR = subtotalINR > 0 ? Math.round(subtotalINR * 0.18) : 0;
+      const totalINR = subtotalINR + gstINR;
+
+      const gstUSD = subtotalUSD > 0 ? Math.round(subtotalUSD * 0.18 * 100) / 100 : 0;
+      const totalUSD = Math.round((subtotalUSD + gstUSD) * 100) / 100;
+
+      const hasINR = subtotalINR > 0;
+      const hasUSD = subtotalUSD > 0;
+      const isMixed = hasINR && hasUSD;
+
+      // Proposal Summary display - Base & Domain
       document.getElementById('sum-base-price').innerText = API.formatCurrency(basePrice, activeCurrency);
       document.getElementById('sum-domain-price').innerText = API.formatCurrency(domainAmount, activeCurrency);
-      document.getElementById('sum-addons-price').innerText = API.formatCurrency(addonsTotal, activeCurrency);
-      document.getElementById('sum-subtotal-price').innerText = API.formatCurrency(subtotal, activeCurrency);
-      document.getElementById('sum-gst-price').innerText = API.formatCurrency(gstCalc.gstAmount, activeCurrency);
-      document.getElementById('sum-total-price').innerText = API.formatCurrency(gstCalc.totalAmount, activeCurrency);
+
+      // Add-ons Summary Display
+      if (addonsINR > 0 && addonsUSD > 0) {
+        document.getElementById('sum-addons-price').innerText = `₹${addonsINR.toLocaleString()} & $${addonsUSD.toLocaleString()}`;
+      } else if (addonsINR > 0) {
+        document.getElementById('sum-addons-price').innerText = `₹${addonsINR.toLocaleString()}`;
+      } else if (addonsUSD > 0) {
+        document.getElementById('sum-addons-price').innerText = `$${addonsUSD.toLocaleString()}`;
+      } else {
+        document.getElementById('sum-addons-price').innerText = API.formatCurrency(0, activeCurrency);
+      }
+
+      // Subtotal Summary Display
+      if (isMixed) {
+        document.getElementById('sum-subtotal-price').innerText = `₹${subtotalINR.toLocaleString()} & $${subtotalUSD.toLocaleString()}`;
+      } else if (hasUSD) {
+        document.getElementById('sum-subtotal-price').innerText = `$${subtotalUSD.toLocaleString()}`;
+      } else {
+        document.getElementById('sum-subtotal-price').innerText = `₹${subtotalINR.toLocaleString()}`;
+      }
+
+      // GST Summary Display
+      if (isMixed) {
+        document.getElementById('sum-gst-price').innerText = `₹${gstINR.toLocaleString()} & $${gstUSD.toLocaleString()}`;
+      } else if (hasUSD) {
+        document.getElementById('sum-gst-price').innerText = `$${gstUSD.toLocaleString()}`;
+      } else {
+        document.getElementById('sum-gst-price').innerText = `₹${gstINR.toLocaleString()}`;
+      }
+
+      // Total Quotation Amount Summary Display
+      if (isMixed) {
+        document.getElementById('sum-total-price').innerText = `₹${totalINR.toLocaleString()} & $${totalUSD.toLocaleString()}`;
+      } else if (hasUSD) {
+        document.getElementById('sum-total-price').innerText = `$${totalUSD.toLocaleString()}`;
+      } else {
+        document.getElementById('sum-total-price').innerText = `₹${totalINR.toLocaleString()}`;
+      }
 
       // Private Commission (Calculated on subtotal before GST)
-      const comm = API.calculateCommission(subtotal, activeCurrency);
-      document.getElementById('sum-comm-rate').innerText = `${comm.rate}%`;
-      document.getElementById('sum-comm-slab-title').innerText = comm.slabTitle;
-      document.getElementById('sum-comm-amount').innerText = comm.formattedCommission;
+      let commINR = { rate: 7, formattedCommission: '₹0', commissionAmount: 0, slabTitle: 'Standard Tier' };
+      let commUSD = { rate: 7, formattedCommission: '$0', commissionAmount: 0, slabTitle: 'Standard Tier' };
+      if (hasINR) commINR = API.calculateCommission(subtotalINR, 'INR');
+      if (hasUSD) commUSD = API.calculateCommission(subtotalUSD, 'USD');
+
+      if (isMixed) {
+        document.getElementById('sum-comm-rate').innerText = `${commINR.rate}% (INR) / ${commUSD.rate}% (USD)`;
+        document.getElementById('sum-comm-slab-title').innerText = 'Multi-Currency Tier';
+        document.getElementById('sum-comm-amount').innerText = `${commINR.formattedCommission} & ${commUSD.formattedCommission}`;
+      } else if (hasUSD) {
+        document.getElementById('sum-comm-rate').innerText = `${commUSD.rate}%`;
+        document.getElementById('sum-comm-slab-title').innerText = commUSD.slabTitle;
+        document.getElementById('sum-comm-amount').innerText = commUSD.formattedCommission;
+      } else {
+        document.getElementById('sum-comm-rate').innerText = `${commINR.rate}%`;
+        document.getElementById('sum-comm-slab-title').innerText = commINR.slabTitle;
+        document.getElementById('sum-comm-amount').innerText = commINR.formattedCommission;
+      }
 
       currentCalculatedQuote = {
         basePrice,
         domainAmount,
-        addonsTotal,
-        subtotal,
-        gstAmount: gstCalc.gstAmount,
-        totalPrice: gstCalc.totalAmount,
-        commissionRate: comm.rate,
-        commissionAmount: comm.commissionAmount,
+        addonsINR,
+        addonsUSD,
+        subtotalINR,
+        subtotalUSD,
+        gstINR,
+        gstUSD,
+        totalINR,
+        totalUSD,
+        isMixed,
+        subtotal: activeCurrency === 'USD' ? subtotalUSD : subtotalINR,
+        gstAmount: activeCurrency === 'USD' ? gstUSD : gstINR,
+        totalPrice: activeCurrency === 'USD' ? totalUSD : totalINR,
+        commissionRate: activeCurrency === 'USD' ? commUSD.rate : commINR.rate,
+        commissionAmount: activeCurrency === 'USD' ? commUSD.commissionAmount : commINR.commissionAmount,
+        commissionAmountINR: commINR.commissionAmount,
+        commissionAmountUSD: commUSD.commissionAmount,
         currency: activeCurrency,
         billingCadence: currentBillingCadence,
         cat
@@ -1005,93 +1095,129 @@
     }
 
     // -------------------------------------------------------------
-    // ADD-ONS SELECTOR MODAL
+    // OPTIONAL ADD-ONS (MANUALLY CONFIGURABLE)
     // -------------------------------------------------------------
-    function openAddonsSelectorModal() {
-      const container = document.getElementById('available-addons-list');
-      container.innerHTML = '';
-      const addons = API.state.addons || [];
+    function openManualAddonForm(index = -1) {
+      const panel = document.getElementById('manual-addon-form-panel');
+      const editIndexInput = document.getElementById('manual-addon-edit-index');
+      const nameInput = document.getElementById('manual-addon-name');
+      const currInput = document.getElementById('manual-addon-currency');
+      const priceInput = document.getElementById('manual-addon-price');
+      const header = document.getElementById('manual-addon-form-header');
+      const saveBtn = document.getElementById('btn-save-manual-addon');
 
-      if (addons.length === 0) {
-        container.innerHTML = '<div style="color: var(--slate-400); text-align: center; padding: 1.5rem;">No add-ons configured by Administrator.</div>';
-        API.openModal('modal-addons-picker');
+      if (index >= 0 && selectedAddons[index]) {
+        const item = selectedAddons[index];
+        editIndexInput.value = index;
+        nameInput.value = item.name;
+        currInput.value = item.currency || activeCurrency;
+        priceInput.value = item.price;
+        header.innerText = 'Edit Optional Add-On';
+        saveBtn.innerText = 'Update Add-On';
+      } else {
+        editIndexInput.value = -1;
+        nameInput.value = '';
+        currInput.value = activeCurrency;
+        priceInput.value = '';
+        header.innerText = 'Add Optional Add-On';
+        saveBtn.innerText = 'Save Add-On';
+      }
+
+      panel.style.display = 'block';
+      nameInput.focus();
+    }
+
+    function closeManualAddonForm() {
+      const panel = document.getElementById('manual-addon-form-panel');
+      if (panel) panel.style.display = 'none';
+      document.getElementById('manual-addon-edit-index').value = -1;
+      document.getElementById('manual-addon-name').value = '';
+      document.getElementById('manual-addon-price').value = '';
+    }
+
+    function saveManualAddon() {
+      const editIndex = parseInt(document.getElementById('manual-addon-edit-index').value, 10);
+      const name = document.getElementById('manual-addon-name').value.trim();
+      const currency = document.getElementById('manual-addon-currency').value;
+      const rawPrice = document.getElementById('manual-addon-price').value.trim();
+      const price = parseFloat(rawPrice);
+
+      if (!name) {
+        alert('Please enter the Add-On Name.');
+        document.getElementById('manual-addon-name').focus();
         return;
       }
 
-      addons.forEach(a => {
-        const monthly = activeCurrency === 'USD' ? a.monthlyUSD : a.monthlyINR;
-        const yearly = activeCurrency === 'USD' ? a.yearlyUSD : a.yearlyINR;
+      if (isNaN(price) || price <= 0) {
+        alert('Please enter a valid positive price for the add-on.');
+        document.getElementById('manual-addon-price').focus();
+        return;
+      }
 
-        const div = document.createElement('div');
-        div.style.cssText = 'background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 8px; padding: 0.85rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;';
-        div.innerHTML = `
-          <div>
-            <strong style="color: var(--slate-900); font-size: 0.95rem;">${API.escapeHtml(a.name)}</strong>
-            <div style="font-size: 0.75rem; color: var(--slate-500);">${API.escapeHtml(a.desc || '')}</div>
-            <div style="font-size: 0.775rem; margin-top: 0.25rem;">
-              Monthly: <strong>${API.formatCurrency(monthly, activeCurrency)}</strong> • Yearly: <strong>${API.formatCurrency(yearly, activeCurrency)}</strong>
-            </div>
-          </div>
-          <div style="display: flex; gap: 0.5rem;">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addSelectedAddon('${a.id}', 'monthly')">
-              + Monthly
-            </button>
-            <button type="button" class="btn btn-primary btn-sm" onclick="addSelectedAddon('${a.id}', 'yearly')">
-              + Yearly
-            </button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
+      const formattedPrice = Math.round(price * 100) / 100;
 
-      API.openModal('modal-addons-picker');
-    }
+      if (editIndex >= 0 && selectedAddons[editIndex]) {
+        selectedAddons[editIndex] = {
+          id: selectedAddons[editIndex].id,
+          name,
+          currency,
+          price: formattedPrice
+        };
+        API.showToast('Add-on updated');
+      } else {
+        selectedAddons.push({
+          id: 'addon-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+          name,
+          currency,
+          price: formattedPrice
+        });
+        API.showToast('Optional Add-on added');
+      }
 
-    function addSelectedAddon(addonId, cadence) {
-      const a = (API.state.addons || []).find(item => item.id === addonId);
-      if (!a) return;
-
-      selectedAddons = selectedAddons.filter(item => item.id !== addonId);
-
-      const price = cadence === 'monthly' ? 
-        (activeCurrency === 'USD' ? a.monthlyUSD : a.monthlyINR) : 
-        (activeCurrency === 'USD' ? a.yearlyUSD : a.yearlyINR);
-
-      selectedAddons.push({
-        id: a.id,
-        name: a.name,
-        billing: cadence,
-        price: Number(price)
-      });
-
+      closeManualAddonForm();
       renderSelectedAddonsPills();
       calculateTotal();
-      API.closeModal('modal-addons-picker');
-      API.showToast(`Added ${a.name} (${cadence})`);
     }
 
-    function removeSelectedAddon(addonId) {
-      selectedAddons = selectedAddons.filter(item => item.id !== addonId);
+    function editManualAddon(index) {
+      openManualAddonForm(index);
+    }
+
+    function deleteManualAddon(index) {
+      if (index < 0 || index >= selectedAddons.length) return;
+      if (!confirm(`Are you sure you want to remove add-on "${selectedAddons[index].name}"?`)) return;
+      selectedAddons.splice(index, 1);
+      closeManualAddonForm();
       renderSelectedAddonsPills();
       calculateTotal();
+      API.showToast('Add-on removed');
     }
 
     function renderSelectedAddonsPills() {
       const c = document.getElementById('selected-addons-container');
+      if (!c) return;
       if (selectedAddons.length === 0) {
-        c.innerHTML = '<div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">No add-ons added yet. Click "+ ADD ADD-ON" above.</div>';
+        c.innerHTML = '<div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">No optional add-ons added yet. Click "+ Add Optional Add-On" above.</div>';
         return;
       }
 
-      c.innerHTML = selectedAddons.map(a => `
-        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--slate-50); border: 1px solid var(--slate-200); padding: 0.4rem 0.75rem; border-radius: 6px; margin-bottom: 0.4rem; font-size: 0.85rem;">
-          <span><strong>${API.escapeHtml(a.name)}</strong> (${a.billing})</span>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <strong class="price-tag">${API.formatCurrency(a.price, activeCurrency)}</strong>
-            <button type="button" class="modal-close-btn" style="font-size: 1.1rem; color: var(--rose-600);" onclick="removeSelectedAddon('${a.id}')">&times;</button>
+      c.innerHTML = selectedAddons.map((a, idx) => {
+        const symbol = a.currency === 'USD' ? '$' : '₹';
+        const formattedPrice = `${symbol}${Number(a.price).toLocaleString()}`;
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--slate-50); border: 1px solid var(--slate-200); padding: 0.55rem 0.85rem; border-radius: 6px; margin-bottom: 0.5rem; font-size: 0.85rem;">
+            <div>
+              <strong style="color: var(--slate-900);">${API.escapeHtml(a.name)}</strong>
+              <span class="pill ${a.currency === 'USD' ? 'pill-info' : 'pill-active'}" style="margin-left: 0.4rem; font-size: 0.7rem; padding: 0.1rem 0.45rem;">${a.currency}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+              <strong class="price-tag" style="font-size: 0.95rem;">${formattedPrice}</strong>
+              <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem;" onclick="editManualAddon(${idx})">Edit</button>
+              <button type="button" class="btn btn-danger btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem;" onclick="deleteManualAddon(${idx})">Delete</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // -------------------------------------------------------------
@@ -1125,6 +1251,15 @@
         basePrice: currentCalculatedQuote.basePrice,
         domainAmount: currentCalculatedQuote.domainAmount,
         addons: selectedAddons,
+        addonsINR: currentCalculatedQuote.addonsINR,
+        addonsUSD: currentCalculatedQuote.addonsUSD,
+        subtotalINR: currentCalculatedQuote.subtotalINR,
+        subtotalUSD: currentCalculatedQuote.subtotalUSD,
+        gstINR: currentCalculatedQuote.gstINR,
+        gstUSD: currentCalculatedQuote.gstUSD,
+        totalINR: currentCalculatedQuote.totalINR,
+        totalUSD: currentCalculatedQuote.totalUSD,
+        isMixedCurrency: currentCalculatedQuote.isMixed,
         subtotal: currentCalculatedQuote.subtotal,
         gstAmount: currentCalculatedQuote.gstAmount,
         totalPrice: currentCalculatedQuote.totalPrice,
@@ -1180,9 +1315,10 @@
         featsUl.innerHTML += `<li>${API.escapeHtml(f)}</li>`;
       });
 
-      const subtotal = quote.subtotal || currentCalculatedQuote.subtotal;
-      const gst = quote.gstAmount || currentCalculatedQuote.gstAmount;
-      const total = quote.totalPrice || currentCalculatedQuote.totalPrice;
+      const quoteAddons = quote.addons || selectedAddons || [];
+      const basePrice = quote.basePrice !== undefined ? quote.basePrice : currentCalculatedQuote.basePrice;
+      const domainAmount = quote.domainAmount !== undefined ? quote.domainAmount : currentCalculatedQuote.domainAmount;
+      const quoteCurr = quote.currency || activeCurrency;
 
       const tbody = document.getElementById('doc-items-tbody');
       tbody.innerHTML = `
@@ -1191,37 +1327,59 @@
             <strong>${API.escapeHtml(cat.name)}</strong>
             <div style="font-size: 0.75rem; color: var(--slate-500);">${cat.classification} Core Architecture & Implementation (${quote.billingCadence || 'Standard'})</div>
           </td>
-          <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(currentCalculatedQuote.basePrice, activeCurrency)}</td>
+          <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(basePrice, quoteCurr)}</td>
         </tr>
       `;
 
-      if (currentCalculatedQuote.domainAmount > 0) {
-        const domName = document.getElementById('calc-domain-name').value.trim() || 'Custom Domain';
+      if (domainAmount > 0) {
+        const domName = domainName || document.getElementById('calc-domain-name').value.trim() || 'Custom Domain';
         tbody.innerHTML += `
           <tr>
             <td style="padding: 0.75rem 1rem;">
               <strong>Domain Registration: ${API.escapeHtml(domName)}</strong>
               <div style="font-size: 0.75rem; color: var(--slate-500);">Registration & DNS Configuration</div>
             </td>
-            <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(currentCalculatedQuote.domainAmount, activeCurrency)}</td>
+            <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(domainAmount, quoteCurr)}</td>
           </tr>
         `;
       }
 
-      selectedAddons.forEach(a => {
+      quoteAddons.forEach(a => {
+        const curr = (a.currency || quoteCurr).toUpperCase();
+        const symbol = curr === 'USD' ? '$' : '₹';
+        const formattedPrice = `${symbol}${Number(a.price).toLocaleString()}`;
         tbody.innerHTML += `
           <tr>
             <td style="padding: 0.75rem 1rem;">
-              <strong>Add-on: ${API.escapeHtml(a.name)} (${a.billing})</strong>
+              <strong>Add-on: ${API.escapeHtml(a.name)}</strong>
+              <div style="font-size: 0.75rem; color: var(--slate-500);">Optional Client Add-On (${curr})</div>
             </td>
-            <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(a.price, activeCurrency)}</td>
+            <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${formattedPrice}</td>
           </tr>
         `;
       });
 
-      document.getElementById('doc-subtotal-price').innerText = API.formatCurrency(subtotal, activeCurrency);
-      document.getElementById('doc-gst-price').innerText = API.formatCurrency(gst, activeCurrency);
-      document.getElementById('doc-total-price').innerText = API.formatCurrency(total, activeCurrency);
+      const isMixed = quote.isMixedCurrency !== undefined ? quote.isMixedCurrency : currentCalculatedQuote.isMixed;
+      const subtotalINR = quote.subtotalINR ?? currentCalculatedQuote.subtotalINR;
+      const subtotalUSD = quote.subtotalUSD ?? currentCalculatedQuote.subtotalUSD;
+      const gstINR = quote.gstINR ?? currentCalculatedQuote.gstINR;
+      const gstUSD = quote.gstUSD ?? currentCalculatedQuote.gstUSD;
+      const totalINR = quote.totalINR ?? currentCalculatedQuote.totalINR;
+      const totalUSD = quote.totalUSD ?? currentCalculatedQuote.totalUSD;
+
+      if (isMixed) {
+        document.getElementById('doc-subtotal-price').innerText = `₹${subtotalINR.toLocaleString()} & $${subtotalUSD.toLocaleString()}`;
+        document.getElementById('doc-gst-price').innerText = `₹${gstINR.toLocaleString()} & $${gstUSD.toLocaleString()}`;
+        document.getElementById('doc-total-price').innerText = `₹${totalINR.toLocaleString()} & $${totalUSD.toLocaleString()}`;
+      } else if (quoteCurr === 'USD' || (subtotalUSD > 0 && subtotalINR === 0)) {
+        document.getElementById('doc-subtotal-price').innerText = `$${subtotalUSD.toLocaleString()}`;
+        document.getElementById('doc-gst-price').innerText = `$${gstUSD.toLocaleString()}`;
+        document.getElementById('doc-total-price').innerText = `$${totalUSD.toLocaleString()}`;
+      } else {
+        document.getElementById('doc-subtotal-price').innerText = `₹${subtotalINR.toLocaleString()}`;
+        document.getElementById('doc-gst-price').innerText = `₹${gstINR.toLocaleString()}`;
+        document.getElementById('doc-total-price').innerText = `₹${totalINR.toLocaleString()}`;
+      }
 
       switchTab('quotation-view', true);
     }
@@ -1274,18 +1432,29 @@
         const proj = (API.state.projects || []).find(p => p.quoteId === q.id || p.quoteNumber === q.quoteNumber);
         const isAccepted = normStatus === 'Accepted';
 
-        const subtotal = q.subtotal || Math.round(q.totalPrice / 1.18);
-        const gst = q.gstAmount || Math.round(subtotal * 0.18);
-        const total = q.totalPrice;
+        const isMixed = q.isMixedCurrency || (q.subtotalINR > 0 && q.subtotalUSD > 0);
+        let subtotalText, gstText, totalText;
+        if (isMixed) {
+          subtotalText = `₹${(q.subtotalINR || 0).toLocaleString()} & $${(q.subtotalUSD || 0).toLocaleString()}`;
+          gstText = `₹${(q.gstINR || 0).toLocaleString()} & $${(q.gstUSD || 0).toLocaleString()}`;
+          totalText = `₹${(q.totalINR || 0).toLocaleString()} & $${(q.totalUSD || 0).toLocaleString()}`;
+        } else {
+          const subtotal = q.subtotal || Math.round((q.totalPrice || 0) / 1.18);
+          const gst = q.gstAmount || Math.round(subtotal * 0.18);
+          const total = q.totalPrice || 0;
+          subtotalText = API.formatCurrency(subtotal, q.currency);
+          gstText = API.formatCurrency(gst, q.currency);
+          totalText = API.formatCurrency(total, q.currency);
+        }
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong style="font-family: var(--font-mono); color: var(--primary);">${API.escapeHtml(q.quoteNumber)}</strong></td>
           <td><strong>${API.escapeHtml(q.clientName)}</strong></td>
           <td>${API.escapeHtml(q.categoryName || 'Solution')}</td>
-          <td class="price-tag">${API.formatCurrency(subtotal, q.currency)}</td>
-          <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${API.formatCurrency(gst, q.currency)}</td>
-          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${API.formatCurrency(total, q.currency)}</td>
+          <td class="price-tag">${subtotalText}</td>
+          <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${gstText}</td>
+          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${totalText}</td>
           <td><span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.commExecutiveName || 'Exec')}</span></td>
           <td><span class="badge-lifecycle ${badgeClass}">${normStatus}</span></td>
           <td>
