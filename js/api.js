@@ -612,6 +612,40 @@ const API = {
     return parseFloat((bytesVal / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   },
 
+  renderHeaderUser(defaultRole = 'USER') {
+    const user = this.getCurrentUser();
+    const avatarEl = document.getElementById('header-user-avatar');
+    const nameEl = document.getElementById('header-user-name');
+    const emailEl = document.getElementById('header-user-email');
+    const roleEl = document.getElementById('header-user-role');
+
+    if (user) {
+      if (nameEl) nameEl.innerText = user.name || user.email.split('@')[0];
+      if (emailEl) emailEl.innerText = user.email || '';
+      if (roleEl) roleEl.innerText = (user.role || defaultRole || 'USER').toUpperCase();
+      if (avatarEl) {
+        const initial = (user.name || user.email || 'U').charAt(0).toUpperCase();
+        avatarEl.innerText = initial;
+      }
+    } else {
+      if (emailEl) emailEl.innerText = 'user@aivontraa.com';
+    }
+  },
+
+  toggleMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.querySelector('.sidebar-backdrop');
+    if (sidebar) sidebar.classList.toggle('open');
+    if (backdrop) backdrop.classList.toggle('active');
+  },
+
+  closeMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.querySelector('.sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+  },
+
   openModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.add('open');
@@ -672,6 +706,8 @@ const API = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  API.renderHeaderUser();
+
   document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
     backdrop.addEventListener('click', function(e) {
       if (e.target === this) {
