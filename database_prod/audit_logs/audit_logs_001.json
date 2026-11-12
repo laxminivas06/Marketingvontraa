@@ -1,0 +1,255 @@
+{
+  "meta": {
+    "shard_id": "audit_logs_001.json",
+    "module": "audit_logs",
+    "sequence": 1,
+    "is_active": true,
+    "format": "JSON",
+    "updated_at": "2026-11-12 19:02:16"
+  },
+  "records": [
+    {
+      "id": "aud_b8b4e378264d",
+      "timestamp": "2026-11-12 19:02:16",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_0923e9fa3191",
+      "timestamp": "2026-11-12 18:59:28",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_97d855cd2876",
+      "timestamp": "2026-11-12 18:46:24",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_7d14f41ef5db",
+      "timestamp": "2026-11-12 18:43:57",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_cb6dc15395e0",
+      "timestamp": "2026-11-12 18:41:31",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_0255e9f9feec",
+      "timestamp": "2026-11-12 18:25:19",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_9bbb8c7250fc",
+      "timestamp": "2026-11-12 18:19:55",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_b1623778bcb0",
+      "timestamp": "2026-11-12 18:19:41",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_cdd294012901",
+      "timestamp": "2026-11-12 18:16:57",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_c42ae8c97117",
+      "timestamp": "2026-11-12 18:16:45",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_40a9d684ed27",
+      "timestamp": "2026-11-12 18:16:27",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_9404445362cc",
+      "timestamp": "2026-11-12 18:13:47",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_ad66093bf255",
+      "timestamp": "2026-11-12 18:07:21",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_f99681c40f83",
+      "timestamp": "2026-11-12 18:05:23",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_10cc568b7446",
+      "timestamp": "2026-11-12 18:05:13",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_a80e384692d3",
+      "timestamp": "2026-11-12 18:03:43",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_075187cce2fc",
+      "timestamp": "2026-11-12 18:02:22",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_467d72b69b90",
+      "timestamp": "2026-11-12 17:58:20",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_3122e7365b88",
+      "timestamp": "2026-11-12 17:57:30",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_1759f987808f",
+      "timestamp": "2026-11-12 17:56:38",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_d1f0a588dbe9",
+      "timestamp": "2026-11-12 17:56:24",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_d096d3a5a412",
+      "timestamp": "2026-11-12 17:55:50",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_6cac462ec950",
+      "timestamp": "2026-11-12 17:55:29",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_29dea95ec8fc",
+      "timestamp": "2026-11-12 17:51:22",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_841d21ea2023",
+      "timestamp": "2026-11-12 17:50:10",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_35235885e832",
+      "timestamp": "2026-11-12 17:48:47",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_a0c143f82111",
+      "timestamp": "2026-11-12 17:47:49",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    }
+  ]
+}

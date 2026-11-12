@@ -15,13 +15,16 @@ COMPANY_WEBSITE = "www.aivontraa.com"
 ROOT_ADMIN_EMAIL = os.environ.get("ROOT_ADMIN_EMAIL", "laxminivasmorishetty143@gmail.com")
 ADMIN_EMAILS = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "laxminivasmorishetty143@gmail.com,admin@aivontraa.com").split(",") if e.strip()}
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_FILE = os.path.join(BASE_DIR, 'database.json')
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
-PAYMENT_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'payments')
-DOCUMENTS_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'documents')
-CHANGE_REQ_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'change_requests')
-SIGNOFF_UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'signoffs')
+from config import Config
+
+BASE_DIR = Config.BASE_DIR
+DB_FILE = Config.DATABASE_FILE
+DATABASE_DIR = Config.DATABASE_DIR
+UPLOAD_FOLDER = Config.UPLOAD_FOLDER
+PAYMENT_UPLOAD_FOLDER = Config.PAYMENT_UPLOAD_FOLDER
+DOCUMENTS_UPLOAD_FOLDER = Config.DOCUMENTS_UPLOAD_FOLDER
+CHANGE_REQ_UPLOAD_FOLDER = Config.CHANGE_REQ_UPLOAD_FOLDER
+SIGNOFF_UPLOAD_FOLDER = Config.SIGNOFF_UPLOAD_FOLDER
 
 for f in [UPLOAD_FOLDER, PAYMENT_UPLOAD_FOLDER, DOCUMENTS_UPLOAD_FOLDER, CHANGE_REQ_UPLOAD_FOLDER, SIGNOFF_UPLOAD_FOLDER]:
     os.makedirs(f, exist_ok=True)
@@ -29,8 +32,8 @@ for f in [UPLOAD_FOLDER, PAYMENT_UPLOAD_FOLDER, DOCUMENTS_UPLOAD_FOLDER, CHANGE_
 MAX_DOCUMENT_SIZE = 500 * 1024  # 500 KB strict limit for requirements & change requests (.docx, .pdf, .zip)
 MAX_PAYMENT_SIZE = 5 * 1024 * 1024  # 5 MB limit for payment proof screenshots
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "524356808349-31ele7mkqr9bn0uqt28bod9m638978eh.apps.googleusercontent.com")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_CLIENT_ID = Config.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = Config.GOOGLE_CLIENT_SECRET
 
 # -------------------------------------------------------------
 # DATABASE & DATA ENCRYPTION AT REST
@@ -57,21 +60,329 @@ def decrypt_sensitive(enc_str: str) -> str:
         return enc_str
 
 # -------------------------------------------------------------
-# SHARDED MULTI-MODULE DATABASE MANAGER (70MB Soft / 100MB Hard)
+# DEFAULT APPLICATION SEED DATA (Supporting Multi-Payment Models)
+# -------------------------------------------------------------
+DEFAULT_CATEGORIES = [
+    {
+        "id": "cat-84f130",
+        "name": "Basic Business Website",
+        "classification": "Website – Basic",
+        "desc": "A simple website for startups, small businesses, and local service providers.",
+        "referenceUrl": "https://wix.com",
+        "enableOneTime": True,
+        "enableMonthly": True,
+        "enableAnnual": True,
+        "priceOneTimeINR": 12000,
+        "priceOneTimeUSD": 169,
+        "priceMonthlyINR": 1200,
+        "priceMonthlyUSD": 19,
+        "priceAnnualINR": 12000,
+        "priceAnnualUSD": 169,
+        "basePriceINR": 12000,
+        "basePriceUSD": 169,
+        "features": [
+            "Responsive Design",
+            "Homepage",
+            "About Us",
+            "Services Page",
+            "Contact Page",
+            "Contact Form",
+            "Google Maps Integration",
+            "WhatsApp Button",
+            "Social Media Links",
+            "Basic SEO"
+        ]
+    },
+    {
+        "id": "cat-60c1f5",
+        "name": "Business Corporate Website",
+        "classification": "Website – Corporate",
+        "desc": "A professional multi-page website for companies, agencies, and organizations.",
+        "referenceUrl": "https://squarespace.com",
+        "enableOneTime": True,
+        "enableMonthly": False,
+        "enableAnnual": True,
+        "priceOneTimeINR": 19000,
+        "priceOneTimeUSD": 350,
+        "priceMonthlyINR": 1900,
+        "priceMonthlyUSD": 35,
+        "priceAnnualINR": 19000,
+        "priceAnnualUSD": 350,
+        "basePriceINR": 19000,
+        "basePriceUSD": 350,
+        "features": [
+            "Responsive Design",
+            "Professional UI/UX",
+            "Homepage",
+            "About Company",
+            "Services Section",
+            "Team Profiles",
+            "Testimonials",
+            "Contact Form",
+            "Google Maps",
+            "Social Media Integration",
+            "SEO Optimization"
+        ]
+    },
+    {
+        "id": "cat-2a4959",
+        "name": "Personal Portfolio Website",
+        "classification": "Website – Portfolio",
+        "desc": "A modern portfolio for creators, designers, developers, photographers, and consultants.",
+        "referenceUrl": "https://webflow.com",
+        "enableOneTime": True,
+        "enableMonthly": False,
+        "enableAnnual": False,
+        "priceOneTimeINR": 8000,
+        "priceOneTimeUSD": 119,
+        "priceMonthlyINR": 800,
+        "priceMonthlyUSD": 15,
+        "priceAnnualINR": 8000,
+        "priceAnnualUSD": 119,
+        "basePriceINR": 8000,
+        "basePriceUSD": 119,
+        "features": [
+            "Modern Creative Layout",
+            "About Me Section",
+            "Projects Gallery",
+            "Resume / CV Download",
+            "Interactive Contact Form",
+            "Social Profiles Linkage",
+            "Full Mobile Optimization"
+        ]
+    },
+    {
+        "id": "cat-92b412",
+        "name": "E-Commerce Storefront",
+        "classification": "Website – E-Commerce",
+        "desc": "Online digital shopping store with catalog, cart, and payment gateway readiness.",
+        "referenceUrl": "https://shopify.com",
+        "enableOneTime": False,
+        "enableMonthly": True,
+        "enableAnnual": True,
+        "priceOneTimeINR": 28000,
+        "priceOneTimeUSD": 450,
+        "priceMonthlyINR": 2800,
+        "priceMonthlyUSD": 45,
+        "priceAnnualINR": 28000,
+        "priceAnnualUSD": 450,
+        "basePriceINR": 28000,
+        "basePriceUSD": 450,
+        "features": [
+            "Product Catalog & Categories",
+            "Interactive Shopping Cart",
+            "Razorpay / Stripe Integration",
+            "Customer Checkout Flow",
+            "Order Confirmation Email",
+            "Inventory Tracker & Search",
+            "Customer Review System"
+        ]
+    },
+    {
+        "id": "cat-7d1a33",
+        "name": "Custom SaaS Platform",
+        "classification": "Software Application",
+        "desc": "Multi-tenant cloud platform with subscription billing, REST APIs, and role access.",
+        "referenceUrl": "https://linear.app",
+        "enableOneTime": True,
+        "enableMonthly": True,
+        "enableAnnual": True,
+        "priceOneTimeINR": 75000,
+        "priceOneTimeUSD": 1000,
+        "priceMonthlyINR": 7500,
+        "priceMonthlyUSD": 100,
+        "priceAnnualINR": 75000,
+        "priceAnnualUSD": 1000,
+        "basePriceINR": 75000,
+        "basePriceUSD": 1000,
+        "features": [
+            "Multi-Tenant Architecture",
+            "JWT & Role-Based Access Control",
+            "Subscription Billing Integration",
+            "Customer Admin Dashboard",
+            "Secure RESTful APIs",
+            "Automated Email Alerts",
+            "99.9% Uptime SLA Setup"
+        ]
+    },
+    {
+        "id": "cat-5e9210",
+        "name": "School / College Management Portal",
+        "classification": "Software Application",
+        "desc": "Educational portal for student admission, fee tracking, faculty, and examinations.",
+        "referenceUrl": "https://edmodo.com",
+        "enableOneTime": True,
+        "enableMonthly": True,
+        "enableAnnual": False,
+        "priceOneTimeINR": 45000,
+        "priceOneTimeUSD": 600,
+        "priceMonthlyINR": 4500,
+        "priceMonthlyUSD": 60,
+        "priceAnnualINR": 45000,
+        "priceAnnualUSD": 600,
+        "basePriceINR": 45000,
+        "basePriceUSD": 600,
+        "features": [
+            "Student Information Database",
+            "Attendance Tracking System",
+            "Fee Management & Receipts",
+            "Staff & Teacher Portal",
+            "Exam & Grade Card Generator",
+            "Parent Notification Engine",
+            "ID Card & Hall Ticket Module"
+        ]
+    },
+    {
+        "id": "cat-4f8821",
+        "name": "Restaurant & Food Delivery App",
+        "classification": "Mobile Application",
+        "desc": "Online table booking, interactive menu, and live order tracking system.",
+        "referenceUrl": "https://zomato.com",
+        "enableOneTime": True,
+        "enableMonthly": True,
+        "enableAnnual": True,
+        "priceOneTimeINR": 32000,
+        "priceOneTimeUSD": 450,
+        "priceMonthlyINR": 3200,
+        "priceMonthlyUSD": 45,
+        "priceAnnualINR": 32000,
+        "priceAnnualUSD": 450,
+        "basePriceINR": 32000,
+        "basePriceUSD": 450,
+        "features": [
+            "Digital Menu with Categories",
+            "Online Ordering & Delivery Flow",
+            "Table Reservation System",
+            "Live Delivery Tracking UI",
+            "Multi-Payment Integration",
+            "Promo Codes & Discounts Engine",
+            "Kitchen Display View"
+        ]
+    }
+]
+
+DEFAULT_ADDONS = [
+    {
+        "id": "add-ai-voice",
+        "name": "AI Voice Assistant",
+        "desc": "Conversational voice agent for automated lead qualification",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "USD",
+        "price": 20.0,
+        "billingCycle": "Monthly",
+        "status": "active"
+    },
+    {
+        "id": "add-adv-analytics",
+        "name": "Advanced Analytics",
+        "desc": "Comprehensive funnel tracking, heatmaps, and executive reporting",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "USD",
+        "price": 100.0,
+        "billingCycle": "Annually",
+        "status": "active"
+    },
+    {
+        "id": "add-auto-attend",
+        "name": "Automated Attendance",
+        "desc": "Biometric, RFID, and geo-fenced team attendance tracking",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "INR",
+        "price": 2000.0,
+        "billingCycle": "Monthly",
+        "status": "active"
+    },
+    {
+        "id": "add-whatsapp-suite",
+        "name": "WhatsApp Automation Suite",
+        "desc": "Automated WhatsApp business alerts, order updates, and chat bots",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "INR",
+        "price": 1500.0,
+        "billingCycle": "Monthly",
+        "status": "active"
+    },
+    {
+        "id": "add-priority-support",
+        "name": "Dedicated Priority Support & SLA",
+        "desc": "24/7 priority emergency response with 1-hour ticket SLA guarantee",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "USD",
+        "price": 300.0,
+        "billingCycle": "Annually",
+        "status": "active"
+    },
+    {
+        "id": "add-google-auth",
+        "name": "Google Sign-In & Auth Integration",
+        "desc": "One-click Google authentication and user session management",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "INR",
+        "price": 2000.0,
+        "billingCycle": "One-Time",
+        "status": "active"
+    },
+    {
+        "id": "add-payment-gateway",
+        "name": "Payment Gateway Integration",
+        "desc": "Stripe, Razorpay, or PayPal checkout gateway setup",
+        "categoryId": "all",
+        "categoryName": "All Web Applications",
+        "currency": "USD",
+        "price": 99.0,
+        "billingCycle": "One-Time",
+        "status": "active"
+    }
+]
+
+DEFAULT_COMMISSION_SLABS_INR = [
+    {"id": "slab-inr-1", "title": "Starter Solutions", "minPrice": 0, "maxPrice": 25000, "rate": 7.0},
+    {"id": "slab-inr-2", "title": "Growth Enterprise", "minPrice": 25001, "maxPrice": 60000, "rate": 8.5},
+    {"id": "slab-inr-3", "title": "Platinum Scale", "minPrice": 60001, "maxPrice": 99999999, "rate": 10.0}
+]
+
+DEFAULT_COMMISSION_SLABS_USD = [
+    {"id": "slab-usd-1", "title": "Global Starter", "minPrice": 0, "maxPrice": 350, "rate": 7.0},
+    {"id": "slab-usd-2", "title": "Global Growth", "minPrice": 351, "maxPrice": 800, "rate": 8.5},
+    {"id": "slab-usd-3", "title": "Global Enterprise", "minPrice": 801, "maxPrice": 99999999, "rate": 10.0}
+]
+
+DEFAULT_USERS = [
+    {
+        "id": "usr-adm-001",
+        "name": "Laxminivas Morishetty",
+        "email": ROOT_ADMIN_EMAIL,
+        "username": "laxminivas",
+        "role": "admin",
+        "authMethod": "google",
+        "status": "active",
+        "responsibilities": ["Full System Administration"]
+    }
+]
+
+# -------------------------------------------------------------
+# SHARDED MULTI-MODULE DATABASE MANAGER (ENVIRONMENT-ISOLATED)
 # -------------------------------------------------------------
 from database_manager import DatabaseManager, MODULES, SOFT_LIMIT_BYTES, HARD_LIMIT_BYTES
 
-db_manager = DatabaseManager(base_dir=BASE_DIR, soft_limit_bytes=SOFT_LIMIT_BYTES, hard_limit_bytes=HARD_LIMIT_BYTES)
-if os.path.exists(DB_FILE):
-    try:
-        db_manager.migrate_from_json(DB_FILE)
-    except Exception as e:
-        print(f"Notice during migration check: {e}")
+db_manager = DatabaseManager(
+    base_dir=BASE_DIR,
+    db_root=DATABASE_DIR,
+    soft_limit_bytes=SOFT_LIMIT_BYTES,
+    hard_limit_bytes=HARD_LIMIT_BYTES,
+    env=Config.ENV
+)
 
 def load_db():
     try:
         state = db_manager.get_full_state()
-        if state and state.get('users'):
+        if state and (state.get('categories') or state.get('users')):
             return state
     except Exception as e:
         print(f"Notice: db_manager fallback: {e}")
@@ -91,7 +402,7 @@ def save_db(data):
     except Exception as e:
         print(f"Error persisting to db_manager: {e}")
 
-    # 2. Atomic mirror to database.json for backward compatibility (with Windows OneDrive lock resilience)
+    # 2. Atomic mirror to DB_FILE for backward compatibility (with Windows lock resilience)
     temp_file = f"{DB_FILE}.tmp"
     try:
         with open(temp_file, 'w', encoding='utf-8') as f:
@@ -108,6 +419,30 @@ def save_db(data):
                     pass
     except Exception as e:
         print(f"Notice mirroring to {DB_FILE}: {e}")
+
+# Safe seed initialization for development / newly mounted database
+def init_db_if_empty():
+    state = db_manager.get_full_state()
+    needs_save = False
+    if not state.get('categories'):
+        state['categories'] = list(DEFAULT_CATEGORIES)
+        needs_save = True
+    if not state.get('addons'):
+        state['addons'] = list(DEFAULT_ADDONS)
+        needs_save = True
+    if not state.get('commissionSlabsINR'):
+        state['commissionSlabsINR'] = list(DEFAULT_COMMISSION_SLABS_INR)
+        needs_save = True
+    if not state.get('commissionSlabsUSD'):
+        state['commissionSlabsUSD'] = list(DEFAULT_COMMISSION_SLABS_USD)
+        needs_save = True
+    if not state.get('users'):
+        state['users'] = list(DEFAULT_USERS)
+        needs_save = True
+    if needs_save:
+        save_db(state)
+
+init_db_if_empty()
 
 
 # -------------------------------------------------------------
@@ -336,15 +671,55 @@ def api_state():
 def api_categories():
     db = load_db()
     if request.method == 'GET':
-        return jsonify(db.get('categories', []))
+        cats = db.get('categories', [])
+        normalized = []
+        for c in cats:
+            item = dict(c)
+            # Default payment model enablement if missing
+            if 'enableOneTime' not in item and 'enableMonthly' not in item and 'enableAnnual' not in item:
+                item['enableOneTime'] = True
+                item['enableMonthly'] = False
+                item['enableAnnual'] = False
+                if item.get('name') == 'Basic Business Website':
+                    item['enableMonthly'] = True
+                    item['enableAnnual'] = True
+            else:
+                item['enableOneTime'] = bool(item.get('enableOneTime', True))
+                item['enableMonthly'] = bool(item.get('enableMonthly', False))
+                item['enableAnnual'] = bool(item.get('enableAnnual', False))
+
+            base_inr = int(item.get('basePriceINR', 0))
+            base_usd = int(item.get('basePriceUSD', 0))
+
+            item['priceOneTimeINR'] = int(item.get('priceOneTimeINR') or base_inr)
+            item['priceOneTimeUSD'] = int(item.get('priceOneTimeUSD') or base_usd)
+            item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') or (round(base_inr / 10) if base_inr else 0))
+            item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') or (round(base_usd / 10) if base_usd else 0))
+            item['priceAnnualINR'] = int(item.get('priceAnnualINR') or base_inr)
+            item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') or base_usd)
+            item['basePriceINR'] = item['priceOneTimeINR']
+            item['basePriceUSD'] = item['priceOneTimeUSD']
+            normalized.append(item)
+        return jsonify(normalized)
 
     payload = request.get_json() or {}
     name = payload.get('name', '').strip()
     classification = payload.get('classification', 'Website').strip()
     desc = payload.get('desc', '').strip()
     ref_url = payload.get('referenceUrl', '').strip()
-    base_inr = int(payload.get('basePriceINR') or 0)
-    base_usd = int(payload.get('basePriceUSD') or 0)
+
+    enable_onetime = bool(payload.get('enableOneTime', True))
+    enable_monthly = bool(payload.get('enableMonthly', False))
+    enable_annual = bool(payload.get('enableAnnual', False))
+    if not (enable_onetime or enable_monthly or enable_annual):
+        enable_onetime = True
+
+    price_onetime_inr = int(payload.get('priceOneTimeINR') or payload.get('basePriceINR') or 0)
+    price_onetime_usd = int(payload.get('priceOneTimeUSD') or payload.get('basePriceUSD') or 0)
+    price_monthly_inr = int(payload.get('priceMonthlyINR') or (round(price_onetime_inr / 10) if price_onetime_inr else 0))
+    price_monthly_usd = int(payload.get('priceMonthlyUSD') or (round(price_onetime_usd / 10) if price_onetime_usd else 0))
+    price_annual_inr = int(payload.get('priceAnnualINR') or price_onetime_inr or 0)
+    price_annual_usd = int(payload.get('priceAnnualUSD') or price_onetime_usd or 0)
     features = payload.get('features') or []
 
     if not name:
@@ -360,8 +735,17 @@ def api_categories():
         "classification": classification,
         "desc": desc,
         "referenceUrl": ref_url,
-        "basePriceINR": base_inr,
-        "basePriceUSD": base_usd,
+        "enableOneTime": enable_onetime,
+        "enableMonthly": enable_monthly,
+        "enableAnnual": enable_annual,
+        "priceOneTimeINR": price_onetime_inr,
+        "priceOneTimeUSD": price_onetime_usd,
+        "priceMonthlyINR": price_monthly_inr,
+        "priceMonthlyUSD": price_monthly_usd,
+        "priceAnnualINR": price_annual_inr,
+        "priceAnnualUSD": price_annual_usd,
+        "basePriceINR": price_onetime_inr,
+        "basePriceUSD": price_onetime_usd,
         "features": features
     }
 
@@ -380,17 +764,39 @@ def api_category_item(cat_id):
 
     if request.method == 'PUT':
         payload = request.get_json() or {}
-        categories[idx]['name'] = payload.get('name', categories[idx]['name']).strip()
-        categories[idx]['classification'] = payload.get('classification', categories[idx].get('classification', 'Website'))
-        categories[idx]['desc'] = payload.get('desc', categories[idx]['desc']).strip()
+        cat = categories[idx]
+        cat['name'] = payload.get('name', cat['name']).strip()
+        cat['classification'] = payload.get('classification', cat.get('classification', 'Website'))
+        cat['desc'] = payload.get('desc', cat.get('desc', '')).strip()
         if 'referenceUrl' in payload:
-            categories[idx]['referenceUrl'] = payload.get('referenceUrl', '').strip()
-        categories[idx]['basePriceINR'] = int(payload.get('basePriceINR', categories[idx].get('basePriceINR', 0)))
-        categories[idx]['basePriceUSD'] = int(payload.get('basePriceUSD', categories[idx].get('basePriceUSD', 0)))
+            cat['referenceUrl'] = payload.get('referenceUrl', '').strip()
+
+        if 'enableOneTime' in payload or 'enableMonthly' in payload or 'enableAnnual' in payload:
+            cat['enableOneTime'] = bool(payload.get('enableOneTime', cat.get('enableOneTime', True)))
+            cat['enableMonthly'] = bool(payload.get('enableMonthly', cat.get('enableMonthly', False)))
+            cat['enableAnnual'] = bool(payload.get('enableAnnual', cat.get('enableAnnual', False)))
+            if not (cat['enableOneTime'] or cat['enableMonthly'] or cat['enableAnnual']):
+                cat['enableOneTime'] = True
+
+        if 'priceOneTimeINR' in payload or 'basePriceINR' in payload:
+            cat['priceOneTimeINR'] = int(payload.get('priceOneTimeINR') or payload.get('basePriceINR') or 0)
+            cat['basePriceINR'] = cat['priceOneTimeINR']
+        if 'priceOneTimeUSD' in payload or 'basePriceUSD' in payload:
+            cat['priceOneTimeUSD'] = int(payload.get('priceOneTimeUSD') or payload.get('basePriceUSD') or 0)
+            cat['basePriceUSD'] = cat['priceOneTimeUSD']
+        if 'priceMonthlyINR' in payload:
+            cat['priceMonthlyINR'] = int(payload.get('priceMonthlyINR', 0))
+        if 'priceMonthlyUSD' in payload:
+            cat['priceMonthlyUSD'] = int(payload.get('priceMonthlyUSD', 0))
+        if 'priceAnnualINR' in payload:
+            cat['priceAnnualINR'] = int(payload.get('priceAnnualINR', 0))
+        if 'priceAnnualUSD' in payload:
+            cat['priceAnnualUSD'] = int(payload.get('priceAnnualUSD', 0))
+
         if 'features' in payload:
-            categories[idx]['features'] = payload['features']
+            cat['features'] = payload['features']
         save_db(db)
-        return jsonify({"success": True, "category": categories[idx]})
+        return jsonify({"success": True, "category": cat})
 
     elif request.method == 'DELETE':
         deleted = categories.pop(idx)
@@ -833,8 +1239,12 @@ def api_addons():
     if currency not in ['INR', 'USD']:
         currency = 'INR'
 
-    billing_cycle = payload.get('billingCycle', 'Monthly').capitalize()
-    if billing_cycle not in ['Monthly', 'Annually']:
+    raw_cycle = str(payload.get('billingCycle', 'Monthly')).strip().lower()
+    if 'one' in raw_cycle:
+        billing_cycle = 'One-Time'
+    elif 'ann' in raw_cycle or 'year' in raw_cycle:
+        billing_cycle = 'Annually'
+    else:
         billing_cycle = 'Monthly'
 
     category_id = payload.get('categoryId', 'all')
@@ -878,8 +1288,12 @@ def api_addon_item(add_id):
         if currency not in ['INR', 'USD']:
             currency = 'INR'
 
-        billing_cycle = payload.get('billingCycle', addons[idx].get('billingCycle', 'Monthly')).capitalize()
-        if billing_cycle not in ['Monthly', 'Annually']:
+        raw_cycle = str(payload.get('billingCycle', addons[idx].get('billingCycle', 'Monthly'))).strip().lower()
+        if 'one' in raw_cycle:
+            billing_cycle = 'One-Time'
+        elif 'ann' in raw_cycle or 'year' in raw_cycle:
+            billing_cycle = 'Annually'
+        else:
             billing_cycle = 'Monthly'
 
         category_id = payload.get('categoryId', addons[idx].get('categoryId', 'all'))
@@ -911,7 +1325,7 @@ def api_addon_item(add_id):
 
 
 # -------------------------------------------------------------
-# QUOTATIONS API (GST 18%, Strict Lifecycle, Permanent Records)
+# QUOTATIONS API (Multi-Payment Models, GST 18%, Permanent Records)
 # -------------------------------------------------------------
 @app.route('/api/quotations', methods=['GET', 'POST'])
 def api_quotations():
@@ -933,66 +1347,130 @@ def api_quotations():
     if currency not in ['INR', 'USD']:
         currency = 'INR'
 
-    base_price = float(payload.get('basePrice', 0))
+    # Determine selected payment model for main website / bundle
+    raw_period = str(payload.get('selectedPaymentPeriod') or payload.get('billingCadence') or 'One-Time').strip().lower()
+    if 'month' in raw_period:
+        selected_payment_period = 'Monthly'
+    elif 'ann' in raw_period or 'year' in raw_period:
+        selected_payment_period = 'Annually'
+    else:
+        selected_payment_period = 'One-Time'
+
+    website_price = float(payload.get('websitePrice', payload.get('basePrice', 0)))
     domain_amount = float(payload.get('domainAmount', 0))
     addons = payload.get('addons', [])
 
-    # 1. Main Web Application – One-Time Payment Cost
-    one_time_subtotal = round(base_price + domain_amount, 2)
-    one_time_gst = round(one_time_subtotal * 0.18, 2) if one_time_subtotal > 0 else 0.0
-    one_time_total = round(one_time_subtotal + one_time_gst, 2) if one_time_subtotal > 0 else 0.0
+    # Split website cost according to its payment model
+    website_onetime = website_price if selected_payment_period == 'One-Time' else 0.0
+    website_monthly = website_price if selected_payment_period == 'Monthly' else 0.0
+    website_annual = website_price if selected_payment_period == 'Annually' else 0.0
 
-    # 2. Optional Add-ons – Monthly Recurring Cost
-    monthly_addons = [a for a in addons if str(a.get('billingCycle', '')).capitalize() == 'Monthly']
-    monthly_inr = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
-    monthly_usd = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+    # Categorize add-ons strictly by billing cycle
+    onetime_addons = []
+    monthly_addons = []
+    annual_addons = []
+
+    for a in addons:
+        cyc = str(a.get('billingCycle', '')).strip().lower()
+        if 'one' in cyc:
+            onetime_addons.append(a)
+        elif 'ann' in cyc or 'year' in cyc:
+            annual_addons.append(a)
+        else:
+            monthly_addons.append(a)
+
+    # 1. ONE-TIME CHARGES
+    onetime_addons_inr = round(sum(float(a.get('price', 0)) for a in onetime_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    onetime_addons_usd = round(sum(float(a.get('price', 0)) for a in onetime_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+
+    base_onetime = website_onetime + domain_amount
+    if currency == 'INR':
+        onetime_inr = round(base_onetime + onetime_addons_inr, 2)
+        onetime_usd = onetime_addons_usd
+    else:
+        onetime_usd = round(base_onetime + onetime_addons_usd, 2)
+        onetime_inr = onetime_addons_inr
+
+    onetime_gst_inr = round(onetime_inr * 0.18, 2) if onetime_inr > 0 else 0.0
+    onetime_gst_usd = round(onetime_usd * 0.18, 2) if onetime_usd > 0 else 0.0
+    onetime_total_inr = round(onetime_inr + onetime_gst_inr, 2)
+    onetime_total_usd = round(onetime_usd + onetime_gst_usd, 2)
+
+    # 2. MONTHLY RECURRING CHARGES
+    monthly_addons_inr = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    monthly_addons_usd = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+
+    if currency == 'INR':
+        monthly_inr = round(website_monthly + monthly_addons_inr, 2)
+        monthly_usd = monthly_addons_usd
+    else:
+        monthly_usd = round(website_monthly + monthly_addons_usd, 2)
+        monthly_inr = monthly_addons_inr
+
     monthly_gst_inr = round(monthly_inr * 0.18, 2) if monthly_inr > 0 else 0.0
     monthly_gst_usd = round(monthly_usd * 0.18, 2) if monthly_usd > 0 else 0.0
-    monthly_total_inr = round(monthly_inr + monthly_gst_inr, 2) if monthly_inr > 0 else 0.0
-    monthly_total_usd = round(monthly_usd + monthly_gst_usd, 2) if monthly_usd > 0 else 0.0
+    monthly_total_inr = round(monthly_inr + monthly_gst_inr, 2)
+    monthly_total_usd = round(monthly_usd + monthly_gst_usd, 2)
 
-    # 3. Optional Add-ons – Annual Recurring Cost
-    annual_addons = [a for a in addons if str(a.get('billingCycle', '')).capitalize() in ['Annually', 'Annual', 'Yearly']]
-    annual_inr = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
-    annual_usd = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+    # 3. ANNUAL RECURRING CHARGES
+    annual_addons_inr = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    annual_addons_usd = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+
+    if currency == 'INR':
+        annual_inr = round(website_annual + annual_addons_inr, 2)
+        annual_usd = annual_addons_usd
+    else:
+        annual_usd = round(website_annual + annual_addons_usd, 2)
+        annual_inr = annual_addons_inr
+
     annual_gst_inr = round(annual_inr * 0.18, 2) if annual_inr > 0 else 0.0
     annual_gst_usd = round(annual_usd * 0.18, 2) if annual_usd > 0 else 0.0
-    annual_total_inr = round(annual_inr + annual_gst_inr, 2) if annual_inr > 0 else 0.0
-    annual_total_usd = round(annual_usd + annual_gst_usd, 2) if annual_usd > 0 else 0.0
+    annual_total_inr = round(annual_inr + annual_gst_inr, 2)
+    annual_total_usd = round(annual_usd + annual_gst_usd, 2)
 
-    # Internal Commission: calculated strictly on the One-Time Application subtotal (excluding domain)
+    # Formatted Strings
+    one_time_total_str = payload.get('oneTimeTotalStr')
+    if not one_time_total_str:
+        if onetime_total_usd > 0 and onetime_total_inr > 0:
+            one_time_total_str = f"${onetime_total_usd:,.2f} + ₹{onetime_total_inr:,.2f} (One-Time)"
+        elif onetime_total_usd > 0:
+            one_time_total_str = f"${onetime_total_usd:,.2f} (One-Time)"
+        elif onetime_total_inr > 0:
+            one_time_total_str = f"₹{onetime_total_inr:,.2f} (One-Time)"
+        else:
+            one_time_total_str = "$0.00" if currency == 'USD' else "₹0"
+
+    monthly_total_str = payload.get('monthlyTotalStr')
+    if not monthly_total_str:
+        if monthly_total_usd > 0 and monthly_total_inr > 0:
+            monthly_total_str = f"${monthly_total_usd:,.2f} + ₹{monthly_total_inr:,.2f} / Month"
+        elif monthly_total_usd > 0:
+            monthly_total_str = f"${monthly_total_usd:,.2f} / Month"
+        elif monthly_total_inr > 0:
+            monthly_total_str = f"₹{monthly_total_inr:,.2f} / Month"
+        else:
+            monthly_total_str = "$0 / Month" if currency == 'USD' else "₹0 / Month"
+
+    annual_total_str = payload.get('annualTotalStr')
+    if not annual_total_str:
+        if annual_total_usd > 0 and annual_total_inr > 0:
+            annual_total_str = f"${annual_total_usd:,.2f} + ₹{annual_total_inr:,.2f} / Year"
+        elif annual_total_usd > 0:
+            annual_total_str = f"${annual_total_usd:,.2f} / Year"
+        elif annual_total_inr > 0:
+            annual_total_str = f"₹{annual_total_inr:,.2f} / Year"
+        else:
+            annual_total_str = "$0 / Year" if currency == 'USD' else "₹0 / Year"
+
+    # Commission calculated on the primary website contract value (in quotation currency)
     slabs = db.get('commissionSlabsUSD', []) if currency == 'USD' else db.get('commissionSlabsINR', [])
-    matched_slab = next((s for s in slabs if base_price >= s.get('minPrice', 0) and base_price <= s.get('maxPrice', 99999999)), None)
+    matched_slab = next((s for s in slabs if website_price >= s.get('minPrice', 0) and website_price <= s.get('maxPrice', 99999999)), None)
     rate = min(10.0, matched_slab.get('rate', 7.0)) if matched_slab else 7.0
-    commission_amount = round((base_price * rate) / 100, 2)
+    commission_amount = round((website_price * rate) / 100, 2)
 
     cat_id = payload.get('categoryId', '')
     cat = next((c for c in db.get('categories', []) if c['id'] == cat_id), None)
     reference_url = cat.get('referenceUrl', '') if cat else payload.get('referenceUrl', '')
-
-    # Monthly formatted string
-    monthly_total_str = payload.get('monthlyTotalStr')
-    if not monthly_total_str:
-        if monthly_usd > 0 and monthly_inr > 0:
-            monthly_total_str = f"${monthly_usd:,.2f} + ₹{monthly_inr:,.2f} / Month"
-        elif monthly_usd > 0:
-            monthly_total_str = f"${monthly_usd:,.2f} / Month"
-        elif monthly_inr > 0:
-            monthly_total_str = f"₹{monthly_inr:,.2f} / Month"
-        else:
-            monthly_total_str = "$0 / Month" if currency == 'USD' else "₹0 / Month"
-
-    # Annual formatted string
-    annual_total_str = payload.get('annualTotalStr')
-    if not annual_total_str:
-        if annual_usd > 0 and annual_inr > 0:
-            annual_total_str = f"${annual_usd:,.2f} + ₹{annual_inr:,.2f} / Year"
-        elif annual_usd > 0:
-            annual_total_str = f"${annual_usd:,.2f} / Year"
-        elif annual_inr > 0:
-            annual_total_str = f"₹{annual_inr:,.2f} / Year"
-        else:
-            annual_total_str = "$0 / Year" if currency == 'USD' else "₹0 / Year"
 
     new_quote = {
         "id": f"qt-{uuid.uuid4().hex[:6]}",
@@ -1003,16 +1481,24 @@ def api_quotations():
         "categoryName": payload.get('categoryName', ''),
         "referenceUrl": reference_url,
         "currency": currency,
-        "paymentType": "One-Time Payment",
-        
-        # 1. Main Application One-Time Investment
-        "basePrice": base_price,
+        "selectedPaymentPeriod": selected_payment_period,
+        "billingCadence": selected_payment_period,
+        "websitePrice": website_price,
+        "basePrice": website_price,
         "domainAmount": domain_amount,
-        "oneTimeSubtotal": one_time_subtotal,
-        "oneTimeGST": one_time_gst,
-        "oneTimeTotal": one_time_total,
-        
-        # 2. Monthly Recurring
+
+        # 1. One-Time Breakdown
+        "websiteOneTime": website_onetime,
+        "onetimeAddons": onetime_addons,
+        "oneTimeSubtotal": onetime_usd if currency == 'USD' else onetime_inr,
+        "oneTimeGST": onetime_gst_usd if currency == 'USD' else onetime_gst_inr,
+        "oneTimeTotal": onetime_total_usd if currency == 'USD' else onetime_total_inr,
+        "oneTimeTotal_INR": onetime_total_inr,
+        "oneTimeTotal_USD": onetime_total_usd,
+        "oneTimeTotalStr": one_time_total_str,
+
+        # 2. Monthly Recurring Breakdown
+        "websiteMonthly": website_monthly,
         "monthlyAddons": monthly_addons,
         "monthlyINR": monthly_inr,
         "monthlyUSD": monthly_usd,
@@ -1021,8 +1507,9 @@ def api_quotations():
         "monthlyTotal_INR": monthly_total_inr,
         "monthlyTotal_USD": monthly_total_usd,
         "monthlyTotalStr": monthly_total_str,
-        
-        # 3. Annual Recurring
+
+        # 3. Annual Recurring Breakdown
+        "websiteAnnual": website_annual,
         "annualAddons": annual_addons,
         "annualINR": annual_inr,
         "annualUSD": annual_usd,
@@ -1035,11 +1522,11 @@ def api_quotations():
         # Full Addons array
         "addons": addons,
 
-        # Standard fallback fields
-        "subtotal": one_time_subtotal,
+        # Fallback compatibility fields
+        "subtotal": onetime_usd if currency == 'USD' else onetime_inr,
         "gstRate": 18.0,
-        "gstAmount": one_time_gst,
-        "totalPrice": one_time_total,
+        "gstAmount": onetime_gst_usd if currency == 'USD' else onetime_gst_inr,
+        "totalPrice": onetime_total_usd if currency == 'USD' else onetime_total_inr,
         "commissionRate": rate,
         "commissionAmount": commission_amount,
         "commExecutiveName": payload.get('commExecutiveName', 'Client Communication Exec'),
@@ -1048,7 +1535,7 @@ def api_quotations():
         "requirementsFiles": payload.get('requirementsFiles', []),
         "status": payload.get('status', 'Generated'),
         "assignmentStatus": "none",
-        "terms": payload.get('terms', "Main application cost is a one-time payment. Selected optional add-on subscriptions are billed on their respective monthly or annual recurring schedules. All prices are subject to 18% GST."),
+        "terms": payload.get('terms', "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST."),
         "createdAt": today_str,
         "updatedAt": today_str
     }

@@ -45,12 +45,26 @@ _DB_LOCK = threading.RLock()
 
 
 class DatabaseManager:
-    def __init__(self, base_dir: str = None, soft_limit_bytes: int = SOFT_LIMIT_BYTES, hard_limit_bytes: int = HARD_LIMIT_BYTES):
+    def __init__(self, base_dir: str = None, db_root: str = None, soft_limit_bytes: int = SOFT_LIMIT_BYTES, hard_limit_bytes: int = HARD_LIMIT_BYTES, env: str = None):
         self.base_dir = base_dir or os.path.dirname(os.path.abspath(__file__))
-        self.db_root = os.path.join(self.base_dir, 'database')
+        self.env = (env or os.environ.get('APP_ENV', 'development')).lower()
+        if db_root:
+            self.db_root = db_root
+        else:
+            try:
+                from config import Config
+                self.db_root = Config.DATABASE_DIR
+            except Exception:
+                db_folder = 'database_prod' if self.env == 'production' else 'database_dev'
+                self.db_root = os.path.join(self.base_dir, db_folder)
+
         self.soft_limit_bytes = soft_limit_bytes
         self.hard_limit_bytes = hard_limit_bytes
         self.catalog_json_path = os.path.join(self.db_root, 'system', 'master_catalog.json')
+
+        # Safety validation: development must NEVER target production
+        if self.env == 'development' and 'database_prod' in os.path.normpath(self.db_root).lower():
+            raise RuntimeError(f"Safety Violation: Development environment cannot mount production database: {self.db_root}")
 
         # Initialize directory tree and master catalog
         self.init_directories()

@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "shard_id": "marketing_001.json",
+    "module": "marketing",
+    "sequence": 1,
+    "is_active": true,
+    "format": "JSON",
+    "updated_at": "2026-11-12 19:02:16",
+    "record_count": 6,
+    "checksum": "e1526c61e0312a45bb924c0ab566e653c5d30154e32e2626e7728750aae69fe7"
+  },
+  "records": [
+    {
+      "id": "slab-inr-1",
+      "title": "Starter INR Deals",
+      "minPrice": 10000,
+      "maxPrice": 15000,
+      "rate": 7.0,
+      "_entity_type": "commissionSlabsINR"
+    },
+    {
+      "id": "slab-inr-2",
+      "title": "Growth INR Deals",
+      "minPrice": 15001,
+      "maxPrice": 25000,
+      "rate": 8.5,
+      "_entity_type": "commissionSlabsINR"
+    },
+    {
+      "id": "slab-inr-3",
+      "title": "Enterprise INR Deals",
+      "minPrice": 25001,
+      "maxPrice": 99999999,
+      "rate": 10.0,
+      "_entity_type": "commissionSlabsINR"
+    },
+    {
+      "id": "slab-usd-1",
+      "title": "Starter Foreign USD",
+      "minPrice": 100,
+      "maxPrice": 200,
+      "rate": 7.0,
+      "_entity_type": "commissionSlabsUSD"
+    },
+    {
+      "id": "slab-usd-2",
+      "title": "Growth Foreign USD",
+      "minPrice": 201,
+      "maxPrice": 400,
+      "rate": 8.5,
+      "_entity_type": "commissionSlabsUSD"
+    },
+    {
+      "id": "slab-usd-3",
+      "title": "Enterprise Foreign USD",
+      "minPrice": 401,
+      "maxPrice": 9999999,
+      "rate": 10.0,
+      "_entity_type": "commissionSlabsUSD"
+    }
+  ]
+}
