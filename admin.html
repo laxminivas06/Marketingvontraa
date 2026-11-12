@@ -957,6 +957,71 @@
     </div>
   </div>
 
+  <!-- OPTIONAL ADD-ON MODAL (Monthly / Annual Recurring) -->
+  <div class="modal-backdrop" id="modal-addon">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="modal-addon-title">Configure Optional Add-on</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-addon')">&times;</button>
+      </div>
+      <form id="form-addon" onsubmit="saveAddon(event)">
+        <input type="hidden" id="addon-edit-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="addon-name">Add-on Name *</label>
+            <input type="text" id="addon-name" class="form-control" placeholder="e.g. AI Voice Assistant" required>
+          </div>
+          <div class="form-group">
+            <label for="addon-desc">Description (Optional)</label>
+            <textarea id="addon-desc" class="form-control" rows="2" placeholder="Brief technical deliverables or capabilities..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="addon-category-id">Target Web Application</label>
+            <select id="addon-category-id" class="form-control">
+              <option value="all">All Web Applications (Global Add-on)</option>
+              <!-- Dynamically populated categories -->
+            </select>
+            <small style="color: var(--slate-500); font-size: 0.75rem;">Associate this add-on with all applications or a specific application.</small>
+          </div>
+          <div style="background: var(--slate-50); padding: 1rem; border-radius: 8px; border: 1px solid var(--slate-200); margin-bottom: 1rem;">
+            <div style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.75rem;">Pricing & Billing Frequency Configuration</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="addon-currency">Currency *</label>
+                <select id="addon-currency" class="form-control" required>
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="addon-price">Price Amount *</label>
+                <input type="number" id="addon-price" class="form-control" required placeholder="20" min="0.01" step="any" style="font-family: var(--font-mono); font-weight: 700;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="addon-billing-cycle">Billing Cycle *</label>
+                <select id="addon-billing-cycle" class="form-control" required>
+                  <option value="Monthly">Monthly</option>
+                  <option value="Annually">Annually</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="addon-status">Status</label>
+            <select id="addon-status" class="form-control">
+              <option value="active">Active (Available to Marketing)</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-addon')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-addon">Save Add-on</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- 4. DEVELOPER ASSIGNMENT MODAL (With Active Project Count & Availability) -->
   <div class="modal-backdrop" id="modal-assign">
     <div class="modal-content" style="max-width: 650px;">
@@ -1257,7 +1322,8 @@
       const headingMap = {
         'overview': 'Dashboard Overview',
         'admin-users': 'System Administrators – Multi-Admin Management',
-        'categories': 'Category Management – Bulk Excel & References',
+        'categories': 'Web Application Management – One-Time Pricing & References',
+        'addons': 'Optional Add-ons Configuration – Monthly & Annual Recurring Pricing',
         'assignments': 'Pending Project Assignments',
         'slabs': 'Commission Slabs – Side-by-Side Layout',
         'marketing-users': 'Marketing Team Management',
@@ -1284,6 +1350,7 @@
       await API.syncState();
       await renderStats();
       renderCategories();
+      renderAddons();
       renderPendingAssignments();
       renderSlabsSideBySide();
       renderAdminUsers();
@@ -1325,15 +1392,26 @@
     }
 
     // -------------------------------------------------------------
-    // CATEGORIES WITH REFERENCE WEBSITES & EXCEL
+    // MAIN WEB APPLICATIONS WITH ONE-TIME PAYMENT & REFERENCES
     // -------------------------------------------------------------
     function renderCategories() {
       const tbody = document.getElementById('table-categories-body');
       tbody.innerHTML = '';
       const list = API.state.categories || [];
 
+      // Update target application dropdown in Add-on modal
+      const addonCatSelect = document.getElementById('addon-category-id');
+      if (addonCatSelect) {
+        const curVal = addonCatSelect.value;
+        addonCatSelect.innerHTML = '<option value="all">All Web Applications (Global Add-on)</option>';
+        list.forEach(c => {
+          addonCatSelect.innerHTML += `<option value="${c.id}">${API.escapeHtml(c.name)}</option>`;
+        });
+        if (curVal) addonCatSelect.value = curVal;
+      }
+
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--slate-400);">No categories created yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem; color: var(--slate-400);">No web applications created yet.</td></tr>`;
         return;
       }
 
@@ -1343,12 +1421,13 @@
         tr.innerHTML = `
           <td><strong>${API.escapeHtml(c.name)}</strong></td>
           <td><span class="pill pill-info">${c.classification || 'Website'}</span></td>
+          <td><span class="pill pill-active" style="font-size: 0.72rem; font-weight: 700;">One-Time Payment</span></td>
           <td>
             ${c.referenceUrl ? `<a href="${c.referenceUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">🔗 Preview Site</a>` : '<span style="color: var(--slate-400); font-size: 0.775rem;">None</span>'}
           </td>
           <td class="price-tag">₹${Number(c.basePriceINR).toLocaleString()}</td>
           <td class="price-tag">$${Number(c.basePriceUSD).toLocaleString()}</td>
-          <td style="max-width: 280px; font-size: 0.775rem; color: var(--slate-600);">${API.escapeHtml(feats)}</td>
+          <td style="max-width: 250px; font-size: 0.775rem; color: var(--slate-600);">${API.escapeHtml(feats)}</td>
           <td style="text-align: right; white-space: nowrap;">
             <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Delete</button>
           </td>
@@ -1423,6 +1502,143 @@
         }
       };
       reader.readAsArrayBuffer(file);
+    }
+
+    // -------------------------------------------------------------
+    // OPTIONAL ADD-ONS CONFIGURATION (Monthly / Annual Recurring)
+    // -------------------------------------------------------------
+    function renderAddons() {
+      const tbody = document.getElementById('table-addons-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const list = API.state.addons || [];
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--slate-400);">No optional add-ons configured yet. Click "+ Add New Add-on" above.</td></tr>`;
+        return;
+      }
+
+      list.forEach(a => {
+        const symbol = (a.currency || 'INR') === 'USD' ? '$' : '₹';
+        const formattedPrice = `${symbol}${Number(a.price || 0).toLocaleString()} / ${a.billingCycle || 'Monthly'}`;
+        const cyclePill = (a.billingCycle || 'Monthly') === 'Monthly' ? 
+          '<span class="pill pill-info" style="font-weight: 700;">Monthly</span>' : 
+          '<span class="pill pill-purple" style="font-weight: 700;">Annually</span>';
+        const statusPill = a.status === 'active' ? 
+          '<span class="pill pill-active">Active</span>' : 
+          '<span class="pill pill-inactive">Inactive</span>';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong>${API.escapeHtml(a.name)}</strong>
+            <div style="font-size: 0.75rem; color: var(--slate-500); margin-top: 0.2rem;">${API.escapeHtml(a.desc || 'No description provided')}</div>
+          </td>
+          <td>
+            <span style="font-size: 0.825rem; font-weight: 600; color: var(--slate-700);">${API.escapeHtml(a.categoryName || 'All Web Applications')}</span>
+          </td>
+          <td>${cyclePill}</td>
+          <td class="price-tag" style="font-size: 0.95rem;">${formattedPrice}</td>
+          <td>${statusPill}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" style="margin-right: 0.35rem;" onclick="openAddAddonModal('${a.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteAddon('${a.id}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openAddAddonModal(editId = null) {
+      // Ensure target application dropdown is populated
+      const addonCatSelect = document.getElementById('addon-category-id');
+      if (addonCatSelect) {
+        addonCatSelect.innerHTML = '<option value="all">All Web Applications (Global Add-on)</option>';
+        (API.state.categories || []).forEach(c => {
+          addonCatSelect.innerHTML += `<option value="${c.id}">${API.escapeHtml(c.name)}</option>`;
+        });
+      }
+
+      if (editId) {
+        const a = (API.state.addons || []).find(item => item.id === editId);
+        if (!a) return;
+        document.getElementById('modal-addon-title').innerText = 'Edit Optional Add-on';
+        document.getElementById('addon-edit-id').value = a.id;
+        document.getElementById('addon-name').value = a.name;
+        document.getElementById('addon-desc').value = a.desc || '';
+        document.getElementById('addon-category-id').value = a.categoryId || 'all';
+        document.getElementById('addon-currency').value = a.currency || 'INR';
+        document.getElementById('addon-price').value = a.price || '';
+        document.getElementById('addon-billing-cycle').value = a.billingCycle || 'Monthly';
+        document.getElementById('addon-status').value = a.status || 'active';
+        document.getElementById('btn-save-addon').innerText = 'Update Add-on';
+      } else {
+        document.getElementById('modal-addon-title').innerText = 'Configure Optional Add-on';
+        document.getElementById('addon-edit-id').value = '';
+        document.getElementById('addon-name').value = '';
+        document.getElementById('addon-desc').value = '';
+        document.getElementById('addon-category-id').value = 'all';
+        document.getElementById('addon-currency').value = 'INR';
+        document.getElementById('addon-price').value = '';
+        document.getElementById('addon-billing-cycle').value = 'Monthly';
+        document.getElementById('addon-status').value = 'active';
+        document.getElementById('btn-save-addon').innerText = 'Save Add-on';
+      }
+
+      API.openModal('modal-addon');
+    }
+
+    async function saveAddon(e) {
+      e.preventDefault();
+      const editId = document.getElementById('addon-edit-id').value;
+      const catSelect = document.getElementById('addon-category-id');
+      const catId = catSelect.value;
+      const catName = catSelect.options[catSelect.selectedIndex]?.text || 'All Web Applications';
+
+      const payload = {
+        name: document.getElementById('addon-name').value.trim(),
+        desc: document.getElementById('addon-desc').value.trim(),
+        categoryId: catId,
+        categoryName: catName,
+        currency: document.getElementById('addon-currency').value,
+        price: parseFloat(document.getElementById('addon-price').value) || 0,
+        billingCycle: document.getElementById('addon-billing-cycle').value,
+        status: document.getElementById('addon-status').value
+      };
+
+      if (!payload.name) {
+        alert('Please enter the add-on name');
+        return;
+      }
+      if (payload.price <= 0) {
+        alert('Please enter a valid positive price for the add-on');
+        return;
+      }
+
+      try {
+        if (editId) {
+          await API.request(`/api/addons/${editId}`, 'PUT', payload);
+          API.showToast('Add-on configuration updated');
+        } else {
+          await API.request('/api/addons', 'POST', payload);
+          API.showToast('Optional Add-on configured successfully');
+        }
+        API.closeModal('modal-addon');
+        await refreshAllData();
+      } catch (err) {
+        alert('Failed to save add-on: ' + err.message);
+      }
+    }
+
+    async function deleteAddon(id) {
+      if (!confirm('Are you sure you want to delete this optional add-on?')) return;
+      try {
+        await API.request(`/api/addons/${id}`, 'DELETE');
+        API.showToast('Add-on removed');
+        await refreshAllData();
+      } catch (err) {
+        alert('Failed to delete add-on: ' + err.message);
+      }
     }
 
     // -------------------------------------------------------------

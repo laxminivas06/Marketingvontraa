@@ -92,19 +92,19 @@
       <main class="content-area">
         <!-- 1. PRICE CALCULATOR & QUOTATION CREATION TAB -->
         <section id="tab-calculator" class="tab-pane">
-          <div class="section-header">
+          <div class="section-header" style="flex-wrap: wrap; gap: 0.75rem;">
             <div>
               <h2>Integrated Price Calculator & Quotation Creator</h2>
-              <p>Configure project requirements, billing cadence (Monthly in INR ₹ vs Annual), 18% GST calculation, and generate professional client proposals.</p>
+              <p>Configure project proposals with one-time application investments and recurring monthly or annual add-ons.</p>
             </div>
-            <!-- Cadence Toggle Switcher -->
-            <div class="cadence-toggle-group">
-              <button type="button" class="cadence-toggle-btn active" id="cadence-monthly-btn" onclick="setBillingCadence('Monthly')">
-                Monthly Pricing (INR ₹)
-              </button>
-              <button type="button" class="cadence-toggle-btn" id="cadence-annual-btn" onclick="setBillingCadence('Annual')">
-                Annual Pricing
-              </button>
+            <!-- Payment structure indicators -->
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="pill pill-primary" style="font-weight: 700; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                Web Applications: One-Time Payment
+              </span>
+              <span class="pill pill-purple" style="font-weight: 700; padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                Add-ons: Monthly or Annual Recurring
+              </span>
             </div>
           </div>
 
@@ -164,8 +164,11 @@
 
               <!-- Category Details Box with Reference Website Preview -->
               <div class="card" id="calc-cat-details-card" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
-                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
-                  <h4 id="cat-disp-name" style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">-</h4>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <h4 id="cat-disp-name" style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900); display: inline-block; margin-right: 0.5rem;">-</h4>
+                    <span class="pill pill-active" style="font-size: 0.7rem; font-weight: 700;">One-Time Payment</span>
+                  </div>
                   <div id="cat-disp-price" style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 800; color: var(--primary);">₹0</div>
                 </div>
                 <p id="cat-disp-desc" style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 0.75rem;">-</p>
@@ -206,40 +209,47 @@
 
               <!-- Optional Add-ons -->
               <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
                   <div>
                     <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900);">
                       3. Optional Add-ons
                     </h3>
-                    <p style="font-size: 0.775rem; color: var(--slate-500);">Manually configure custom client add-ons in INR (₹) or USD ($)</p>
+                    <p style="font-size: 0.775rem; color: var(--slate-500);">Select client add-ons or manually configure custom add-ons with monthly or annual billing</p>
                   </div>
                   <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-addon-form" onclick="openManualAddonForm()">
-                    + Add Optional Add-On
+                    + Add Custom Add-On
                   </button>
                 </div>
 
-                <!-- Form to manually enter an add-on (displays when clicking + Add Optional Add-On) -->
+                <!-- Form to manually enter a custom add-on -->
                 <div id="manual-addon-form-panel" style="display: none; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                    <strong style="font-size: 0.85rem; color: var(--slate-800);" id="manual-addon-form-header">Add Optional Add-On</strong>
+                    <strong style="font-size: 0.85rem; color: var(--slate-800);" id="manual-addon-form-header">Add Custom Add-On</strong>
                     <button type="button" class="modal-close-btn" style="font-size: 1.1rem; line-height: 1;" onclick="closeManualAddonForm()">&times;</button>
                   </div>
                   <input type="hidden" id="manual-addon-edit-index" value="-1">
-                  <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.75rem;">
+                  <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.75rem;">
                     <div class="form-group" style="margin-bottom: 0;">
                       <label for="manual-addon-name" style="font-size: 0.75rem; font-weight: 700;">Add-On Name *</label>
-                      <input type="text" id="manual-addon-name" class="form-control form-control-sm" placeholder="e.g. Google Sign-In Integration">
+                      <input type="text" id="manual-addon-name" class="form-control form-control-sm" placeholder="e.g. AI Voice Assistant">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                      <label for="manual-addon-currency" style="font-size: 0.75rem; font-weight: 700;">Price Currency *</label>
+                      <label for="manual-addon-billing-cycle" style="font-size: 0.75rem; font-weight: 700;">Billing Cycle *</label>
+                      <select id="manual-addon-billing-cycle" class="form-control form-control-sm">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Annually">Annually</option>
+                      </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="manual-addon-currency" style="font-size: 0.75rem; font-weight: 700;">Currency *</label>
                       <select id="manual-addon-currency" class="form-control form-control-sm">
                         <option value="INR">INR (₹)</option>
                         <option value="USD">USD ($)</option>
                       </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                      <label for="manual-addon-price" style="font-size: 0.75rem; font-weight: 700;">Add-On Price *</label>
-                      <input type="number" id="manual-addon-price" class="form-control form-control-sm" placeholder="2000" min="0" step="any">
+                      <label for="manual-addon-price" style="font-size: 0.75rem; font-weight: 700;">Price *</label>
+                      <input type="number" id="manual-addon-price" class="form-control form-control-sm" placeholder="20" min="0.01" step="any">
                     </div>
                   </div>
                   <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
@@ -248,8 +258,9 @@
                   </div>
                 </div>
 
+                <!-- Available and Selected Add-ons List -->
                 <div id="selected-addons-container">
-                  <div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">No optional add-ons added yet. Click "+ Add Optional Add-On" above.</div>
+                  <div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">Loading optional add-ons...</div>
                 </div>
               </div>
 
@@ -265,44 +276,77 @@
               </div>
             </div>
 
-            <!-- RIGHT SUMMARY (WITH ITEMISED 18% GST BREAKDOWN) -->
+            <!-- RIGHT SUMMARY (3 SEPARATE PRICING CATEGORIES) -->
             <div>
               <div class="card" style="position: sticky; top: 85px; border-color: var(--primary-border);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
                   <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--slate-900);">
                     Quotation Summary
                   </h3>
-                  <span class="pill pill-info" id="cadence-badge-display">Monthly Cadence</span>
+                  <span class="pill pill-primary" id="summary-currency-badge">One-Time & Recurring</span>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed var(--slate-200); font-size: 0.85rem;">
-                  <span style="color: var(--slate-500);">Base Solution Scope:</span>
-                  <strong class="price-tag" id="sum-base-price">₹0</strong>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed var(--slate-200); font-size: 0.85rem;">
-                  <span style="color: var(--slate-500);">Domain Registration:</span>
-                  <strong class="price-tag" id="sum-domain-price">₹0</strong>
-                </div>
-
-                <div style="display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed var(--slate-200); font-size: 0.85rem;">
-                  <span style="color: var(--slate-500);">Add-ons Total:</span>
-                  <strong class="price-tag" id="sum-addons-price">₹0</strong>
-                </div>
-
-                <!-- GST 18% Breakdown Box -->
-                <div class="gst-breakdown-box">
-                  <div class="gst-row">
-                    <span>Subtotal:</span>
-                    <strong id="sum-subtotal-price">₹0</strong>
+                <!-- 1. ONE-TIME APPLICATION COST -->
+                <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 0.9rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid var(--slate-200); padding-bottom: 0.4rem;">
+                    <span style="font-size: 0.775rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 0.05em;">
+                      1. One-Time Application Cost
+                    </span>
+                    <span class="pill pill-active" style="font-size: 0.675rem;">One-Time</span>
                   </div>
-                  <div class="gst-row">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.35rem;">
+                    <span style="color: var(--slate-600);">Main Web Application:</span>
+                    <strong id="sum-base-price" style="font-family: var(--font-mono);">₹0</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.35rem;">
+                    <span style="color: var(--slate-600);">Domain Registration:</span>
+                    <strong id="sum-domain-price" style="font-family: var(--font-mono);">₹0</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.35rem; color: var(--slate-500);">
+                    <span>One-Time Subtotal:</span>
+                    <span id="sum-onetime-subtotal" style="font-family: var(--font-mono); font-weight: 700;">₹0</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.45rem; color: var(--slate-500);">
                     <span>Applicable GST (18%):</span>
-                    <strong id="sum-gst-price" style="color: var(--slate-700);">₹0</strong>
+                    <span id="sum-onetime-gst" style="font-family: var(--font-mono); font-weight: 700;">₹0</span>
                   </div>
-                  <div class="gst-row total">
-                    <span>Total Quotation Amount:</span>
-                    <strong id="sum-total-price" style="color: var(--primary);">₹0</strong>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 800; border-top: 1px dashed var(--slate-300); padding-top: 0.45rem; color: var(--slate-900);">
+                    <span>Total One-Time:</span>
+                    <strong id="sum-onetime-total" style="color: var(--primary); font-family: var(--font-mono);">₹0</strong>
+                  </div>
+                </div>
+
+                <!-- 2. MONTHLY RECURRING COST -->
+                <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 0.9rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid var(--slate-200); padding-bottom: 0.4rem;">
+                    <span style="font-size: 0.775rem; text-transform: uppercase; font-weight: 800; color: #0284c7; letter-spacing: 0.05em;">
+                      2. Monthly Recurring Cost
+                    </span>
+                    <span class="pill pill-info" style="font-size: 0.675rem;">Monthly</span>
+                  </div>
+                  <div id="sum-monthly-items-container" style="font-size: 0.8rem; color: var(--slate-600); margin-bottom: 0.45rem;">
+                    <div style="font-style: italic; color: var(--slate-400);">No monthly add-ons selected</div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.925rem; font-weight: 800; border-top: 1px dashed var(--slate-300); padding-top: 0.45rem; color: var(--slate-900);">
+                    <span>Total Monthly:</span>
+                    <strong id="sum-monthly-total" style="color: #0284c7; font-family: var(--font-mono);">$0 / Month</strong>
+                  </div>
+                </div>
+
+                <!-- 3. ANNUAL RECURRING COST -->
+                <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 1.15rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid var(--slate-200); padding-bottom: 0.4rem;">
+                    <span style="font-size: 0.775rem; text-transform: uppercase; font-weight: 800; color: #7c3aed; letter-spacing: 0.05em;">
+                      3. Annual Recurring Cost
+                    </span>
+                    <span class="pill pill-purple" style="font-size: 0.675rem;">Annually</span>
+                  </div>
+                  <div id="sum-annual-items-container" style="font-size: 0.8rem; color: var(--slate-600); margin-bottom: 0.45rem;">
+                    <div style="font-style: italic; color: var(--slate-400);">No annual add-ons selected</div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.925rem; font-weight: 800; border-top: 1px dashed var(--slate-300); padding-top: 0.45rem; color: var(--slate-900);">
+                    <span>Total Annually:</span>
+                    <strong id="sum-annual-total" style="color: #7c3aed; font-family: var(--font-mono);">$0 / Year</strong>
                   </div>
                 </div>
 
@@ -317,7 +361,7 @@
                     <span id="sum-comm-amount" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--emerald-600);">₹0</span>
                   </div>
                   <div style="font-size: 0.7rem; color: var(--slate-400); margin-top: 0.35rem;">
-                    🔒 Commission is strictly excluded from client quotations and proposals.
+                    🔒 Commission calculated on one-time application contract value. Excluded from client proposal.
                   </div>
                 </div>
 
