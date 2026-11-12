@@ -1,0 +1,409 @@
+{
+  "meta": {
+    "shard_id": "projects_001.json",
+    "module": "projects",
+    "sequence": 1,
+    "is_active": true,
+    "format": "JSON",
+    "updated_at": "2026-11-12 16:42:10",
+    "record_count": 2,
+    "checksum": "87b521b33f78a91473b625c425a47cf7146eaf94152ef9424a813ff37b7a9ccf"
+  },
+  "records": [
+    {
+      "id": "proj-aiv-2",
+      "quoteId": "qt-aiv-103",
+      "quoteNumber": "AIV-QT-2026-103",
+      "clientName": "Titan Industrial Gear",
+      "projectName": "E-Commerce Online Store",
+      "categoryName": "E-Commerce Online Store",
+      "referenceUrl": "https://shopify.com",
+      "requirements": [
+        "Product Catalog & Category Filtering",
+        "UPI & Card Payment Integration",
+        "Customer Orders & Account Portal",
+        "Automated PDF Invoices & Email Notifications",
+        "Mobile-Responsive Fast Checkout"
+      ],
+      "commExecutiveName": "Rajesh Kumar",
+      "docCoordinatorName": "Priya Sharma",
+      "assignedMarketing": [
+        {
+          "name": "Rajesh Kumar",
+          "responsibility": "Client Communication"
+        },
+        {
+          "name": "Priya Sharma",
+          "responsibility": "Documentation"
+        }
+      ],
+      "assignedDevId": "",
+      "assignedDevName": "Unassigned",
+      "assignedDevEmail": "",
+      "startDate": "2026-03-10",
+      "expectedEndDate": "",
+      "assignmentStatus": "pending_assignment",
+      "assignmentRequestedAt": "2026-03-06 15:00",
+      "assignmentRequestedBy": "Rajesh Kumar",
+      "assignmentHistory": [],
+      "status": "Changes Requested",
+      "progress": 0,
+      "workDescription": "Quotation accepted by customer. Ready for engineering allocation by Admin.",
+      "remarks": "Client requires fast launch in 20 days.",
+      "testingUrl": "",
+      "finalUrl": "",
+      "testingStatus": "Pending",
+      "finalApprovalStatus": "Not Submitted",
+      "zipFiles": [],
+      "changeRequests": [
+        {
+          "id": "cr-782a17",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_d07f7a_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_d07f7a_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-7cbe7d",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_028394_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_028394_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-b2735a",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_670ff4_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_670ff4_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-b7e4d1",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_41c021_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_41c021_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-4aaca3",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_eb2f5e_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_eb2f5e_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-2860f7",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_bc1634_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_bc1634_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-b7386d",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_c21c60_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_c21c60_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-3454a8",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_92a193_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_92a193_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-668cc4",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_c68efb_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_c68efb_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-2b0d75",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-2_a4d7b1_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-2_a4d7b1_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        }
+      ],
+      "payment": {
+        "totalAmount": 50150.0,
+        "amountPaid": 25075.0,
+        "currency": "INR",
+        "status": "Payment Verified",
+        "method": "PhonePe",
+        "date": "2026-03-06",
+        "refNumber": "PHPE2026030699",
+        "screenshotFilename": "titan_phonepe_proof.png",
+        "screenshotUrl": "/uploads/payments/sample_payment_proof.png",
+        "notes": "50% kickoff advance of ₹25,075 paid through PhonePe. Pending admin verification.",
+        "verifiedBy": "Laxminivas Morishetty",
+        "verifiedAt": "2026-11-12 15:42",
+        "uploadedBy": "Priya Sharma",
+        "uploadedAt": "2026-03-06 15:30"
+      },
+      "lastUpdated": "2026-11-12",
+      "signoffDocument": {
+        "filename": "signoff_proj-aiv-2_f2e6a9_client_signoff_certificate.pdf",
+        "originalName": "client_signoff_certificate.pdf",
+        "url": "/uploads/signoffs/signoff_proj-aiv-2_f2e6a9_client_signoff_certificate.pdf",
+        "uploadedAt": "2026-11-12 16:42",
+        "uploadedBy": "Administrator"
+      },
+      "_entity_type": "projects"
+    },
+    {
+      "id": "proj-aiv-1",
+      "quoteId": "qt-aiv-101",
+      "quoteNumber": "AIV-QT-2026-101",
+      "clientName": "Apex Global Logistics Ltd.",
+      "projectName": "Custom CRM & Lead Portal",
+      "categoryName": "Custom CRM & Lead Portal",
+      "referenceUrl": "https://hubspot.com",
+      "requirements": [
+        "Role-Based Access Control (Admin / Staff / Sales)",
+        "Lead Status Kanban Pipeline",
+        "WhatsApp Automation Alerts",
+        "Exportable Excel / PDF Sales Reports",
+        "Cloud Database & Activity Log History"
+      ],
+      "commExecutiveName": "Rajesh Kumar",
+      "docCoordinatorName": "Priya Sharma",
+      "assignedMarketing": [
+        {
+          "name": "Rajesh Kumar",
+          "responsibility": "Client Communication"
+        },
+        {
+          "name": "Priya Sharma",
+          "responsibility": "Payment Collection"
+        }
+      ],
+      "assignedDevId": "usr-dev-arundhaya",
+      "assignedDevName": "Arundhaya",
+      "assignedDevEmail": "arundhaya.dev@aivontraa.com",
+      "startDate": "2026-03-06",
+      "expectedEndDate": "2026-03-24",
+      "assignmentStatus": "assigned",
+      "assignmentHistory": [
+        {
+          "developerId": "usr-dev-arundhaya",
+          "developerName": "Arundhaya",
+          "assignedAt": "2026-03-06 10:00",
+          "assignedBy": "Laxminivas Morishetty"
+        }
+      ],
+      "status": "Changes Requested",
+      "progress": 55,
+      "workDescription": "Database schema established, JWT auth and lead API endpoints built. WhatsApp bot webhook integration in progress.",
+      "remarks": "Awaiting final WhatsApp Business phone number verification from client.",
+      "testingUrl": "https://test-apex.aivontraa.com",
+      "finalUrl": "",
+      "testingStatus": "Pending Review",
+      "finalApprovalStatus": "Not Submitted",
+      "zipFiles": [
+        {
+          "id": "zip-1",
+          "filename": "apex_brand_assets.zip",
+          "originalName": "apex_brand_assets.zip",
+          "sizeKb": 320.0,
+          "uploadedAt": "2026-03-06 11:00",
+          "uploadedBy": "Priya Sharma"
+        }
+      ],
+      "changeRequests": [
+        {
+          "id": "cr-2fd0d9",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "header_revision.docx",
+          "documentSizeKb": 0.0,
+          "documentUrl": "/uploads/change_requests/cr_proj-aiv-1_e6bc23_header_revision.docx",
+          "file": {
+            "originalName": "header_revision.docx",
+            "filename": "header_revision.docx",
+            "sizeKb": 0.0,
+            "url": "/uploads/change_requests/cr_proj-aiv-1_e6bc23_header_revision.docx"
+          },
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-13f6eb",
+          "title": "Update Header Layout",
+          "desc": "Add phone number to top bar",
+          "priority": "High",
+          "requestedBy": "Client Director",
+          "recordedBy": "Documentation Coordinator",
+          "documentFilename": "",
+          "documentSizeKb": 0,
+          "documentUrl": "",
+          "file": null,
+          "date": "2026-11-12",
+          "status": "Pending"
+        },
+        {
+          "id": "cr-1",
+          "title": "Add WhatsApp Export Button on Deals Table",
+          "desc": "Customer requested one-click export of lead phone numbers to broadcast list.",
+          "priority": "High",
+          "requestedBy": "Apex Logistics Client",
+          "recordedBy": "Rajesh Kumar",
+          "documentFilename": "WhatsApp_Export_Brief.docx",
+          "documentSizeKb": 85.2,
+          "date": "2026-03-09",
+          "status": "In Progress"
+        }
+      ],
+      "payment": {
+        "totalAmount": 64310.0,
+        "amountPaid": 32155.0,
+        "currency": "INR",
+        "status": "Payment Verified",
+        "method": "Bank Transfer",
+        "date": "2026-03-06",
+        "refNumber": "NEFT2026030601",
+        "screenshotFilename": "apex_advance_proof.png",
+        "screenshotUrl": "/uploads/payments/sample_payment_proof.png",
+        "notes": "50% kickoff advance of ₹32,155 verified by Administrator.",
+        "verifiedBy": "Laxminivas Morishetty",
+        "verifiedAt": "2026-11-12 15:37",
+        "uploadedBy": "Priya Sharma",
+        "uploadedAt": "2026-03-06 12:30"
+      },
+      "lastUpdated": "2026-11-12",
+      "signoffDocument": {
+        "filename": "signoff_proj-aiv-1_eb9c92_client_signoff_certificate.pdf",
+        "originalName": "client_signoff_certificate.pdf",
+        "url": "/uploads/signoffs/signoff_proj-aiv-1_eb9c92_client_signoff_certificate.pdf",
+        "uploadedAt": "2026-11-12 15:37",
+        "uploadedBy": "Administrator"
+      },
+      "_entity_type": "projects"
+    }
+  ]
+}

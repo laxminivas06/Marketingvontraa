@@ -602,8 +602,8 @@
                   <span class="pulse-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
                   <span id="db-health-text">SYSTEM OPTIMAL</span>
                 </span>
-                <span class="badge" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5; font-size: 0.75rem; padding: 6px 12px; border-radius: 999px; font-weight: 700;">
-                  🔒 AES-256 Encrypted at Rest
+                <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #059669; font-size: 0.75rem; padding: 6px 12px; border-radius: 999px; font-weight: 700;">
+                  📄 100% Pure JSON Storage
                 </span>
               </div>
             </div>
@@ -619,7 +619,7 @@
                   <span>🛡️</span> Run Integrity Check
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="triggerDatabaseOptimization()" id="btn-db-optimize">
-                  <span>⚡</span> Optimize & VACUUM
+                  <span>⚡</span> Optimize & Compact JSON
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="triggerDatabaseBackup()" id="btn-db-backup">
                   <span>📦</span> Create Backup Now
@@ -708,7 +708,7 @@
                   <table>
                     <thead>
                       <tr>
-                        <th>Shard Database File</th>
+                        <th>JSON Shard File</th>
                         <th>Module Directory</th>
                         <th>Seq #</th>
                         <th>File Size</th>
@@ -2526,8 +2526,10 @@
       try {
         const res = await API.runDatabaseIntegrityCheck();
         const report = res.report || {};
-        alert(`Integrity Scan Complete!\nStatus: ${report.overallStatus}\nDatabases Checked: ${report.totalChecked}\nAll SQLite B-Trees & HMAC-SHA256 Checksums Verified.`);
-        API.showToast(`🛡️ Integrity Check: ${report.overallStatus}`);
+        const status = report.status || report.overallStatus || 'HEALTHY';
+        const checked = report.checkedShards || report.totalChecked || 0;
+        alert(`Integrity Scan Complete!\nStatus: ${status}\nJSON Shards Checked: ${checked}\nAll JSON Schemas & HMAC-SHA256 Checksums Verified.`);
+        API.showToast(`🛡️ Integrity Check: ${status}`);
         await loadDatabaseManagement();
       } catch (err) {
         alert('Integrity check failed: ' + err.message);

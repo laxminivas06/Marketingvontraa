@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "shard_id": "customers_001.json",
+    "module": "customers",
+    "sequence": 1,
+    "is_active": false,
+    "format": "JSON",
+    "created_at": "2026-11-12 16:27:47",
+    "rotated_at": "2026-11-12 16:41:26",
+    "checksum": "8d75327184f3aa07f67961085a06d125e6f70d185f5a8838f572c51cdf996332"
+  },
+  "records": []
+}
