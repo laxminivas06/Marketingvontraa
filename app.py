@@ -753,57 +753,17 @@ def api_user_toggle_status(user_id):
 
 
 # -------------------------------------------------------------
-# ADD-ONS CONFIGURATION (Monthly & Annual: INR & USD)
+# ADD-ONS CONFIGURATION (Deprecated - returns empty list)
 # -------------------------------------------------------------
 @app.route('/api/addons', methods=['GET', 'POST'])
 def api_addons():
-    db = load_db()
     if request.method == 'GET':
-        return jsonify(db.get('addons', []))
-
-    payload = request.get_json() or {}
-    name = payload.get('name', '').strip()
-    if not name:
-        return jsonify({"success": False, "message": "Add-on name is required"}), 400
-
-    new_addon = {
-        "id": f"add-{uuid.uuid4().hex[:6]}",
-        "name": name,
-        "desc": payload.get('desc', '').strip(),
-        "monthlyINR": int(payload.get('monthlyINR') or 0),
-        "yearlyINR": int(payload.get('yearlyINR') or 0),
-        "monthlyUSD": int(payload.get('monthlyUSD') or 0),
-        "yearlyUSD": int(payload.get('yearlyUSD') or 0),
-        "status": payload.get('status', 'active')
-    }
-    db.setdefault('addons', []).append(new_addon)
-    save_db(db)
-    return jsonify({"success": True, "addon": new_addon})
+        return jsonify([])
+    return jsonify({"success": True, "addons": []})
 
 @app.route('/api/addons/<add_id>', methods=['PUT', 'DELETE'])
 def api_addon_item(add_id):
-    db = load_db()
-    addons = db.get('addons', [])
-    idx = next((i for i, a in enumerate(addons) if a['id'] == add_id), None)
-    if idx is None:
-        return jsonify({"success": False, "message": "Add-on not found"}), 404
-
-    if request.method == 'PUT':
-        payload = request.get_json() or {}
-        addons[idx]['name'] = payload.get('name', addons[idx]['name']).strip()
-        addons[idx]['desc'] = payload.get('desc', addons[idx]['desc']).strip()
-        addons[idx]['monthlyINR'] = int(payload.get('monthlyINR', addons[idx].get('monthlyINR', 0)))
-        addons[idx]['yearlyINR'] = int(payload.get('yearlyINR', addons[idx].get('yearlyINR', 0)))
-        addons[idx]['monthlyUSD'] = int(payload.get('monthlyUSD', addons[idx].get('monthlyUSD', 0)))
-        addons[idx]['yearlyUSD'] = int(payload.get('yearlyUSD', addons[idx].get('yearlyUSD', 0)))
-        addons[idx]['status'] = payload.get('status', addons[idx].get('status', 'active'))
-        save_db(db)
-        return jsonify({"success": True, "addon": addons[idx]})
-
-    elif request.method == 'DELETE':
-        deleted = addons.pop(idx)
-        save_db(db)
-        return jsonify({"success": True, "deleted": deleted})
+    return jsonify({"success": True})
 
 
 # -------------------------------------------------------------
@@ -834,19 +794,50 @@ def api_quotations():
     domain_amount = float(payload.get('domainAmount', 0))
     addons = payload.get('addons', [])
 
-    addons_total = sum(float(a.get('price', 0)) for a in addons)
-    subtotal = round(base_price + domain_amount + addons_total, 2)
+    # Calculate separate totals for INR and USD
+    inr_addons = [a for a in addons if str(a.get('currency', '')).upper() == 'INR']
+    usd_addons = [a for a in addons if str(a.get('currency', '')).upper() == 'USD']
+    addons_inr = round(sum(float(a.get('price', 0)) for a in inr_addons), 2)
+    addons_usd = round(sum(float(a.get('price', 0)) for a in usd_addons), 2)
 
-    # GST is calculated at 18% and displayed separately
-    gst_rate = 18.0
-    gst_amount = round(subtotal * 0.18, 2)
-    total_price = round(subtotal + gst_amount, 2)
+    # Base price and domain belong to the base quotation currency
+    base_inr = (base_price + domain_amount) if currency == 'INR' else 0.0
+    base_usd = (base_price + domain_amount) if currency == 'USD' else 0.0
+
+    subtotal_inr = round(base_inr + addons_inr, 2)
+    subtotal_usd = round(base_usd + addons_usd, 2)
+
+    gst_inr = round(subtotal_inr * 0.18, 2) if subtotal_inr > 0 else 0.0
+    total_inr = round(subtotal_inr + gst_inr, 2) if subtotal_inr > 0 else 0.0
+
+    gst_usd = round(subtotal_usd * 0.18, 2) if subtotal_usd > 0 else 0.0
+    total_usd = round(subtotal_usd + gst_usd, 2) if subtotal_usd > 0 else 0.0
+
+    is_mixed_currency = (subtotal_inr > 0 and subtotal_usd > 0)
+
+    # Primary fields based on base currency or single currency
+    if currency == 'USD':
+        subtotal = subtotal_usd
+        gst_amount = gst_usd
+        total_price = total_usd
+    else:
+        subtotal = subtotal_inr
+        gst_amount = gst_inr
+        total_price = total_inr
 
     # Automatic Commission Calculation based on currency slabs
-    slabs = db.get('commissionSlabsUSD', []) if currency == 'USD' else db.get('commissionSlabsINR', [])
-    matched_slab = next((s for s in slabs if subtotal >= s.get('minPrice', 0) and subtotal <= s.get('maxPrice', 99999999)), None)
-    rate = min(10.0, matched_slab.get('rate', 7.0)) if matched_slab else 7.0
-    commission_amount = round((subtotal * rate) / 100, 2)
+    slabs_inr = db.get('commissionSlabsINR', [])
+    matched_slab_inr = next((s for s in slabs_inr if subtotal_inr >= s.get('minPrice', 0) and subtotal_inr <= s.get('maxPrice', 99999999)), None)
+    rate_inr = min(10.0, matched_slab_inr.get('rate', 7.0)) if matched_slab_inr else 7.0
+    commission_amount_inr = round((subtotal_inr * rate_inr) / 100, 2)
+
+    slabs_usd = db.get('commissionSlabsUSD', [])
+    matched_slab_usd = next((s for s in slabs_usd if subtotal_usd >= s.get('minPrice', 0) and subtotal_usd <= s.get('maxPrice', 99999999)), None)
+    rate_usd = min(10.0, matched_slab_usd.get('rate', 7.0)) if matched_slab_usd else 7.0
+    commission_amount_usd = round((subtotal_usd * rate_usd) / 100, 2)
+
+    commission_amount = commission_amount_usd if currency == 'USD' else commission_amount_inr
+    rate = rate_usd if currency == 'USD' else rate_inr
 
     cat_id = payload.get('categoryId', '')
     cat = next((c for c in db.get('categories', []) if c['id'] == cat_id), None)
@@ -865,12 +856,23 @@ def api_quotations():
         "basePrice": base_price,
         "domainAmount": domain_amount,
         "addons": addons,
+        "addonsINR": addons_inr,
+        "addonsUSD": addons_usd,
         "subtotal": subtotal,
-        "gstRate": gst_rate,
+        "subtotalINR": subtotal_inr,
+        "subtotalUSD": subtotal_usd,
+        "gstRate": 18.0,
         "gstAmount": gst_amount,
+        "gstINR": gst_inr,
+        "gstUSD": gst_usd,
         "totalPrice": total_price,
+        "totalINR": total_inr,
+        "totalUSD": total_usd,
+        "isMixedCurrency": is_mixed_currency,
         "commissionRate": rate,
         "commissionAmount": commission_amount,
+        "commissionAmountINR": commission_amount_inr,
+        "commissionAmountUSD": commission_amount_usd,
         "commExecutiveName": payload.get('commExecutiveName', 'Client Communication Exec'),
         "docCoordinatorName": payload.get('docCoordinatorName', 'Project Documentation Coordinator'),
         "assignedMarketing": payload.get('assignedMarketing', []),
