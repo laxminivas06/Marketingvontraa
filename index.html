@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Aivontraa Automation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    /* Pure White Minimalist Theme */
+    body {
+      background-color: #ffffff !important;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #0f172a;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .login-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 3rem 2.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 20px 25px -5px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+    }
+
+    .login-logo-container {
+      margin-bottom: 1.75rem;
+      display: inline-block;
+    }
+
+    .login-logo {
+      height: 52px;
+      width: auto;
+      max-width: 200px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .login-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.025em;
+      margin: 0 0 0.5rem 0;
+      line-height: 1.25;
+    }
+
+    .login-subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin: 0 0 2rem 0;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .login-error-alert {
+      display: none;
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      color: #e11d48;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .google-signin-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      min-height: 50px;
+    }
+
+    /* Custom Google Button */
+    .btn-continue-google {
+      width: 100%;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      outline: none;
+      text-decoration: none;
+      box-sizing: border-box;
+      padding: 0 1.5rem;
+    }
+
+    .btn-continue-google:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-continue-google:active {
+      transform: translateY(0);
+      background: #f1f5f9;
+    }
+
+    .login-footer {
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #f1f5f9;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .login-footer a {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .login-footer a:hover {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem;
+      }
+      .login-card {
+        padding: 2.25rem 1.5rem;
+        border-radius: 16px;
+      }
+      .login-title {
+        font-size: 1.3rem;
+      }
+      .login-logo {
+        height: 44px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- 1. Company Logo at the Top -->
+      <div class="login-logo-container">
+        <a href="https://www.aivontraa.com" target="_blank" rel="noopener noreferrer">
+          <img src="https://aivontraa.com/assets/images/ai.png" alt="Aivontraa Automation Logo" class="login-logo">
+        </a>
+      </div>
+
+      <!-- 2. Typography & Short Welcome Message -->
+      <h1 class="login-title">Aivontraa Automation</h1>
+      <p class="login-subtitle">Welcome back. Continue with your authorized Google account to access your workspace.</p>
+
+      <!-- 3. Error Alert Container -->
+      <div id="login-error" class="login-error-alert" role="alert"></div>
+
+      <!-- 4. Single Authentication Action: Continue with Google -->
+      <div class="google-signin-wrapper">
+        <!-- Official Google Identity Services Initialization -->
+        <div id="g_id_onload"
+             data-client_id="524356808349-31ele7mkqr9bn0uqt28bod9m638978eh.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleGoogleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+
+        <!-- Render Target for Official Google Button -->
+        <div id="g_id_signin_container" style="width: 100%; display: flex; justify-content: center;">
+          <div class="g_id_signin"
+               data-type="standard"
+               data-shape="pill"
+               data-theme="outline"
+               data-text="continue_with"
+               data-size="large"
+               data-logo_alignment="left"
+               data-width="340">
+          </div>
+        </div>
+
+        <!-- Native Fallback Button (visible if iframe doesn't render) -->
+        <button type="button" id="btn-custom-google" class="btn-continue-google" onclick="triggerGoogleSignIn()" style="display: none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+      </div>
+
+      <!-- 5. Minimalist Footer -->
+      <div class="login-footer">
+        <div>Enterprise Single Sign-On • Strict Encryption</div>
+        <div style="margin-top: 0.35rem;">
+          <a href="https://www.aivontraa.com" target="_blank" rel="noopener noreferrer">www.aivontraa.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // Auto-redirect if already authenticated
+    window.addEventListener('DOMContentLoaded', () => {
+      const u = API.getCurrentUser();
+      if (u && u.role) {
+        API.redirectToRolePortal(u.role);
+      }
+
+      // If Google GSI iframe takes more than 1.5s or fails to load, display fallback button
+      setTimeout(() => {
+        const gsiBtn = document.querySelector('.g_id_signin iframe') || document.querySelector('.g_id_signin div');
+        if (!gsiBtn) {
+          const fallback = document.getElementById('btn-custom-google');
+          if (fallback) fallback.style.display = 'inline-flex';
+        }
+      }, 1500);
+    });
+
+    function showError(msg) {
+      const b = document.getElementById('login-error');
+      if (b) {
+        b.innerText = msg;
+        b.style.display = 'block';
+      }
+    }
+
+    // Google Identity Services Credential Handler
+    async function handleGoogleCredentialResponse(response) {
+      const b = document.getElementById('login-error');
+      if (b) b.style.display = 'none';
+
+      try {
+        const user = await API.loginWithGoogleCredential(response.credential);
+        API.showToast(`Signed in successfully as ${user.name || user.email}`);
+        setTimeout(() => {
+          API.redirectToRolePortal(user.role);
+        }, 300);
+      } catch (err) {
+        showError(err.message || 'Google Sign-in failed. Please ensure your Google account is registered with Aivontraa.');
+      }
+    }
+
+    // Trigger Google Sign-In via prompt if custom button clicked
+    function triggerGoogleSignIn() {
+      if (window.google && google.accounts && google.accounts.id) {
+        google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            const fallbackEmail = prompt('Enter your registered Google account email:');
+            if (fallbackEmail) {
+              loginWithEmail(fallbackEmail.trim());
+            }
+          }
+        });
+      } else {
+        const fallbackEmail = prompt('Enter your registered Google account email:');
+        if (fallbackEmail) {
+          loginWithEmail(fallbackEmail.trim());
+        }
+      }
+    }
+
+    async function loginWithEmail(email) {
+      const b = document.getElementById('login-error');
+      if (b) b.style.display = 'none';
+      try {
+        const user = await API.loginWithGoogleEmail(email, email.split('@')[0]);
+        API.showToast(`Welcome back, ${user.name || user.email}!`);
+        setTimeout(() => {
+          API.redirectToRolePortal(user.role);
+        }, 300);
+      } catch (err) {
+        showError(err.message || 'Authentication failed');
+      }
+    }
+  </script>
+</body>
+</html>

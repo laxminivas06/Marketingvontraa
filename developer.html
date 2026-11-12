@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Developer Portal - Aivontraa Automation Pvt. Ltd.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="app-layout">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div class="sidebar-backdrop" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('active');"></div>
+
+    <!-- SIDEBAR (COMPLETELY FIXED & NON-SCROLLABLE) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-logo-card">
+            <img src="https://aivontraa.com/assets/images/ai.png" alt="Aivontraa Logo" class="brand-logo-img">
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 800; color: var(--slate-900); line-height: 1.1;">Aivontraa</div>
+            <div style="font-size: 0.65rem; color: var(--slate-400); font-weight: 700;">Automation Pvt. Ltd.</div>
+          </div>
+        </div>
+        <span class="portal-badge badge-developer">DEV</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">ENGINEERING SPRINT</div>
+        <a href="/developer/assigned" class="nav-item active" data-tab="assigned" onclick="handleDevNavClick('assigned', event, this)">
+          <span class="nav-icon">💻</span>
+          <span>My Assigned Projects</span>
+        </a>
+        <a href="/developer/change-requests" class="nav-item" data-tab="change-requests" onclick="handleDevNavClick('change-requests', event, this)">
+          <span class="nav-icon">🔄</span>
+          <span>Change Requests</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="font-size: 0.72rem; color: var(--slate-400); margin-bottom: 0.5rem; text-align: center; font-weight: 600;">
+          Aivontraa Engineering Core
+        </div>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="API.logout()">
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN WRAPPER (INDEPENDENTLY SCROLLABLE) -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-backdrop').classList.toggle('active');">☰</button>
+          <div class="page-title" id="dev-page-heading">Developer Portal</div>
+        </div>
+        <div class="topbar-right">
+          <div class="user-profile-badge">
+            <div class="user-avatar" id="header-user-avatar" style="background: var(--purple-600);">D</div>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-900);" id="header-user-name">Arundhaya</div>
+              <div style="font-size: 0.7rem; color: #7e22ce; font-weight: 800;" id="header-user-role">ENGINEERING SPECIALIST</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <!-- STATS CARDS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Assigned Projects</div>
+            <div class="stat-value" id="dev-stat-total">0</div>
+            <div class="stat-sub">Assigned directly to me</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid var(--amber-600);">
+            <div class="stat-label">Active Sprints</div>
+            <div class="stat-value" id="dev-stat-in-dev" style="color: var(--amber-600);">0</div>
+            <div class="stat-sub">In development / frontend / backend</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid var(--primary);">
+            <div class="stat-label">Testing & Review</div>
+            <div class="stat-value" id="dev-stat-testing" style="color: var(--primary);">0</div>
+            <div class="stat-sub">Testing URL live / under review</div>
+          </div>
+          <div class="stat-card" style="border-left: 4px solid var(--emerald-600);">
+            <div class="stat-label">Completed & Approved</div>
+            <div class="stat-value" id="dev-stat-completed" style="color: var(--emerald-600);">0</div>
+            <div class="stat-sub">Final sign-off by Admin</div>
+          </div>
+        </div>
+
+        <!-- 1. ASSIGNED PROJECTS TAB -->
+        <section id="dev-tab-assigned" class="tab-pane">
+          <div class="section-header">
+            <div>
+              <h2>My Assigned Projects</h2>
+              <p>Deliverables, reference benchmarks, downloadable ZIP requirement assets, testing link submission, and 14-stage workflow</p>
+            </div>
+          </div>
+
+          <div id="dev-projects-cards-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Project Cards Injected via JS -->
+          </div>
+        </section>
+
+        <!-- 2. CHANGE REQUESTS TAB -->
+        <section id="dev-tab-change-requests" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Assigned Change Requests</h2>
+              <p>Client change requests forwarded by marketing team. Update status to keep team synchronized.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Change Request Title</th>
+                  <th>Description</th>
+                  <th>Priority</th>
+                  <th>Requested By</th>
+                  <th>Recorded Date</th>
+                  <th>Current Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="table-dev-crs-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. PROGRESS UPDATE MODAL (14-Stage Workflow) -->
+  <div class="modal-backdrop" id="modal-dev-progress">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Update Milestone Progress</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-dev-progress')">&times;</button>
+      </div>
+      <form id="form-dev-progress" onsubmit="saveProjectProgress(event)">
+        <input type="hidden" id="dev-modal-proj-id">
+        <div class="modal-body">
+          <div style="background: var(--slate-50); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; border: 1px solid var(--slate-200);">
+            <strong id="dev-modal-client-info">-</strong>
+          </div>
+
+          <div class="form-group">
+            <label for="dev-modal-status">14-Stage Workflow Status *</label>
+            <select id="dev-modal-status" class="form-control" required>
+              <option value="Assigned">1. Assigned</option>
+              <option value="Development Started">2. Development Started</option>
+              <option value="Frontend Development">3. Frontend Development</option>
+              <option value="Backend Development">4. Backend Development</option>
+              <option value="Testing">5. Testing</option>
+              <option value="Testing Website Submitted">6. Testing Website Submitted</option>
+              <option value="Changes Requested">7. Changes Requested</option>
+              <option value="Changes In Progress">8. Changes In Progress</option>
+              <option value="Final Website Submitted">9. Final Website Submitted</option>
+              <option value="Admin Review">10. Admin Review</option>
+              <option value="Approved">11. Approved</option>
+              <option value="Payment Pending">12. Payment Pending</option>
+              <option value="Payment Verified">13. Payment Verified</option>
+              <option value="Project Completed">14. Project Completed</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="dev-modal-progress-range">Progress Percentage (0 - 100%) *</label>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <input type="range" id="dev-modal-progress-range" min="0" max="100" step="5" class="form-control" style="flex: 1;" oninput="document.getElementById('dev-modal-progress-num').value = this.value">
+              <input type="number" id="dev-modal-progress-num" min="0" max="100" class="form-control" style="width: 80px; font-family: var(--font-mono); font-weight: 700;" oninput="document.getElementById('dev-modal-progress-range').value = this.value">
+              <span style="font-weight: 700;">%</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="dev-modal-desc">Work Description / Deliverables Built</label>
+            <textarea id="dev-modal-desc" class="form-control" rows="3" placeholder="Describe components built, APIs integrated, and testing performed..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="dev-modal-remarks">Remarks / Technical Blockers</label>
+            <input type="text" id="dev-modal-remarks" class="form-control" placeholder="e.g. Waiting for client payment gateway keys">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-dev-progress')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Progress Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. TESTING WEBSITE SUBMISSION MODAL (Stage 6) -->
+  <div class="modal-backdrop" id="modal-submit-testing">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Submit Testing Website (Staging)</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-submit-testing')">&times;</button>
+      </div>
+      <form id="form-submit-testing" onsubmit="submitTestingWebsite(event)">
+        <input type="hidden" id="testing-modal-proj-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="testing-modal-url">Testing Website URL *</label>
+            <input type="url" id="testing-modal-url" class="form-control" placeholder="https://staging.clientproject.com" required style="font-family: var(--font-mono);">
+            <small style="color: var(--slate-500); font-size: 0.725rem;">Staging deployment link for administrator and marketing review.</small>
+          </div>
+          <div class="form-group">
+            <label for="testing-modal-desc">Testing Description / QA Notes *</label>
+            <textarea id="testing-modal-desc" class="form-control" rows="3" placeholder="Explain test credentials, flow, and key features ready for review..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="testing-modal-date">Submission Date</label>
+            <input type="date" id="testing-modal-date" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-submit-testing')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Testing Website</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. FINAL WEBSITE SUBMISSION MODAL (Stage 9) -->
+  <div class="modal-backdrop" id="modal-submit-final">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Submit Final Website (Production)</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-submit-final')">&times;</button>
+      </div>
+      <form id="form-submit-final" onsubmit="submitFinalWebsite(event)">
+        <input type="hidden" id="final-modal-proj-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="final-modal-url">Final Website URL *</label>
+            <input type="url" id="final-modal-url" class="form-control" placeholder="https://clientproject.com" required style="font-family: var(--font-mono);">
+            <small style="color: var(--slate-500); font-size: 0.725rem;">Live production deployment URL for final admin review & approval.</small>
+          </div>
+          <div class="form-group">
+            <label for="final-modal-desc">Final Project Description *</label>
+            <textarea id="final-modal-desc" class="form-control" rows="3" placeholder="Summary of complete deliverables, revisions completed, and final verification..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="final-modal-date">Submission Date</label>
+            <input type="date" id="final-modal-date" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-submit-final')">Cancel</button>
+          <button type="submit" class="btn btn-success">Submit Final Website</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    let myAssignedProjects = [];
+    let currentActiveTab = 'assigned';
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth(['developer', 'admin'])) return;
+
+      currentActiveTab = API.initRouting('/developer', 'assigned', (tabId) => {
+        switchDevTab(tabId, false);
+      });
+
+      switchDevTab(currentActiveTab, false);
+      await refreshDeveloperPortal();
+    });
+
+    function handleDevNavClick(tabId, event, element) {
+      if (event) event.preventDefault();
+      switchDevTab(tabId, true);
+    }
+
+    function switchDevTab(tabId, pushHistory = true) {
+      currentActiveTab = tabId;
+      document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const target = document.getElementById(`dev-tab-${tabId}`);
+      if (target) {
+        target.style.display = 'block';
+      } else {
+        const fallback = document.getElementById('dev-tab-assigned');
+        if (fallback) fallback.style.display = 'block';
+        tabId = 'assigned';
+      }
+
+      const activeNav = document.querySelector(`.nav-item[data-tab='${tabId}']`);
+      if (activeNav) activeNav.classList.add('active');
+
+      const headings = {
+        'assigned': 'My Assigned Projects',
+        'change-requests': 'Assigned Change Requests'
+      };
+      document.getElementById('dev-page-heading').innerText = headings[tabId] || 'Developer Portal';
+
+      if (pushHistory) {
+        API.navigate('/developer', tabId, headings[tabId]);
+      }
+
+      if (window.innerWidth <= 860) {
+        document.querySelector('.sidebar').classList.remove('open');
+      }
+    }
+
+    async function refreshDeveloperPortal() {
+      await API.syncState();
+      const user = API.getCurrentUser();
+      const allProjects = API.state.projects || [];
+
+      // Developer only sees their assigned projects
+      if (user.role === 'developer') {
+        myAssignedProjects = allProjects.filter(p => p.assignedDevId === user.id || p.assignedDevEmail === user.email);
+      } else {
+        myAssignedProjects = allProjects;
+      }
+
+      renderDeveloperStats();
+      renderProjectsCards();
+      renderChangeRequestsTable();
+    }
+
+    function renderDeveloperStats() {
+      const total = myAssignedProjects.length;
+      const inDev = myAssignedProjects.filter(p => ['Development Started', 'Frontend Development', 'Backend Development', 'Changes Requested', 'Changes In Progress'].includes(p.status)).length;
+      const testing = myAssignedProjects.filter(p => ['Testing', 'Testing Website Submitted', 'Admin Review'].includes(p.status)).length;
+      const completed = myAssignedProjects.filter(p => p.status === 'Project Completed' || p.status === 'Completed').length;
+
+      document.getElementById('dev-stat-total').innerText = total;
+      document.getElementById('dev-stat-in-dev').innerText = inDev;
+      document.getElementById('dev-stat-testing').innerText = testing;
+      document.getElementById('dev-stat-completed').innerText = completed;
+    }
+
+    function renderProjectsCards() {
+      const container = document.getElementById('dev-projects-cards-container');
+      container.innerHTML = '';
+
+      if (myAssignedProjects.length === 0) {
+        container.innerHTML = `<div class="card" style="text-align: center; padding: 3rem; color: var(--slate-400);">No assigned projects currently. Check back soon.</div>`;
+        return;
+      }
+
+      myAssignedProjects.forEach(p => {
+        const badgeCls = API.getStatusBadgeClass(p.status);
+        const zips = p.zipFiles || [];
+        const pay = p.payment || {};
+        const payBadgeCls = API.getPaymentBadgeClass(pay.status || 'Payment Pending');
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--slate-100); padding-bottom: 1rem;">
+            <div>
+              <span style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--primary);">${API.escapeHtml(p.quoteNumber)}</span>
+              <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--slate-900); margin: 0.2rem 0;">${API.escapeHtml(p.clientName)}</h3>
+              <div style="font-size: 0.85rem; color: var(--slate-600); font-weight: 600;">Category: ${API.escapeHtml(p.projectName || p.categoryName)}</div>
+            </div>
+            <div style="text-align: right;">
+              <span class="pill ${badgeCls}" style="font-size: 0.85rem;">${p.status}</span>
+              <div style="font-size: 0.775rem; color: var(--slate-500); margin-top: 0.35rem;">
+                Assigned: ${p.startDate || '—'} • Target: ${p.expectedEndDate || 'TBD'}
+              </div>
+            </div>
+          </div>
+
+          <!-- Reference Website Benchmark -->
+          ${p.referenceUrl ? `
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-size: 0.775rem; font-weight: 800; color: #1e40af; text-transform: uppercase;">Reference Benchmark:</span>
+                <span style="font-size: 0.825rem; color: #1e3a8a; margin-left: 0.5rem; font-family: var(--font-mono);">${API.escapeHtml(p.referenceUrl)}</span>
+              </div>
+              <a href="${p.referenceUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-weight: 700;">
+                🌐 Open Reference Website ↗
+              </a>
+            </div>
+          ` : ''}
+
+          <!-- Marketing Team & Notes -->
+          <div style="display: flex; gap: 1.5rem; background: var(--slate-50); padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.8rem; color: var(--slate-600); margin-bottom: 1rem;">
+            <div><strong>Client Comm Exec:</strong> ${API.escapeHtml(p.commExecutiveName || 'Rajesh Kumar')}</div>
+            <div><strong>Documentation Coordinator:</strong> ${API.escapeHtml(p.docCoordinatorName || 'Priya Sharma')}</div>
+            ${p.remarks ? `<div style="margin-left: auto; color: var(--amber-700);"><strong>Marketing Note:</strong> ${API.escapeHtml(p.remarks)}</div>` : ''}
+          </div>
+
+          <!-- Requirements -->
+          <div style="margin-bottom: 1rem;">
+            <div style="font-size: 0.775rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.4rem;">Project Requirements:</div>
+            <ul class="features-list" style="margin-bottom: 0;">
+              ${(p.requirements || []).map(r => `<li>${API.escapeHtml(r)}</li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- Downloadable Project Requirement Documents (.docx, .pdf, .zip) -->
+          <div style="margin-bottom: 1rem; background: #ffffff; border: 1px solid var(--slate-200); border-radius: 8px; padding: 0.85rem;">
+            <div style="font-size: 0.775rem; font-weight: 800; text-transform: uppercase; color: var(--slate-500); margin-bottom: 0.4rem;">
+              📄 Uploaded Requirements & Assets (${zips.length} files available):
+            </div>
+            ${zips.length === 0 ? '<div style="font-size: 0.8rem; color: var(--slate-400); font-style: italic;">No requirement documents uploaded yet.</div>' : `
+              <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                ${zips.map(z => `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.6rem; background: var(--slate-50); border-radius: 6px; font-size: 0.8rem;">
+                    <span>📄 <strong>${API.escapeHtml(z.originalName)}</strong> (${z.sizeKb} KB) - uploaded by ${z.uploadedBy}</span>
+                    <a href="/api/projects/${p.id}/files/${z.filename}" class="btn btn-secondary btn-sm" download>📥 Download File</a>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- Website Testing & Final Submissions -->
+          <div style="background: var(--primary-light); border: 1px solid var(--primary-border); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--primary);">Website URLs & Submissions</span>
+              <div style="display: flex; gap: 0.4rem;">
+                <button class="btn btn-secondary btn-sm" onclick="openTestingSubmitModal('${p.id}')">1. Submit Testing Website</button>
+                <button class="btn btn-primary btn-sm" onclick="openFinalSubmitModal('${p.id}')">2. Submit Final Website</button>
+              </div>
+            </div>
+            <div style="font-size: 0.825rem; display: flex; flex-direction: column; gap: 0.35rem;">
+              <div>
+                <strong>Testing Website:</strong> 
+                ${p.testingUrl ? `<a href="${p.testingUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700;">🔗 ${p.testingUrl}</a> (${p.testingStatus || 'Submitted'})` : '<span style="color: var(--slate-500); font-style: italic;">Not submitted yet</span>'}
+              </div>
+              <div>
+                <strong>Final Production Website:</strong> 
+                ${p.finalUrl ? `<a href="${p.finalUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--emerald-600); font-weight: 700;">🚀 ${p.finalUrl}</a> (${p.finalApprovalStatus || 'Submitted'})` : '<span style="color: var(--slate-500); font-style: italic;">Not submitted yet</span>'}
+              </div>
+            </div>
+          </div>
+
+          <!-- PAYMENT INFORMATION (VIEW-ONLY ACCESS FOR DEVELOPERS) -->
+          <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 8px; padding: 0.85rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-size: 0.775rem; font-weight: 800; text-transform: uppercase; color: var(--slate-600);">
+                💳 Payment Information (View-Only)
+              </span>
+              <span class="pill ${payBadgeCls}">${pay.status || 'Payment Pending'}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; font-size: 0.8rem;">
+              <div>
+                <span style="color: var(--slate-500); font-size: 0.7rem; display: block;">Total Project Amount:</span>
+                <strong class="price-tag">${API.formatCurrency(pay.totalAmount || 0, pay.currency || 'INR')}</strong>
+              </div>
+              <div>
+                <span style="color: var(--slate-500); font-size: 0.7rem; display: block;">Amount Paid:</span>
+                <strong class="price-tag" style="color: var(--emerald-600);">${API.formatCurrency(pay.amountPaid || 0, pay.currency || 'INR')}</strong>
+              </div>
+              <div>
+                <span style="color: var(--slate-500); font-size: 0.7rem; display: block;">Payment Verification:</span>
+                <strong>${pay.status === 'Payment Verified' ? '✓ Verified by Admin' : 'Pending Verification'}</strong>
+              </div>
+              <div>
+                <span style="color: var(--slate-500); font-size: 0.7rem; display: block;">Completion Sign-off:</span>
+                <strong>${p.status === 'Project Completed' ? 'Approved & Completed' : (pay.status === 'Payment Verified' ? 'Ready for Sign-off' : 'Awaiting Payment')}</strong>
+              </div>
+            </div>
+            ${pay.notes ? `
+              <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--slate-600); border-top: 1px dashed var(--slate-200); padding-top: 0.35rem;">
+                <strong>Payment Notes:</strong> ${API.escapeHtml(pay.notes)}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Progress Slider Display -->
+          <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.25rem;">
+              <span>Sprint Progress: ${p.progress || 0}%</span>
+              <span>Last update: ${p.lastUpdated || 'Today'}</span>
+            </div>
+            <div style="height: 8px; background: var(--slate-100); border-radius: 999px; overflow: hidden;">
+              <div style="height: 100%; width: ${p.progress || 0}%; background: var(--primary);"></div>
+            </div>
+          </div>
+
+          <div style="background: var(--slate-50); padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: var(--slate-700); margin-bottom: 0.2rem;">Engineering Work Log:</div>
+            <div style="color: var(--slate-600); line-height: 1.4;">${API.escapeHtml(p.workDescription || 'No description recorded yet.')}</div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="openTestingSubmitModal('${p.id}')">Submit Testing Link</button>
+            <button class="btn btn-secondary btn-sm" onclick="openFinalSubmitModal('${p.id}')">Submit Final Link</button>
+            <button class="btn btn-primary btn-sm" onclick="openProgressModal('${p.id}')">Update Milestone Progress</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderChangeRequestsTable() {
+      const tbody = document.getElementById('table-dev-crs-body');
+      tbody.innerHTML = '';
+      let total = 0;
+
+      myAssignedProjects.forEach(p => {
+        (p.changeRequests || []).forEach(cr => {
+          total++;
+          let pBadge = 'pill-info';
+          if (cr.priority === 'High' || cr.priority === 'Critical') pBadge = 'pill-inactive';
+          if (cr.priority === 'Medium') pBadge = 'pill-warning';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${API.escapeHtml(p.clientName)}</strong></td>
+            <td>
+              <strong>${API.escapeHtml(cr.title)}</strong>
+              ${cr.file ? `<div style="margin-top: 0.25rem;"><a href="/api/projects/${p.id}/files/${cr.file.filename}" target="_blank" download style="color: var(--primary); font-size: 0.75rem; font-weight: 700;">📄 Download File (${API.escapeHtml(cr.file.originalName)})</a></div>` : ''}
+            </td>
+            <td style="font-size: 0.8rem; color: var(--slate-600); max-width: 250px;">${API.escapeHtml(cr.desc)}</td>
+            <td><span class="pill ${pBadge}">${cr.priority}</span></td>
+            <td style="font-size: 0.8rem;">${API.escapeHtml(cr.requestedBy)}</td>
+            <td style="font-size: 0.8rem; color: var(--slate-500);">${cr.date}</td>
+            <td><span class="pill ${cr.status === 'Completed' ? 'pill-active' : 'pill-warning'}">${cr.status}</span></td>
+            <td style="text-align: right;">
+              <select class="form-control form-control-sm" style="width: 140px;" onchange="updateCRStatus('${p.id}', '${cr.id}', this.value)">
+                <option value="Pending" ${cr.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="In Progress" ${cr.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Completed" ${cr.status === 'Completed' ? 'selected' : ''}>✓ Completed</option>
+              </select>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+
+      if (total === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--slate-400);">No customer change requests assigned.</td></tr>`;
+      }
+    }
+
+    async function updateCRStatus(projId, crId, newStatus) {
+      try {
+        await API.request(`/api/projects/${projId}/change-requests/${crId}`, 'PUT', { status: newStatus });
+        API.showToast(`Change request updated to "${newStatus}"`);
+        await refreshDeveloperPortal();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function openProgressModal(projId) {
+      const proj = myAssignedProjects.find(item => item.id === projId);
+      if (!proj) return;
+
+      document.getElementById('dev-modal-proj-id').value = proj.id;
+      document.getElementById('dev-modal-client-info').innerText = `${proj.clientName} (${proj.quoteNumber}) - ${proj.projectName || proj.categoryName}`;
+      document.getElementById('dev-modal-status').value = proj.status || 'Development Started';
+      document.getElementById('dev-modal-progress-range').value = proj.progress || 0;
+      document.getElementById('dev-modal-progress-num').value = proj.progress || 0;
+      document.getElementById('dev-modal-desc').value = proj.workDescription || '';
+      document.getElementById('dev-modal-remarks').value = proj.remarks || '';
+
+      API.openModal('modal-dev-progress');
+    }
+
+    async function saveProjectProgress(e) {
+      e.preventDefault();
+      const projId = document.getElementById('dev-modal-proj-id').value;
+      const payload = {
+        status: document.getElementById('dev-modal-status').value,
+        progress: parseInt(document.getElementById('dev-modal-progress-num').value, 10) || 0,
+        workDescription: document.getElementById('dev-modal-desc').value.trim(),
+        remarks: document.getElementById('dev-modal-remarks').value.trim()
+      };
+
+      try {
+        await API.request(`/api/projects/${projId}/progress`, 'PUT', payload);
+        API.closeModal('modal-dev-progress');
+        API.showToast('Milestone progress saved');
+        await refreshDeveloperPortal();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function openTestingSubmitModal(projId) {
+      const proj = myAssignedProjects.find(item => item.id === projId);
+      if (!proj) return;
+
+      document.getElementById('testing-modal-proj-id').value = proj.id;
+      document.getElementById('testing-modal-url').value = proj.testingUrl || '';
+      document.getElementById('testing-modal-desc').value = proj.testingDescription || '';
+      document.getElementById('testing-modal-date').value = proj.testingDate || new Date().toISOString().split('T')[0];
+
+      API.openModal('modal-submit-testing');
+    }
+
+    async function submitTestingWebsite(e) {
+      e.preventDefault();
+      const projId = document.getElementById('testing-modal-proj-id').value;
+      const payload = {
+        testingUrl: document.getElementById('testing-modal-url').value.trim(),
+        testingDescription: document.getElementById('testing-modal-desc').value.trim(),
+        submissionDate: document.getElementById('testing-modal-date').value
+      };
+
+      try {
+        await API.request(`/api/projects/${projId}/testing-submission`, 'PUT', payload);
+        API.closeModal('modal-submit-testing');
+        API.showToast('Testing website submitted for Admin & Marketing review');
+        await refreshDeveloperPortal();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function openFinalSubmitModal(projId) {
+      const proj = myAssignedProjects.find(item => item.id === projId);
+      if (!proj) return;
+
+      document.getElementById('final-modal-proj-id').value = proj.id;
+      document.getElementById('final-modal-url').value = proj.finalUrl || '';
+      document.getElementById('final-modal-desc').value = proj.finalDescription || '';
+      document.getElementById('final-modal-date').value = proj.finalDate || new Date().toISOString().split('T')[0];
+
+      API.openModal('modal-submit-final');
+    }
+
+    async function submitFinalWebsite(e) {
+      e.preventDefault();
+      const projId = document.getElementById('final-modal-proj-id').value;
+      const payload = {
+        finalUrl: document.getElementById('final-modal-url').value.trim(),
+        finalDescription: document.getElementById('final-modal-desc').value.trim(),
+        submissionDate: document.getElementById('final-modal-date').value
+      };
+
+      try {
+        await API.request(`/api/projects/${projId}/final-submission`, 'PUT', payload);
+        API.closeModal('modal-submit-final');
+        API.showToast('Final website submitted for Admin Review & Approval');
+        await refreshDeveloperPortal();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+  </script>
+</body>
+</html>

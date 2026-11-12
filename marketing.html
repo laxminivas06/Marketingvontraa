@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Portal - Aivontraa Automation Pvt. Ltd.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div class="sidebar-backdrop" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('active');"></div>
+
+    <!-- SIDEBAR (COMPLETELY FIXED & NON-SCROLLABLE) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-logo-card">
+            <img src="https://aivontraa.com/assets/images/ai.png" alt="Aivontraa Logo" class="brand-logo-img">
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 800; color: var(--slate-900); line-height: 1.1;">Aivontraa</div>
+            <div style="font-size: 0.65rem; color: var(--slate-400); font-weight: 700;">Automation Pvt. Ltd.</div>
+          </div>
+        </div>
+        <span class="portal-badge badge-marketing">SALES</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">MARKETING OPERATIONS</div>
+        <a href="/marketing/calculator" class="nav-item active" data-tab="calculator" onclick="handleNavClick('calculator', event, this)">
+          <span class="nav-icon">🧮</span>
+          <span>Price Calculator & Quote</span>
+        </a>
+        <a href="/marketing/references" class="nav-item" data-tab="references" onclick="handleNavClick('references', event, this)">
+          <span class="nav-icon">🌐</span>
+          <span>Website References</span>
+        </a>
+        <a href="/marketing/tracking" class="nav-item" data-tab="tracking" onclick="handleNavClick('tracking', event, this)">
+          <span class="nav-icon">📊</span>
+          <span>Customer Acceptance</span>
+        </a>
+        <a href="/marketing/requirements" class="nav-item" data-tab="requirements" onclick="handleNavClick('requirements', event, this)">
+          <span class="nav-icon">📦</span>
+          <span>Project Documents</span>
+        </a>
+        <a href="/marketing/change-requests" class="nav-item" data-tab="change-requests" onclick="handleNavClick('change-requests', event, this)">
+          <span class="nav-icon">🔄</span>
+          <span>Change Requests</span>
+        </a>
+        <a href="/marketing/commission" class="nav-item" data-tab="commission" onclick="handleNavClick('commission', event, this)">
+          <span class="nav-icon">💼</span>
+          <span>Commission Structure</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="font-size: 0.72rem; color: var(--slate-400); margin-bottom: 0.5rem; text-align: center; font-weight: 600;">
+          Aivontraa Automation Pvt. Ltd.
+        </div>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="API.logout()">
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT (INDEPENDENTLY SCROLLABLE) -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-backdrop').classList.toggle('active');">☰</button>
+          <div class="page-title" id="page-heading">Price Calculator & Proposal</div>
+        </div>
+        <div class="topbar-right">
+          <div class="user-profile-badge">
+            <div class="user-avatar" id="header-user-avatar" style="background: var(--primary);">M</div>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-900);" id="header-user-name">Marketing Executive</div>
+              <div style="font-size: 0.7rem; color: #1e40af; font-weight: 800;" id="header-user-role">MARKETING TEAM</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <!-- 1. PRICE CALCULATOR & QUOTATION CREATION TAB -->
+        <section id="tab-calculator" class="tab-pane">
+          <div class="section-header">
+            <div>
+              <h2>Integrated Price Calculator & Quotation Creator</h2>
+              <p>Configure project requirements, billing cadence (Monthly in INR ₹ vs Annual), 18% GST calculation, and generate professional client proposals.</p>
+            </div>
+            <!-- Cadence Toggle Switcher -->
+            <div class="cadence-toggle-group">
+              <button type="button" class="cadence-toggle-btn active" id="cadence-monthly-btn" onclick="setBillingCadence('Monthly')">
+                Monthly Pricing (INR ₹)
+              </button>
+              <button type="button" class="cadence-toggle-btn" id="cadence-annual-btn" onclick="setBillingCadence('Annual')">
+                Annual Pricing
+              </button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.3fr 0.9fr; gap: 2rem; align-items: start;">
+            <!-- LEFT CONFIGURATION FORM -->
+            <div>
+              <!-- Client & Lead Info -->
+              <div class="card">
+                <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 1rem;">
+                  1. Customer & Account Details
+                </h3>
+
+                <div class="form-group">
+                  <label for="calc-client-name">Customer / Business Name *</label>
+                  <input type="text" id="calc-client-name" class="form-control" placeholder="e.g. Apex Global Logistics Ltd." required oninput="calculateTotal()">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group">
+                    <label for="calc-comm-exec">Client Communication Lead</label>
+                    <input type="text" id="calc-comm-exec" class="form-control" placeholder="Representative Name">
+                  </div>
+                  <div class="form-group">
+                    <label for="calc-doc-coordinator">Documentation Specialist</label>
+                    <input type="text" id="calc-doc-coordinator" class="form-control" placeholder="Coordinator Name">
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group">
+                    <label for="calc-classification">Classification *</label>
+                    <select id="calc-classification" class="form-control" onchange="filterCategoriesByClassification()">
+                      <option value="All">All Types</option>
+                      <option value="Website">Website</option>
+                      <option value="Software Application">Software Application</option>
+                      <option value="Mobile Application">Mobile Application</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="calc-currency">Currency *</label>
+                    <select id="calc-currency" class="form-control" onchange="onCurrencyChanged()">
+                      <option value="INR" selected>Indian Rupees (INR ₹)</option>
+                      <option value="USD">United States Dollars (USD $)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="calc-category">Select Project Solution Category *</label>
+                  <select id="calc-category" class="form-control" onchange="onCategoryChanged()">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+              </div>
+
+              <!-- Category Details Box with Reference Website Preview -->
+              <div class="card" id="calc-cat-details-card" style="background: var(--slate-50); border: 1px solid var(--slate-200);">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                  <h4 id="cat-disp-name" style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">-</h4>
+                  <div id="cat-disp-price" style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 800; color: var(--primary);">₹0</div>
+                </div>
+                <p id="cat-disp-desc" style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 0.75rem;">-</p>
+
+                <!-- Associated Reference Website -->
+                <div id="cat-disp-ref-box" style="display: none; margin-bottom: 0.85rem; padding: 0.6rem 0.85rem; background: #ffffff; border: 1px solid var(--slate-200); border-radius: 8px; align-items: center; justify-content: space-between;">
+                  <span style="font-size: 0.775rem; color: var(--slate-700); font-weight: 700;">Reference Website Benchmark:</span>
+                  <a id="cat-disp-ref-link" href="#" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-size: 0.825rem; font-weight: 700; text-decoration: underline;">
+                    Open Reference Site ↗
+                  </a>
+                </div>
+
+                <div>
+                  <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-500); margin-bottom: 0.35rem;">Included Features:</div>
+                  <ul class="features-list" id="cat-disp-features" style="margin-bottom: 0;">
+                    <!-- Features list -->
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Domain Details -->
+              <div class="card">
+                <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 1rem;">
+                  2. Domain Registration Details
+                </h3>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="calc-domain-name">Target Domain Name</label>
+                    <input type="text" id="calc-domain-name" class="form-control" placeholder="e.g. apexlogistics.com">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="calc-domain-amount" id="label-domain-amount">Domain Amount (INR ₹)</label>
+                    <input type="number" id="calc-domain-amount" class="form-control" placeholder="1200" min="0" oninput="calculateTotal()" style="font-family: var(--font-mono); font-weight: 700;">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Optional Add-ons -->
+              <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <div>
+                    <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900);">
+                      3. Optional Add-ons
+                    </h3>
+                    <p style="font-size: 0.775rem; color: var(--slate-500);">Select add-ons with monthly or annual billing</p>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="openAddonsSelectorModal()">
+                    + ADD ADD-ON
+                  </button>
+                </div>
+
+                <div id="selected-addons-container">
+                  <div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">No add-ons selected yet. Click "+ ADD ADD-ON" above.</div>
+                </div>
+              </div>
+
+              <!-- Project Requirements Document Upload (.docx, .pdf, .zip <= 500 KB) -->
+              <div class="card">
+                <h3 style="font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 0.5rem;">
+                  4. Attach Requirements Document
+                </h3>
+                <p style="font-size: 0.775rem; color: var(--slate-500); margin-bottom: 0.75rem;">
+                  Upload specifications, wireframes, or branding assets (.docx, .pdf, .zip, max 500 KB). Directly accessible to developers after assignment.
+                </p>
+                <input type="file" id="calc-requirement-file" class="form-control" accept=".docx, .pdf, .zip">
+              </div>
+            </div>
+
+            <!-- RIGHT SUMMARY (WITH ITEMISED 18% GST BREAKDOWN) -->
+            <div>
+              <div class="card" style="position: sticky; top: 85px; border-color: var(--primary-border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                  <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--slate-900);">
+                    Quotation Summary
+                  </h3>
+                  <span class="pill pill-info" id="cadence-badge-display">Monthly Cadence</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed var(--slate-200); font-size: 0.85rem;">
+                  <span style="color: var(--slate-500);">Base Solution Scope:</span>
+                  <strong class="price-tag" id="sum-base-price">₹0</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed var(--slate-200); font-size: 0.85rem;">
+                  <span style="color: var(--slate-500);">Domain Registration:</span>
+                  <strong class="price-tag" id="sum-domain-price">₹0</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed var(--slate-200); font-size: 0.85rem;">
+                  <span style="color: var(--slate-500);">Add-ons Total:</span>
+                  <strong class="price-tag" id="sum-addons-price">₹0</strong>
+                </div>
+
+                <!-- GST 18% Breakdown Box -->
+                <div class="gst-breakdown-box">
+                  <div class="gst-row">
+                    <span>Subtotal:</span>
+                    <strong id="sum-subtotal-price">₹0</strong>
+                  </div>
+                  <div class="gst-row">
+                    <span>Applicable GST (18%):</span>
+                    <strong id="sum-gst-price" style="color: var(--slate-700);">₹0</strong>
+                  </div>
+                  <div class="gst-row total">
+                    <span>Total Quotation Amount:</span>
+                    <strong id="sum-total-price" style="color: var(--primary);">₹0</strong>
+                  </div>
+                </div>
+
+                <!-- INTERNAL COMMISSION (PRIVATE TO MARKETING) -->
+                <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 1.25rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500);">Internal Commission (Private)</span>
+                    <span class="pill pill-active" id="sum-comm-rate" style="font-size: 0.75rem;">7%</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span style="font-size: 0.8rem; color: var(--slate-600);" id="sum-comm-slab-title">Standard Tier</span>
+                    <span id="sum-comm-amount" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--emerald-600);">₹0</span>
+                  </div>
+                  <div style="font-size: 0.7rem; color: var(--slate-400); margin-top: 0.35rem;">
+                    🔒 Commission is strictly excluded from client quotations and proposals.
+                  </div>
+                </div>
+
+                <!-- GENERATE PROPOSAL BUTTON -->
+                <button type="button" class="btn btn-primary btn-block" style="padding: 0.85rem; font-size: 1rem;" onclick="generateOfficialQuotation()">
+                  📄 Generate Official Quotation →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. WEBSITE REFERENCES PAGE -->
+        <section id="tab-references" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Website References Benchmarks</h2>
+              <p>Explore live reference websites configured by administration. Open live examples in a new browser tab for client discussions.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <input type="text" id="ref-search-input" class="form-control form-control-sm" placeholder="🔍 Search references or features..." style="width: 240px;" oninput="filterReferences()">
+              <select id="ref-filter-type" class="form-control form-control-sm" style="width: 180px;" onchange="filterReferences()">
+                <option value="All">All Classifications</option>
+                <option value="Website">Website</option>
+                <option value="Software Application">Software Application</option>
+                <option value="Mobile Application">Mobile Application</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="references-cards-container" class="ref-grid">
+            <!-- Injected via renderReferences() -->
+          </div>
+        </section>
+
+        <!-- 3. OFFICIAL QUOTATION PREVIEW & PDF VIEW -->
+        <section id="tab-quotation-view" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Official Customer Proposal Document</h2>
+              <p>Review and download professional client quotation. Neatly fits within 1–2 pages.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-sm" onclick="switchTab('calculator', true)">
+                ← Edit Parameters
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="window.print()">
+                🖨️ Print Quotation
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="downloadQuotationPDF()">
+                📥 Download PDF
+              </button>
+              <button class="btn btn-success btn-sm" onclick="shareQuotation()">
+                🔗 Share Proposal
+              </button>
+            </div>
+          </div>
+
+          <!-- Printable Document Container (1-2 pages crisp layout) -->
+          <div class="quotation-document" id="quotation-print-area">
+            <div class="quotation-header">
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="brand-logo-card">
+                  <img src="https://aivontraa.com/assets/images/ai.png" alt="Aivontraa Logo" class="brand-logo-img" style="height: 38px;">
+                </div>
+                <div>
+                  <div class="company-title">AIVONTRAA AUTOMATION PVT. LTD.</div>
+                  <div class="company-meta">
+                    Enterprise Software, AI Automation, Web Solutions & Cloud Platforms<br>
+                    Website: www.aivontraa.com • Email: laxminivasmorishetty143@gmail.com<br>
+                    CIN: U72900DL2026PTC001234 • GSTIN: 36AAICA1234F1Z9
+                  </div>
+                </div>
+              </div>
+              <div class="quotation-badge">
+                <span class="portal-badge badge-marketing" style="font-size: 0.75rem; margin-bottom: 0.35rem;">OFFICIAL QUOTATION</span>
+                <div class="quote-number" id="doc-quote-number">AIV-QT-2026-0000</div>
+                <div style="font-size: 0.775rem; color: var(--slate-500); margin-top: 0.2rem;" id="doc-quote-date">Date: 2026-03-12</div>
+              </div>
+            </div>
+
+            <!-- Customer & Marketing Lead Info -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; background: var(--slate-50); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--slate-200);">
+              <div>
+                <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.25rem;">PREPARED FOR:</div>
+                <div id="doc-client-name" style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">-</div>
+                <div id="doc-domain-name" style="font-size: 0.85rem; color: var(--primary); font-family: var(--font-mono); margin-top: 0.2rem;">-</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.25rem;">CLIENT SUCCESS TEAM:</div>
+                <div id="doc-executive-name" style="font-size: 0.95rem; font-weight: 700; color: var(--slate-800);">-</div>
+                <div style="font-size: 0.775rem; color: var(--slate-500); margin-top: 0.2rem;">Aivontraa Commercial Delivery Operations</div>
+              </div>
+            </div>
+
+            <!-- Solution Deliverables -->
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-bottom: 0.35rem;">
+                Project Solution: <span id="doc-category-name" style="color: var(--primary);">-</span>
+              </h4>
+              <p id="doc-category-desc" style="font-size: 0.85rem; color: var(--slate-600); margin-bottom: 0.75rem; line-height: 1.5;">-</p>
+
+              <!-- Reference Website Benchmark -->
+              <div id="doc-reference-url-box" style="display: none; font-size: 0.8rem; color: var(--slate-600); margin-bottom: 0.75rem; padding: 0.4rem 0.65rem; background: var(--slate-100); border-radius: 6px;">
+                <strong>Benchmark Reference:</strong> <span id="doc-reference-url">-</span>
+              </div>
+
+              <div style="font-size: 0.775rem; font-weight: 800; text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.4rem;">
+                Included Deliverable Specifications:
+              </div>
+              <ul class="features-list" id="doc-features-list">
+                <!-- Features -->
+              </ul>
+            </div>
+
+            <!-- Financial Schedule Table with Separate GST (18%) -->
+            <div style="margin-bottom: 2rem;">
+              <h4 style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate-500); margin-bottom: 0.75rem;">
+                Investment Schedule
+              </h4>
+              <table style="width: 100%; border: 1px solid var(--slate-200); border-radius: var(--radius-md);">
+                <thead>
+                  <tr style="background: var(--slate-100);">
+                    <th style="padding: 0.65rem 1rem;">Item Description</th>
+                    <th style="text-align: right; padding: 0.65rem 1rem;">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="doc-items-tbody">
+                  <!-- Items injected -->
+                </tbody>
+                <tfoot>
+                  <tr style="background: var(--slate-50); border-top: 1px solid var(--slate-200);">
+                    <td style="padding: 0.65rem 1rem; font-weight: 700; color: var(--slate-700);">Subtotal:</td>
+                    <td id="doc-subtotal-price" style="padding: 0.65rem 1rem; text-align: right; font-weight: 700; font-family: var(--font-mono); color: var(--slate-800);">-</td>
+                  </tr>
+                  <tr style="background: var(--slate-50);">
+                    <td style="padding: 0.65rem 1rem; font-weight: 700; color: var(--slate-700);">Applicable GST (18%):</td>
+                    <td id="doc-gst-price" style="padding: 0.65rem 1rem; text-align: right; font-weight: 700; font-family: var(--font-mono); color: var(--slate-800);">-</td>
+                  </tr>
+                  <tr style="background: #ffffff; border-top: 2px solid var(--slate-300);">
+                    <td style="padding: 1rem; font-size: 1.15rem; font-weight: 800; color: var(--slate-900);">Total Quotation Amount:</td>
+                    <td id="doc-total-price" style="padding: 1rem; text-align: right; font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: var(--primary);">-</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div style="border-top: 1px solid var(--slate-200); padding-top: 1.25rem;">
+              <h5 style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.5rem; letter-spacing: 0.05em;">
+                Terms & Conditions
+              </h5>
+              <ol style="font-size: 0.775rem; color: var(--slate-500); padding-left: 1.2rem; line-height: 1.6;">
+                <li>50% advance upon project kickoff; remaining 50% upon final staging review and deployment.</li>
+                <li>Production schedule commences immediately following receipt of client assets, credentials, and brief.</li>
+                <li>Includes 30 calendar days of comprehensive post-launch warranty, bug fixing, and operational support.</li>
+                <li>Commission information is strictly excluded from client quotations.</li>
+              </ol>
+            </div>
+
+            <!-- Signatures -->
+            <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px dashed var(--slate-200);">
+              <div style="text-align: center; width: 220px;">
+                <div style="border-bottom: 1px solid var(--slate-400); height: 40px; margin-bottom: 0.5rem;"></div>
+                <div style="font-size: 0.775rem; font-weight: 700; color: var(--slate-700);">Client Acceptance Signature</div>
+              </div>
+              <div style="text-align: center; width: 220px;">
+                <div style="border-bottom: 1px solid var(--slate-400); height: 40px; margin-bottom: 0.5rem;"></div>
+                <div style="font-size: 0.775rem; font-weight: 700; color: var(--slate-700);">Aivontraa Automation Authorized</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. CUSTOMER ACCEPTANCE TRACKING TAB -->
+        <section id="tab-tracking" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Customer Acceptance Tracking & Engineering Handover</h2>
+              <p>Strict Lifecycle: <em>Draft ➔ Generated ➔ Sent to Customer ➔ Accepted ➔ Rejected</em>. When accepted, click <strong>ASSIGN</strong> to initiate handover. Quotations cannot be deleted.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Quote #</th>
+                  <th>Customer Name</th>
+                  <th>Solution Category</th>
+                  <th>Subtotal</th>
+                  <th>GST (18%)</th>
+                  <th>Total Amount</th>
+                  <th>Lead Exec</th>
+                  <th>Current Status</th>
+                  <th>Update Status</th>
+                  <th style="text-align: right;">Engineering Handover</th>
+                </tr>
+              </thead>
+              <tbody id="table-marketing-tracking-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 5. PROJECT REQUIREMENTS DOCUMENTS (.docx, .pdf, .zip <= 500 KB) -->
+        <section id="tab-requirements" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Project Requirements Documents</h2>
+              <p>Upload brand assets, logos, wireframes, and guidelines (.docx, .pdf, .zip <= 500 KB). Developers access uploaded assets immediately upon sprint assignment.</p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; align-items: end;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="select-zip-project">Select Project / Customer *</label>
+                <select id="select-zip-project" class="form-control" onchange="renderProjectZipAssets()">
+                  <!-- Projects populated -->
+                </select>
+              </div>
+
+              <div>
+                <input type="file" id="zip-file-upload-input" accept=".docx, .pdf, .zip" style="display: none;" onchange="handleDocFileUpload(event)">
+                <button class="btn btn-primary btn-block" onclick="document.getElementById('zip-file-upload-input').click()">
+                  📤 Upload Document (.docx, .pdf, .zip)
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-top: 0.75rem; font-size: 0.775rem; color: var(--slate-500); background: var(--slate-50); padding: 0.6rem 0.85rem; border-radius: 6px; border: 1px solid var(--slate-200);">
+              ⚡ <strong>Upload Rules:</strong> Maximum <strong>500 KB</strong> per file. Supported formats: <strong>.docx, .pdf, .zip</strong>.
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Document Name</th>
+                  <th>File Size</th>
+                  <th>Uploaded Date & Time</th>
+                  <th>Uploaded By</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-project-zips-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. CHANGE REQUESTS TAB -->
+        <section id="tab-change-requests" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Customer Change Requests</h2>
+              <p>Submit client requested revisions and attach scope files (.docx, .pdf, .zip <= 500 KB). Automatically synchronized with engineering.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAddChangeRequestModal()">
+              + Submit Change Request
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer / Project</th>
+                  <th>Change Request Title & Scope</th>
+                  <th>Priority</th>
+                  <th>Requested By</th>
+                  <th>Attached File</th>
+                  <th>Date</th>
+                  <th>Engineering Status</th>
+                </tr>
+              </thead>
+              <tbody id="table-change-requests-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 7. COMMISSION STRUCTURE TAB -->
+        <section id="tab-commission" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Marketing Commission Policy</h2>
+              <p>Transparent commission policy tiers set by administration. Calculated on subtotal selling price (excluding domain charges).</p>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            <!-- INR Commission Structure -->
+            <div class="card" style="border-top: 4px solid var(--primary);">
+              <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900); margin-bottom: 1rem;">
+                🇮🇳 Indian Commission Tiers (INR ₹)
+              </h3>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tier</th>
+                      <th>Selling Price</th>
+                      <th>Commission %</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mktg-slabs-inr-tbody">
+                    <!-- Slabs -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- USD Commission Structure -->
+            <div class="card" style="border-top: 4px solid var(--emerald-600);">
+              <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900); margin-bottom: 1rem;">
+                🌐 Foreign Commission Tiers (USD $)
+              </h3>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tier</th>
+                      <th>Selling Price</th>
+                      <th>Commission %</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mktg-slabs-usd-tbody">
+                    <!-- Slabs -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Add-ons Selection Modal -->
+  <div class="modal-backdrop" id="modal-addons-picker">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Select Optional Add-ons</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-addons-picker')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.8rem; color: var(--slate-500); margin-bottom: 1rem;">
+          Choose add-on modules and specify billing cadence (Monthly or Yearly) according to client preference.
+        </p>
+        <div id="available-addons-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-addons-picker')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Request Modal with .docx, .pdf, .zip Upload <= 500 KB -->
+  <div class="modal-backdrop" id="modal-change-request">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Submit Customer Change Request</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-change-request')">&times;</button>
+      </div>
+      <form id="form-change-request" onsubmit="submitChangeRequest(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="cr-project">Target Active Project *</label>
+            <select id="cr-project" class="form-control" required>
+              <!-- Projects -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cr-title">Change Request Title *</label>
+            <input type="text" id="cr-title" class="form-control" placeholder="e.g. Add WhatsApp Floating Button" required>
+          </div>
+          <div class="form-group">
+            <label for="cr-priority">Priority *</label>
+            <select id="cr-priority" class="form-control">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cr-requested-by">Requested By (Client Representative Name)</label>
+            <input type="text" id="cr-requested-by" class="form-control" placeholder="e.g. Mr. Rajesh (Director)">
+          </div>
+          <div class="form-group">
+            <label for="cr-desc">Detailed Change Scope & Guidelines *</label>
+            <textarea id="cr-desc" class="form-control" rows="3" placeholder="Provide exact specifications for the engineering developer..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="cr-doc-file">Attach Change Request Document (.docx, .pdf, .zip <= 500 KB)</label>
+            <input type="file" id="cr-doc-file" class="form-control" accept=".docx, .pdf, .zip">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-change-request')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Forward to Developer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    let activeCurrency = 'INR';
+    let currentBillingCadence = 'Monthly'; // 'Monthly' in INR or 'Annual'
+    let selectedAddons = [];
+    let currentCalculatedQuote = null;
+    let currentActiveTab = 'calculator';
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth(['marketing'])) return;
+
+      const user = API.getCurrentUser();
+      if (user) {
+        if (document.getElementById('calc-comm-exec')) {
+          document.getElementById('calc-comm-exec').value = user.name || user.email;
+        }
+      }
+
+      currentActiveTab = API.initRouting('/marketing', 'calculator', (tabId) => {
+        switchTab(tabId, false);
+      });
+
+      switchTab(currentActiveTab, false);
+      await refreshData();
+    });
+
+    function setBillingCadence(cadence) {
+      currentBillingCadence = cadence;
+      const mBtn = document.getElementById('cadence-monthly-btn');
+      const aBtn = document.getElementById('cadence-annual-btn');
+      const badge = document.getElementById('cadence-badge-display');
+
+      if (cadence === 'Monthly') {
+        mBtn.classList.add('active');
+        aBtn.classList.remove('active');
+        if (badge) badge.innerText = 'Monthly Cadence (INR ₹)';
+        // When monthly is clicked, enforce INR currency display
+        document.getElementById('calc-currency').value = 'INR';
+        activeCurrency = 'INR';
+      } else {
+        aBtn.classList.add('active');
+        mBtn.classList.remove('active');
+        if (badge) badge.innerText = 'Annual Cadence';
+      }
+
+      calculateTotal();
+    }
+
+    function handleNavClick(tabId, event, element) {
+      if (event) event.preventDefault();
+      switchTab(tabId, true);
+    }
+
+    function switchTab(tabId, pushHistory = true) {
+      currentActiveTab = tabId;
+      document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) {
+        target.style.display = 'block';
+      } else {
+        const fallback = document.getElementById('tab-calculator');
+        if (fallback) fallback.style.display = 'block';
+        tabId = 'calculator';
+      }
+
+      const activeNav = document.querySelector(`.nav-item[data-tab='${tabId}']`);
+      if (activeNav) activeNav.classList.add('active');
+
+      const headings = {
+        'calculator': 'Price Calculator & Proposal',
+        'references': 'Website References',
+        'quotation-view': 'Official Proposal Document',
+        'tracking': 'Customer Acceptance Tracking',
+        'requirements': 'Project Requirements Documents',
+        'change-requests': 'Customer Change Requests',
+        'commission': 'Marketing Commission Policy'
+      };
+      document.getElementById('page-heading').innerText = headings[tabId] || 'Marketing Portal';
+
+      if (pushHistory) {
+        API.navigate('/marketing', tabId, headings[tabId]);
+      }
+
+      if (window.innerWidth <= 992) {
+        document.querySelector('.sidebar').classList.remove('open');
+        document.querySelector('.sidebar-backdrop')?.classList.remove('active');
+      }
+
+      if (tabId === 'references') renderReferences();
+      if (tabId === 'tracking') renderTrackingTable();
+      if (tabId === 'requirements') populateProjectsDropdownForZip();
+      if (tabId === 'change-requests') renderChangeRequestsTable();
+      if (tabId === 'commission') renderCommissionPolicy();
+    }
+
+    async function refreshData() {
+      await API.syncState();
+      filterCategoriesByClassification();
+      renderReferences();
+      renderTrackingTable();
+      populateProjectsDropdownForZip();
+      renderChangeRequestsTable();
+      renderCommissionPolicy();
+    }
+
+    // -------------------------------------------------------------
+    // CALCULATOR & CATEGORIES
+    // -------------------------------------------------------------
+    function filterCategoriesByClassification() {
+      const cls = document.getElementById('calc-classification').value;
+      const select = document.getElementById('calc-category');
+      select.innerHTML = '';
+
+      const cats = API.state.categories || [];
+      const filtered = cls === 'All' ? cats : cats.filter(c => c.classification === cls);
+
+      if (filtered.length === 0) {
+        select.innerHTML = '<option value="">No categories in this classification</option>';
+        return;
+      }
+
+      filtered.forEach(c => {
+        select.innerHTML += `<option value="${c.id}">${API.escapeHtml(c.name)} (${c.classification})</option>`;
+      });
+
+      onCategoryChanged();
+    }
+
+    function onCurrencyChanged() {
+      activeCurrency = document.getElementById('calc-currency').value;
+      const domLabel = document.getElementById('label-domain-amount');
+      if (domLabel) {
+        domLabel.innerText = `Domain Amount (${activeCurrency} ${activeCurrency === 'INR' ? '₹' : '$'})`;
+      }
+      onCategoryChanged();
+    }
+
+    function onCategoryChanged() {
+      const catId = document.getElementById('calc-category').value;
+      const cat = (API.state.categories || []).find(c => c.id === catId);
+      if (!cat) return;
+
+      const rawPrice = activeCurrency === 'USD' ? cat.basePriceUSD : cat.basePriceINR;
+      const price = currentBillingCadence === 'Monthly' ? Math.round(rawPrice / 10) : rawPrice;
+
+      document.getElementById('cat-disp-name').innerText = cat.name;
+      document.getElementById('cat-disp-price').innerText = `${API.formatCurrency(price, activeCurrency)}${currentBillingCadence === 'Monthly' ? '/mo' : ''}`;
+      document.getElementById('cat-disp-desc').innerText = cat.desc || '';
+
+      const refBox = document.getElementById('cat-disp-ref-box');
+      const refLink = document.getElementById('cat-disp-ref-link');
+      if (cat.referenceUrl) {
+        refBox.style.display = 'flex';
+        refLink.href = cat.referenceUrl;
+        refLink.innerText = `Open Reference (${cat.referenceUrl}) ↗`;
+      } else {
+        refBox.style.display = 'none';
+      }
+
+      const featsList = document.getElementById('cat-disp-features');
+      featsList.innerHTML = '';
+      (cat.features || []).forEach(f => {
+        featsList.innerHTML += `<li>${API.escapeHtml(f)}</li>`;
+      });
+
+      calculateTotal();
+    }
+
+    function calculateTotal() {
+      const catId = document.getElementById('calc-category').value;
+      const cat = (API.state.categories || []).find(c => c.id === catId);
+      const rawBase = cat ? (activeCurrency === 'USD' ? Number(cat.basePriceUSD) : Number(cat.basePriceINR)) : 0;
+      const basePrice = currentBillingCadence === 'Monthly' ? Math.round(rawBase / 10) : rawBase;
+      const domainAmount = Number(document.getElementById('calc-domain-amount').value) || 0;
+
+      let addonsTotal = 0;
+      selectedAddons.forEach(a => {
+        addonsTotal += Number(a.price) || 0;
+      });
+
+      const subtotal = basePrice + domainAmount + addonsTotal;
+      const gstCalc = API.calculateGST(subtotal);
+
+      // Proposal Summary
+      document.getElementById('sum-base-price').innerText = API.formatCurrency(basePrice, activeCurrency);
+      document.getElementById('sum-domain-price').innerText = API.formatCurrency(domainAmount, activeCurrency);
+      document.getElementById('sum-addons-price').innerText = API.formatCurrency(addonsTotal, activeCurrency);
+      document.getElementById('sum-subtotal-price').innerText = API.formatCurrency(subtotal, activeCurrency);
+      document.getElementById('sum-gst-price').innerText = API.formatCurrency(gstCalc.gstAmount, activeCurrency);
+      document.getElementById('sum-total-price').innerText = API.formatCurrency(gstCalc.totalAmount, activeCurrency);
+
+      // Private Commission (Calculated on subtotal before GST)
+      const comm = API.calculateCommission(subtotal, activeCurrency);
+      document.getElementById('sum-comm-rate').innerText = `${comm.rate}%`;
+      document.getElementById('sum-comm-slab-title').innerText = comm.slabTitle;
+      document.getElementById('sum-comm-amount').innerText = comm.formattedCommission;
+
+      currentCalculatedQuote = {
+        basePrice,
+        domainAmount,
+        addonsTotal,
+        subtotal,
+        gstAmount: gstCalc.gstAmount,
+        totalPrice: gstCalc.totalAmount,
+        commissionRate: comm.rate,
+        commissionAmount: comm.commissionAmount,
+        currency: activeCurrency,
+        billingCadence: currentBillingCadence,
+        cat
+      };
+    }
+
+    // -------------------------------------------------------------
+    // WEBSITE REFERENCES PAGE
+    // -------------------------------------------------------------
+    function renderReferences() {
+      const container = document.getElementById('references-cards-container');
+      if (!container) return;
+      const cats = API.state.categories || [];
+      const search = (document.getElementById('ref-search-input')?.value || '').toLowerCase();
+      const filterType = document.getElementById('ref-filter-type')?.value || 'All';
+
+      const filtered = cats.filter(c => {
+        const matchesType = filterType === 'All' || c.classification === filterType;
+        const matchesSearch = !search || 
+          c.name.toLowerCase().includes(search) || 
+          (c.desc && c.desc.toLowerCase().includes(search)) || 
+          (c.referenceUrl && c.referenceUrl.toLowerCase().includes(search)) ||
+          (c.features && c.features.some(f => f.toLowerCase().includes(search)));
+        return matchesType && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--slate-400);">No reference websites matching your search.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(c => {
+        const url = c.referenceUrl || 'https://example.com';
+        let domain = url;
+        try {
+          domain = new URL(url).hostname;
+        } catch(e) {}
+
+        return `
+          <div class="ref-card">
+            <div class="ref-card-header">
+              <div>
+                <span class="pill pill-info" style="font-size: 0.7rem; margin-bottom: 0.35rem;">${API.escapeHtml(c.classification || 'Website')}</span>
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900);">${API.escapeHtml(c.name)}</h3>
+              </div>
+              <div style="text-align: right; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: var(--slate-700);">
+                ₹${Number(c.basePriceINR).toLocaleString()} / $${Number(c.basePriceUSD).toLocaleString()}
+              </div>
+            </div>
+            <div class="ref-card-body">
+              <p style="font-size: 0.825rem; color: var(--slate-600); margin-bottom: 1rem; line-height: 1.45;">
+                ${API.escapeHtml(c.desc || 'Comprehensive digital solution designed for high performance.')}
+              </p>
+
+              <div class="ref-preview-box">
+                <span class="ref-browser-dot" style="background: #ef4444;"></span>
+                <span class="ref-browser-dot" style="background: #f59e0b;"></span>
+                <span class="ref-browser-dot" style="background: #10b981;"></span>
+                <span style="font-family: var(--font-mono); font-size: 0.775rem; color: var(--slate-600); margin-left: 0.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  🌐 ${API.escapeHtml(domain)}
+                </span>
+              </div>
+
+              <div style="font-size: 0.725rem; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 0.4rem;">
+                Core Deliverables:
+              </div>
+              <ul class="features-list" style="margin: 0; padding: 0;">
+                ${(c.features || []).slice(0, 3).map(f => `<li style="font-size: 0.775rem;">${API.escapeHtml(f)}</li>`).join('')}
+              </ul>
+            </div>
+            <div class="ref-card-footer">
+              <span style="font-size: 0.75rem; color: var(--slate-400); font-family: var(--font-mono);">
+                ${c.referenceUrl ? 'Configured URL' : 'Default benchmark'}
+              </span>
+              <a href="${c.referenceUrl || '#'}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-weight: 700;">
+                OPEN WEBSITE ↗
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterReferences() {
+      renderReferences();
+    }
+
+    // -------------------------------------------------------------
+    // ADD-ONS SELECTOR MODAL
+    // -------------------------------------------------------------
+    function openAddonsSelectorModal() {
+      const container = document.getElementById('available-addons-list');
+      container.innerHTML = '';
+      const addons = API.state.addons || [];
+
+      if (addons.length === 0) {
+        container.innerHTML = '<div style="color: var(--slate-400); text-align: center; padding: 1.5rem;">No add-ons configured by Administrator.</div>';
+        API.openModal('modal-addons-picker');
+        return;
+      }
+
+      addons.forEach(a => {
+        const monthly = activeCurrency === 'USD' ? a.monthlyUSD : a.monthlyINR;
+        const yearly = activeCurrency === 'USD' ? a.yearlyUSD : a.yearlyINR;
+
+        const div = document.createElement('div');
+        div.style.cssText = 'background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 8px; padding: 0.85rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;';
+        div.innerHTML = `
+          <div>
+            <strong style="color: var(--slate-900); font-size: 0.95rem;">${API.escapeHtml(a.name)}</strong>
+            <div style="font-size: 0.75rem; color: var(--slate-500);">${API.escapeHtml(a.desc || '')}</div>
+            <div style="font-size: 0.775rem; margin-top: 0.25rem;">
+              Monthly: <strong>${API.formatCurrency(monthly, activeCurrency)}</strong> • Yearly: <strong>${API.formatCurrency(yearly, activeCurrency)}</strong>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addSelectedAddon('${a.id}', 'monthly')">
+              + Monthly
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="addSelectedAddon('${a.id}', 'yearly')">
+              + Yearly
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      API.openModal('modal-addons-picker');
+    }
+
+    function addSelectedAddon(addonId, cadence) {
+      const a = (API.state.addons || []).find(item => item.id === addonId);
+      if (!a) return;
+
+      selectedAddons = selectedAddons.filter(item => item.id !== addonId);
+
+      const price = cadence === 'monthly' ? 
+        (activeCurrency === 'USD' ? a.monthlyUSD : a.monthlyINR) : 
+        (activeCurrency === 'USD' ? a.yearlyUSD : a.yearlyINR);
+
+      selectedAddons.push({
+        id: a.id,
+        name: a.name,
+        billing: cadence,
+        price: Number(price)
+      });
+
+      renderSelectedAddonsPills();
+      calculateTotal();
+      API.closeModal('modal-addons-picker');
+      API.showToast(`Added ${a.name} (${cadence})`);
+    }
+
+    function removeSelectedAddon(addonId) {
+      selectedAddons = selectedAddons.filter(item => item.id !== addonId);
+      renderSelectedAddonsPills();
+      calculateTotal();
+    }
+
+    function renderSelectedAddonsPills() {
+      const c = document.getElementById('selected-addons-container');
+      if (selectedAddons.length === 0) {
+        c.innerHTML = '<div style="font-size: 0.825rem; color: var(--slate-400); font-style: italic;">No add-ons added yet. Click "+ ADD ADD-ON" above.</div>';
+        return;
+      }
+
+      c.innerHTML = selectedAddons.map(a => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--slate-50); border: 1px solid var(--slate-200); padding: 0.4rem 0.75rem; border-radius: 6px; margin-bottom: 0.4rem; font-size: 0.85rem;">
+          <span><strong>${API.escapeHtml(a.name)}</strong> (${a.billing})</span>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <strong class="price-tag">${API.formatCurrency(a.price, activeCurrency)}</strong>
+            <button type="button" class="modal-close-btn" style="font-size: 1.1rem; color: var(--rose-600);" onclick="removeSelectedAddon('${a.id}')">&times;</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // -------------------------------------------------------------
+    // GENERATE OFFICIAL QUOTATION (WITH SEPARATE 18% GST)
+    // -------------------------------------------------------------
+    async function generateOfficialQuotation() {
+      const clientName = document.getElementById('calc-client-name').value.trim();
+      if (!clientName) {
+        alert('Please enter Customer / Business Name');
+        document.getElementById('calc-client-name').focus();
+        return;
+      }
+
+      const catId = document.getElementById('calc-category').value;
+      const cat = (API.state.categories || []).find(c => c.id === catId);
+      if (!cat) {
+        alert('Please select a solution category');
+        return;
+      }
+
+      const commExec = document.getElementById('calc-comm-exec').value.trim() || 'Marketing Executive';
+      const docCoord = document.getElementById('calc-doc-coordinator').value.trim() || 'Documentation Coordinator';
+      const domainName = document.getElementById('calc-domain-name').value.trim();
+
+      const payload = {
+        clientName,
+        classification: cat.classification,
+        categoryId: cat.id,
+        categoryName: cat.name,
+        currency: activeCurrency,
+        basePrice: currentCalculatedQuote.basePrice,
+        domainAmount: currentCalculatedQuote.domainAmount,
+        addons: selectedAddons,
+        subtotal: currentCalculatedQuote.subtotal,
+        gstAmount: currentCalculatedQuote.gstAmount,
+        totalPrice: currentCalculatedQuote.totalPrice,
+        billingCadence: currentCalculatedQuote.billingCadence,
+        commExecutiveName: commExec,
+        docCoordinatorName: docCoord,
+        status: 'Generated'
+      };
+
+      try {
+        const res = await API.request('/api/quotations', 'POST', payload);
+        API.showToast('Quotation successfully generated');
+
+        // Check if requirements file was attached
+        const fileInput = document.getElementById('calc-requirement-file');
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          try {
+            await API.uploadRequirementDocument(res.quotation.id, fileInput.files[0], commExec);
+            API.showToast('Requirements document attached to quotation');
+          } catch(e) {
+            console.warn('Doc upload warning:', e.message);
+          }
+        }
+
+        await API.syncState();
+        displayGeneratedQuotation(res.quotation, cat, domainName);
+      } catch (err) {
+        alert('Failed to generate quotation: ' + err.message);
+      }
+    }
+
+    function displayGeneratedQuotation(quote, cat, domainName) {
+      document.getElementById('doc-quote-number').innerText = quote.quoteNumber;
+      document.getElementById('doc-quote-date').innerText = `Date: ${quote.createdAt}`;
+      document.getElementById('doc-client-name').innerText = quote.clientName;
+      document.getElementById('doc-domain-name').innerText = domainName ? `Domain: ${domainName}` : '';
+      document.getElementById('doc-executive-name').innerText = `${quote.commExecutiveName || 'Lead Executive'} • ${quote.docCoordinatorName || 'Documentation'}`;
+
+      document.getElementById('doc-category-name').innerText = cat.name;
+      document.getElementById('doc-category-desc').innerText = cat.desc || '';
+
+      const refBox = document.getElementById('doc-reference-url-box');
+      if (cat.referenceUrl) {
+        refBox.style.display = 'block';
+        document.getElementById('doc-reference-url').innerText = cat.referenceUrl;
+      } else {
+        refBox.style.display = 'none';
+      }
+
+      const featsUl = document.getElementById('doc-features-list');
+      featsUl.innerHTML = '';
+      (cat.features || []).forEach(f => {
+        featsUl.innerHTML += `<li>${API.escapeHtml(f)}</li>`;
+      });
+
+      const subtotal = quote.subtotal || currentCalculatedQuote.subtotal;
+      const gst = quote.gstAmount || currentCalculatedQuote.gstAmount;
+      const total = quote.totalPrice || currentCalculatedQuote.totalPrice;
+
+      const tbody = document.getElementById('doc-items-tbody');
+      tbody.innerHTML = `
+        <tr>
+          <td style="padding: 0.75rem 1rem;">
+            <strong>${API.escapeHtml(cat.name)}</strong>
+            <div style="font-size: 0.75rem; color: var(--slate-500);">${cat.classification} Core Architecture & Implementation (${quote.billingCadence || 'Standard'})</div>
+          </td>
+          <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(currentCalculatedQuote.basePrice, activeCurrency)}</td>
+        </tr>
+      `;
+
+      if (currentCalculatedQuote.domainAmount > 0) {
+        const domName = document.getElementById('calc-domain-name').value.trim() || 'Custom Domain';
+        tbody.innerHTML += `
+          <tr>
+            <td style="padding: 0.75rem 1rem;">
+              <strong>Domain Registration: ${API.escapeHtml(domName)}</strong>
+              <div style="font-size: 0.75rem; color: var(--slate-500);">Registration & DNS Configuration</div>
+            </td>
+            <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(currentCalculatedQuote.domainAmount, activeCurrency)}</td>
+          </tr>
+        `;
+      }
+
+      selectedAddons.forEach(a => {
+        tbody.innerHTML += `
+          <tr>
+            <td style="padding: 0.75rem 1rem;">
+              <strong>Add-on: ${API.escapeHtml(a.name)} (${a.billing})</strong>
+            </td>
+            <td style="text-align: right; padding: 0.75rem 1rem;" class="price-tag">${API.formatCurrency(a.price, activeCurrency)}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('doc-subtotal-price').innerText = API.formatCurrency(subtotal, activeCurrency);
+      document.getElementById('doc-gst-price').innerText = API.formatCurrency(gst, activeCurrency);
+      document.getElementById('doc-total-price').innerText = API.formatCurrency(total, activeCurrency);
+
+      switchTab('quotation-view', true);
+    }
+
+    function downloadQuotationPDF() {
+      const element = document.getElementById('quotation-print-area');
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `${document.getElementById('doc-quote-number').innerText}_Quotation.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+      API.showToast('Generating official PDF proposal...');
+    }
+
+    function shareQuotation() {
+      const qNum = document.getElementById('doc-quote-number').innerText;
+      const cName = document.getElementById('doc-client-name').innerText;
+      const total = document.getElementById('doc-total-price').innerText;
+      const text = `Hello ${cName},\n\nYour official project proposal (${qNum}) from Aivontraa Automation Pvt. Ltd. has been prepared with an estimated investment of ${total} (inclusive of 18% GST).\n\nKindly review your proposal at www.aivontraa.com.\n\nWarm regards,\nAivontraa Automation Pvt. Ltd.`;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+        API.showToast('Proposal text copied to clipboard!');
+      } else {
+        prompt('Copy quotation share text:', text);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // CUSTOMER ACCEPTANCE TRACKING & DEVELOPER HANDOVER
+    // Strict Lifecycle: Draft -> Generated -> Sent to Customer -> Accepted -> Rejected
+    // CRITICAL PRIVACY RULE: Developer name is NEVER shown to marketing
+    // -------------------------------------------------------------
+    function renderTrackingTable() {
+      const tbody = document.getElementById('table-marketing-tracking-body');
+      tbody.innerHTML = '';
+      const quotes = API.state.quotations || [];
+
+      if (quotes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 2rem; color: var(--slate-400);">No quotations generated yet.</td></tr>`;
+        return;
+      }
+
+      quotes.forEach(q => {
+        const normStatus = API.normalizeQuotationStatus(q.status);
+        const badgeClass = API.getLifecycleBadgeClass(normStatus);
+        const proj = (API.state.projects || []).find(p => p.quoteId === q.id || p.quoteNumber === q.quoteNumber);
+        const isAccepted = normStatus === 'Accepted';
+
+        const subtotal = q.subtotal || Math.round(q.totalPrice / 1.18);
+        const gst = q.gstAmount || Math.round(subtotal * 0.18);
+        const total = q.totalPrice;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="font-family: var(--font-mono); color: var(--primary);">${API.escapeHtml(q.quoteNumber)}</strong></td>
+          <td><strong>${API.escapeHtml(q.clientName)}</strong></td>
+          <td>${API.escapeHtml(q.categoryName || 'Solution')}</td>
+          <td class="price-tag">${API.formatCurrency(subtotal, q.currency)}</td>
+          <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${API.formatCurrency(gst, q.currency)}</td>
+          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${API.formatCurrency(total, q.currency)}</td>
+          <td><span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.commExecutiveName || 'Exec')}</span></td>
+          <td><span class="badge-lifecycle ${badgeClass}">${normStatus}</span></td>
+          <td>
+            <select class="form-control form-control-sm" style="width: 170px;" onchange="updateQuoteStatus('${q.id}', this.value)">
+              <option value="Draft" ${normStatus === 'Draft' ? 'selected' : ''}>Draft</option>
+              <option value="Generated" ${normStatus === 'Generated' ? 'selected' : ''}>Generated</option>
+              <option value="Sent to Customer" ${normStatus === 'Sent to Customer' ? 'selected' : ''}>Sent to Customer</option>
+              <option value="Accepted" ${normStatus === 'Accepted' ? 'selected' : ''}>✓ Accepted</option>
+              <option value="Rejected" ${normStatus === 'Rejected' ? 'selected' : ''}>✗ Rejected</option>
+            </select>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            ${isAccepted ? (
+              proj && proj.assignedDevId ?
+              `<span class="pill pill-info">Engineering Team Assigned</span>` :
+              (q.assignmentStatus === 'pending_assignment' || (proj && proj.assignmentStatus === 'pending_assignment') ?
+                `<span class="pill pill-warning">Handover Requested (Pending Admin)</span>` :
+                `<button class="btn btn-primary btn-sm" onclick="requestDeveloperAssignment('${q.id}')">
+                   📌 ASSIGN
+                 </button>`
+              )
+            ) : '<span style="color: var(--slate-400); font-size: 0.775rem;">Awaiting Acceptance</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateQuoteStatus(quoteId, newStatus) {
+      try {
+        await API.request(`/api/quotations/${quoteId}/status`, 'PUT', { status: newStatus });
+        API.showToast(`Status updated to "${newStatus}"`);
+        await API.syncState();
+        renderTrackingTable();
+        populateProjectsDropdownForZip();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function requestDeveloperAssignment(quoteId) {
+      if (!confirm('Confirm project handover to engineering team? Administrator will allocate an engineer to begin sprint.')) return;
+      const user = API.getCurrentUser() || { name: 'Marketing Executive' };
+      try {
+        await API.request(`/api/quotations/${quoteId}/request-assignment`, 'POST', {
+          requestedBy: user.name
+        });
+        API.showToast('Project handover request submitted to Administrator');
+        await API.syncState();
+        renderTrackingTable();
+        populateProjectsDropdownForZip();
+      } catch (err) {
+        alert('Assignment request failed: ' + err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // PROJECT REQUIREMENTS ASSETS (.docx, .pdf, .zip <= 500 KB)
+    // -------------------------------------------------------------
+    function populateProjectsDropdownForZip() {
+      const select = document.getElementById('select-zip-project');
+      const crSelect = document.getElementById('cr-project');
+      if (!select) return;
+
+      select.innerHTML = '';
+      if (crSelect) crSelect.innerHTML = '';
+
+      const projs = API.state.projects || [];
+      if (projs.length === 0) {
+        select.innerHTML = '<option value="">No active projects</option>';
+        if (crSelect) crSelect.innerHTML = '<option value="">No active projects</option>';
+        renderProjectZipAssets();
+        return;
+      }
+
+      projs.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">${API.escapeHtml(p.clientName)} (${p.quoteNumber}) - ${p.projectName || p.categoryName}</option>`;
+        if (crSelect) crSelect.innerHTML += `<option value="${p.id}">${API.escapeHtml(p.clientName)} - ${p.projectName || p.categoryName}</option>`;
+      });
+
+      renderProjectZipAssets();
+    }
+
+    function renderProjectZipAssets() {
+      const projId = document.getElementById('select-zip-project').value;
+      const tbody = document.getElementById('table-project-zips-body');
+      tbody.innerHTML = '';
+
+      const proj = (API.state.projects || []).find(p => p.id === projId);
+      if (!proj || !proj.zipFiles || proj.zipFiles.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--slate-400);">No requirement files attached to this project yet.</td></tr>`;
+        return;
+      }
+
+      proj.zipFiles.forEach(z => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>📄 ${API.escapeHtml(z.originalName)}</strong></td>
+          <td><span style="font-family: var(--font-mono); font-weight: 700;">${z.sizeKb} KB</span></td>
+          <td style="font-size: 0.8rem; color: var(--slate-500);">${z.uploadedAt}</td>
+          <td><span style="font-size: 0.8rem;">${API.escapeHtml(z.uploadedBy)}</span></td>
+          <td style="text-align: right; white-space: nowrap;">
+            <a href="/api/projects/${proj.id}/files/${z.filename}" class="btn btn-secondary btn-sm" download>Download</a>
+            <button class="btn btn-danger btn-sm" onclick="deleteZipFile('${proj.id}', '${z.id}')" style="margin-left: 0.35rem;">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function handleDocFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const projId = document.getElementById('select-zip-project').value;
+      if (!projId) {
+        alert('Please select an active project first');
+        return;
+      }
+
+      const user = API.getCurrentUser() || { name: 'Documentation Coordinator' };
+
+      try {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['docx', 'pdf', 'zip'].includes(ext)) {
+          alert('Allowed formats: .docx, .pdf, .zip');
+          return;
+        }
+        if (file.size > 500 * 1024) {
+          alert(`File exceeds 500 KB limit (Current: ${Math.round(file.size / 1024)} KB)`);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('uploadedBy', user.name);
+
+        const res = await fetch(`/api/projects/${projId}/uploads`, {
+          method: 'POST',
+          headers: {
+            'X-User-Role': user.role,
+            'X-User-Id': user.id || '',
+            'X-User-Name': user.name || ''
+          },
+          body: formData
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message || 'Upload failed');
+
+        API.showToast(`Uploaded ${file.name} successfully`);
+        await API.syncState();
+        renderProjectZipAssets();
+      } catch (err) {
+        alert('Upload rejected: ' + err.message);
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    async function deleteZipFile(projId, fileId) {
+      if (!confirm('Are you sure you want to delete this document asset?')) return;
+      try {
+        await API.request(`/api/projects/${projId}/files/${fileId}`, 'DELETE');
+        API.showToast('Document asset removed');
+        await API.syncState();
+        renderProjectZipAssets();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // CHANGE REQUESTS MANAGEMENT (.docx, .pdf, .zip <= 500 KB)
+    // -------------------------------------------------------------
+    function renderChangeRequestsTable() {
+      const tbody = document.getElementById('table-change-requests-body');
+      tbody.innerHTML = '';
+      const projs = API.state.projects || [];
+      let totalCRs = 0;
+
+      projs.forEach(p => {
+        (p.changeRequests || []).forEach(cr => {
+          totalCRs++;
+          let pBadge = 'pill-info';
+          if (cr.priority === 'High' || cr.priority === 'Critical') pBadge = 'pill-inactive';
+          if (cr.priority === 'Medium') pBadge = 'pill-warning';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${API.escapeHtml(p.clientName)}</strong></td>
+            <td>
+              <div style="font-weight: 700; color: var(--slate-900);">${API.escapeHtml(cr.title)}</div>
+              <div style="font-size: 0.775rem; color: var(--slate-600);">${API.escapeHtml(cr.desc || cr.description || '')}</div>
+            </td>
+            <td><span class="pill ${pBadge}">${cr.priority}</span></td>
+            <td><span style="font-size: 0.8rem;">${API.escapeHtml(cr.requestedBy)}</span></td>
+            <td>
+              ${cr.file ? `<a href="/api/projects/${p.id}/files/${cr.file.filename}" target="_blank" download style="color: var(--primary); font-size: 0.775rem; font-weight: 700;">📄 ${API.escapeHtml(cr.file.originalName)}</a>` : '<span style="color: var(--slate-400); font-size: 0.75rem;">None</span>'}
+            </td>
+            <td style="font-size: 0.8rem; color: var(--slate-500);">${cr.date}</td>
+            <td><span class="pill ${cr.status === 'Completed' ? 'pill-active' : 'pill-warning'}">${cr.status}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+
+      if (totalCRs === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--slate-400);">No change requests recorded yet. Click "+ Submit Change Request".</td></tr>`;
+      }
+    }
+
+    function openAddChangeRequestModal() {
+      document.getElementById('cr-title').value = '';
+      document.getElementById('cr-desc').value = '';
+      document.getElementById('cr-priority').value = 'Medium';
+      const fileInput = document.getElementById('cr-doc-file');
+      if (fileInput) fileInput.value = '';
+      API.openModal('modal-change-request');
+    }
+
+    async function submitChangeRequest(e) {
+      e.preventDefault();
+      const projId = document.getElementById('cr-project').value;
+      if (!projId) return alert('Select project');
+
+      const title = document.getElementById('cr-title').value.trim();
+      const priority = document.getElementById('cr-priority').value;
+      const desc = document.getElementById('cr-desc').value.trim();
+      const fileInput = document.getElementById('cr-doc-file');
+      const file = fileInput.files ? fileInput.files[0] : null;
+
+      try {
+        await API.uploadChangeRequestDocument(projId, file, title, desc, priority);
+        API.closeModal('modal-change-request');
+        API.showToast('Change request forwarded to developer');
+        await API.syncState();
+        renderChangeRequestsTable();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // COMMISSION SLABS (MARKETING VIEW)
+    // -------------------------------------------------------------
+    function renderCommissionPolicy() {
+      const tbodyINR = document.getElementById('mktg-slabs-inr-tbody');
+      tbodyINR.innerHTML = '';
+      (API.state.commissionSlabsINR || []).forEach(s => {
+        const maxStr = s.maxPrice >= 9000000 ? 'and above' : `₹${Number(s.maxPrice).toLocaleString()}`;
+        tbodyINR.innerHTML += `
+          <tr>
+            <td><strong>${API.escapeHtml(s.title)}</strong></td>
+            <td class="price-tag">₹${Number(s.minPrice).toLocaleString()} – ${maxStr}</td>
+            <td><span class="pill pill-active">${s.rate}%</span></td>
+          </tr>
+        `;
+      });
+
+      const tbodyUSD = document.getElementById('mktg-slabs-usd-tbody');
+      tbodyUSD.innerHTML = '';
+      (API.state.commissionSlabsUSD || []).forEach(s => {
+        const maxStr = s.maxPrice >= 9000000 ? 'and above' : `$${Number(s.maxPrice).toLocaleString()}`;
+        tbodyUSD.innerHTML += `
+          <tr>
+            <td><strong>${API.escapeHtml(s.title)}</strong></td>
+            <td class="price-tag">$${Number(s.minPrice).toLocaleString()} – ${maxStr}</td>
+            <td><span class="pill pill-active">${s.rate}%</span></td>
+          </tr>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>

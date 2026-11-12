@@ -1,0 +1,2633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - Aivontraa Automation Pvt. Ltd.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- SheetJS for client-side Excel handling -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div id="app-layout">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div class="sidebar-backdrop" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('active');"></div>
+
+    <!-- SIDEBAR (COMPLETELY FIXED & NON-SCROLLABLE) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-logo-card">
+            <img src="https://aivontraa.com/assets/images/ai.png" alt="Aivontraa Logo" class="brand-logo-img">
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 800; color: var(--slate-900); line-height: 1.1;">Aivontraa</div>
+            <div style="font-size: 0.65rem; color: var(--slate-400); font-weight: 700;">Automation Pvt. Ltd.</div>
+          </div>
+        </div>
+        <span class="portal-badge badge-admin">ADMIN</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">ADMIN CONTROL</div>
+        <a href="/admin/overview" class="nav-item active" data-tab="overview" onclick="handleNavClick('overview', event, this)">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard Overview</span>
+        </a>
+        <a href="/admin/categories" class="nav-item" data-tab="categories" onclick="handleNavClick('categories', event, this)">
+          <span class="nav-icon">📁</span>
+          <span>Category Management</span>
+        </a>
+        <a href="/admin/assignments" class="nav-item" data-tab="assignments" onclick="handleNavClick('assignments', event, this)">
+          <span class="nav-icon">📌</span>
+          <span>Project Assignments</span>
+          <span class="nav-badge-count" id="badge-pending-assignments" style="display: none;">0</span>
+        </a>
+        <a href="/admin/slabs" class="nav-item" data-tab="slabs" onclick="handleNavClick('slabs', event, this)">
+          <span class="nav-icon">⚙️</span>
+          <span>Commission Slabs</span>
+        </a>
+        <a href="/admin/marketing-users" class="nav-item" data-tab="marketing-users" onclick="handleNavClick('marketing-users', event, this)">
+          <span class="nav-icon">💼</span>
+          <span>Marketing Team</span>
+        </a>
+        <a href="/admin/dev-users" class="nav-item" data-tab="dev-users" onclick="handleNavClick('dev-users', event, this)">
+          <span class="nav-icon">💻</span>
+          <span>Developer Team</span>
+        </a>
+        <a href="/admin/addons" class="nav-item" data-tab="addons" onclick="handleNavClick('addons', event, this)">
+          <span class="nav-icon">🧩</span>
+          <span>Add-ons Config</span>
+        </a>
+        <a href="/admin/quotations" class="nav-item" data-tab="quotations" onclick="handleNavClick('quotations', event, this)">
+          <span class="nav-icon">📄</span>
+          <span>All Quotations</span>
+        </a>
+        <a href="/admin/projects" class="nav-item" data-tab="projects" onclick="handleNavClick('projects', event, this)">
+          <span class="nav-icon">🚀</span>
+          <span>Project Review</span>
+        </a>
+        <a href="/admin/payments" class="nav-item" data-tab="payments" onclick="handleNavClick('payments', event, this)">
+          <span class="nav-icon">💳</span>
+          <span>Payment Details</span>
+        </a>
+        <a href="/admin/database" class="nav-item" data-tab="database" onclick="handleNavClick('database', event, this)">
+          <span class="nav-icon">🗄️</span>
+          <span>Data Management</span>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.65rem; padding: 2px 5px; margin-left: auto;">70MB</span>
+        </a>
+
+        <div class="nav-section-title" style="margin-top: 0.5rem;">PORTAL PREVIEWS</div>
+        <a href="/marketing" class="nav-item" style="color: var(--primary);">
+          <span class="nav-icon">👁️</span>
+          <span>Marketing Portal →</span>
+        </a>
+        <a href="/developer" class="nav-item" style="color: var(--purple-600);">
+          <span class="nav-icon">👁️</span>
+          <span>Developer Portal →</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="font-size: 0.72rem; color: var(--slate-400); margin-bottom: 0.5rem; text-align: center; font-weight: 600;">
+          laxminivasmorishetty143@gmail.com
+        </div>
+        <button class="btn btn-secondary btn-sm btn-block" onclick="API.logout()">
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT (INDEPENDENTLY SCROLLABLE) -->
+    <div class="main-wrapper">
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-backdrop').classList.toggle('active');">☰</button>
+          <div class="page-title" id="page-heading">Dashboard Overview</div>
+        </div>
+        <div class="topbar-right">
+          <div class="user-profile-badge">
+            <div class="user-avatar" id="header-user-avatar" style="background: #b91c1c;">L</div>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--slate-900);" id="header-user-name">Laxminivas Morishetty</div>
+              <div style="font-size: 0.7rem; color: #b91c1c; font-weight: 800;" id="header-user-role">ADMINISTRATOR</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <!-- 1. DASHBOARD OVERVIEW SECTION -->
+        <section id="tab-overview" class="tab-pane">
+          <div class="section-header">
+            <div>
+              <h2>Dashboard Overview</h2>
+              <p>Agency operations, quotations pipeline, development progress and commission totals</p>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Categories</div>
+              <div class="stat-value" id="stat-categories">0</div>
+              <div class="stat-sub">Website & Software solutions</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Marketing Executives</div>
+              <div class="stat-value" id="stat-marketing">0</div>
+              <div class="stat-sub">Client Communication & Documentation</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Quotations</div>
+              <div class="stat-value" id="stat-quotations">0</div>
+              <div class="stat-sub">Generated customer proposals</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--emerald-600);">
+              <div class="stat-label">Accepted Quotations</div>
+              <div class="stat-value" id="stat-accepted" style="color: var(--emerald-700);">0</div>
+              <div class="stat-sub">Confirmed client deals</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--rose-600);">
+              <div class="stat-label">Rejected Quotations</div>
+              <div class="stat-value" id="stat-rejected" style="color: var(--rose-600);">0</div>
+              <div class="stat-sub">Declined proposals</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--amber-600);">
+              <div class="stat-label">Active Projects</div>
+              <div class="stat-value" id="stat-active-projs" style="color: var(--amber-600);">0</div>
+              <div class="stat-sub">In development & testing</div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--purple-600);">
+              <div class="stat-label">Completed Projects</div>
+              <div class="stat-value" id="stat-completed-projs" style="color: var(--purple-600);">0</div>
+              <div class="stat-sub">Delivered, verified & signed off</div>
+            </div>
+            <div class="stat-card" style="background: var(--primary-light); border-color: var(--primary-border);">
+              <div class="stat-label" style="color: var(--primary);">Total Marketing Commission</div>
+              <div class="stat-value" id="stat-commission" style="color: var(--primary); font-size: 1.45rem;">₹0</div>
+              <div class="stat-sub" style="color: var(--slate-600);">Representative commission payout</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. CATEGORY MANAGEMENT – BULK EXCEL UPLOAD & REFERENCE WEBSITES -->
+        <section id="tab-categories" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Category Management</h2>
+              <p>Add individual categories or bulk upload via Excel. Set reference website URLs to share examples with marketing executives.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="/api/categories/template" class="btn btn-secondary btn-sm" download>
+                📥 Download Excel Template
+              </a>
+              <input type="file" id="cat-excel-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleCategoryExcelUpload(event)">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('cat-excel-input').click()">
+                📤 Bulk Upload Categories (Excel)
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Category Form -->
+          <div class="card" style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--slate-900); margin-bottom: 1.25rem;">
+              Add New Category
+            </h3>
+            <form id="form-add-category" onsubmit="saveNewCategory(event)">
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label for="cat-name">Category Name *</label>
+                  <input type="text" id="cat-name" class="form-control" placeholder="e.g. Basic Business Website" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="cat-classification">Classification *</label>
+                  <select id="cat-classification" class="form-control" required>
+                    <option value="Website">Website</option>
+                    <option value="Software Application">Software Application</option>
+                    <option value="Mobile Application">Mobile Application</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cat-desc">Description</label>
+                <textarea id="cat-desc" class="form-control" rows="2" placeholder="Brief deliverables overview..."></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="cat-ref-url">Reference Website URL (New)</label>
+                <input type="url" id="cat-ref-url" class="form-control" placeholder="https://example.com" style="font-family: var(--font-mono);">
+                <small style="color: var(--slate-500); font-size: 0.75rem;">This reference website URL will automatically be available to marketing executives in their Website References page and Calculator.</small>
+              </div>
+
+              <div style="background: var(--slate-50); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--slate-200); margin-bottom: 1.25rem;">
+                <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.75rem; letter-spacing: 0.05em;">
+                  Base Pricing Configuration (INR & USD)
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="cat-price-inr">Indian Base Price (INR ₹) *</label>
+                    <input type="number" id="cat-price-inr" class="form-control" placeholder="15000" min="0" required style="font-family: var(--font-mono); font-weight: 700;">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="cat-price-usd">Foreign Base Price (USD $) *</label>
+                    <input type="number" id="cat-price-usd" class="form-control" placeholder="250" min="0" required style="font-family: var(--font-mono); font-weight: 700;">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cat-features">Included Features (Enter one feature per line) *</label>
+                <textarea id="cat-features" class="form-control" rows="4" placeholder="Google Sign-in Authentication&#10;Responsive Design&#10;Basic Dashboard&#10;Contact Form&#10;Database Integration" required></textarea>
+                <small style="color: var(--slate-500); font-size: 0.75rem;">These bullet points will automatically appear on customer quotations.</small>
+              </div>
+
+              <div style="text-align: right;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-size: 0.95rem;">
+                  SAVE CATEGORY
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Existing Categories Table -->
+          <div class="section-header">
+            <h3>View Categories</h3>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Category Name</th>
+                  <th>Classification</th>
+                  <th>Reference Website</th>
+                  <th>INR Price (₹)</th>
+                  <th>USD Price ($)</th>
+                  <th>Included Features</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-categories-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3. PENDING PROJECT ASSIGNMENTS SECTION (NEW VERSION 3.0) -->
+        <section id="tab-assignments" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Pending Project Assignments</h2>
+              <p>Accepted customer proposals awaiting developer sprint allocation. Review requirements and assign an available developer.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Quote #</th>
+                  <th>Customer Name</th>
+                  <th>Category / Solution</th>
+                  <th>Amount</th>
+                  <th>Marketing Comm Exec</th>
+                  <th>Doc Coordinator</th>
+                  <th>Requirements</th>
+                  <th>ZIP Files</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="table-assignments-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. COMMISSION SLABS – SIDE-BY-SIDE LAYOUT (UNLIMITED & FULL CONTROL) -->
+        <section id="tab-slabs" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Commission Slab Management</h2>
+              <p>Side-by-side editable commission slabs for Indian (INR) and Foreign (USD) deals. Unlimited slabs, customizable price ranges and percentages (max 10%).</p>
+            </div>
+          </div>
+
+          <div class="slabs-side-by-side">
+            <!-- LEFT SIDE: INDIAN COMMISSION (INR) -->
+            <div class="card" style="border-top: 4px solid var(--primary);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">🇮🇳 Indian Commission (INR ₹)</h3>
+                  <p style="font-size: 0.775rem; color: var(--slate-500);">Configurable price ranges & commission %</p>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="openAddSlabModal('INR')">
+                  + Add Slab
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tier Title</th>
+                      <th>Price Range (INR)</th>
+                      <th>Rate %</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-slabs-inr-body">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- RIGHT SIDE: FOREIGN COMMISSION (USD) -->
+            <div class="card" style="border-top: 4px solid var(--emerald-600);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">🌐 Foreign Commission (USD $)</h3>
+                  <p style="font-size: 0.775rem; color: var(--slate-500);">Configurable international slabs & commission %</p>
+                </div>
+                <button class="btn btn-success btn-sm" onclick="openAddSlabModal('USD')">
+                  + Add Slab
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tier Title</th>
+                      <th>Price Range (USD)</th>
+                      <th>Rate %</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-slabs-usd-body">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. MARKETING USER MANAGEMENT -->
+        <section id="tab-marketing-users" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Marketing Team Management</h2>
+              <p>Manage marketing team members and their multiple responsibilities (Client Communication, Payment Collection, Customer Follow-up, Requirement Collection, Documentation, Project Coordination, etc.).</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-primary btn-sm" onclick="openAddUserModal('marketing')">
+                + Create Marketing User
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                  <th>Google Account Email</th>
+                  <th>Assigned Responsibilities</th>
+                  <th>Account Status</th>
+                  <th>Date Created</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-marketing-users-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 6. DEVELOPER USER MANAGEMENT -->
+        <section id="tab-dev-users" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Developer Team Management</h2>
+              <p>Add developers, check active workload, and allocate projects.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-primary btn-sm" onclick="openAddUserModal('developer')">
+                + Add Developer
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Developer Name</th>
+                  <th>Email</th>
+                  <th>Active Projects</th>
+                  <th>Availability</th>
+                  <th>Account Status</th>
+                  <th>Date Created</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-dev-users-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 7. ADD-ONS CONFIGURATION -->
+        <section id="tab-addons" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Add-ons Configuration</h2>
+              <p>Configure monthly and yearly rates for optional client add-ons in INR and USD.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAddAddonModal()">
+              + Add New Add-on
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Add-on Name</th>
+                  <th>Monthly (INR ₹)</th>
+                  <th>Yearly (INR ₹)</th>
+                  <th>Monthly (USD $)</th>
+                  <th>Yearly (USD $)</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-addons-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 8. ALL QUOTATIONS -->
+        <section id="tab-quotations" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>All Customer Quotations</h2>
+              <p>Permanent historical registry of proposals with lifecycle status filtering. Quotations cannot be deleted.</p>
+            </div>
+            <!-- Status Filter -->
+            <div class="filter-group">
+              <button class="filter-btn active" onclick="filterQuotationsTable('All', this)">All</button>
+              <button class="filter-btn" onclick="filterQuotationsTable('Draft', this)">Draft</button>
+              <button class="filter-btn" onclick="filterQuotationsTable('Generated', this)">Generated</button>
+              <button class="filter-btn" onclick="filterQuotationsTable('Sent to Customer', this)">Sent</button>
+              <button class="filter-btn" onclick="filterQuotationsTable('Accepted', this)">Accepted</button>
+              <button class="filter-btn" onclick="filterQuotationsTable('Rejected', this)">Rejected</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Quote #</th>
+                  <th>Customer Name</th>
+                  <th>Marketing Lead</th>
+                  <th>Solution Category</th>
+                  <th>Subtotal</th>
+                  <th>GST (18%)</th>
+                  <th>Total Amount</th>
+                  <th>Commission (Admin Only)</th>
+                  <th>Date</th>
+                  <th>Current Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-quotations-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 9. PROJECT MANAGEMENT, TESTING LINKS & ADMIN APPROVAL -->
+        <section id="tab-projects" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Project Management & Review</h2>
+              <p>Track 14-stage workflow progress, inspect testing & final websites, manage revision change requests, and verify completion.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Quote Ref</th>
+                  <th>Customer Name</th>
+                  <th>Assigned Developer</th>
+                  <th>Testing Website Link</th>
+                  <th>Final Production Link</th>
+                  <th>Workflow Status</th>
+                  <th>Progress</th>
+                  <th style="text-align: right;">Review Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-projects-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 10. PROJECT PAYMENT DETAILS -->
+        <section id="tab-payments" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>Project Payment Verification & Final Sign-off</h2>
+              <p>Active for accepted quotations. Verify UPI, PhonePe, and Bank Transfer payment screenshots, and upload final sign-off documents (.pdf, .docx).</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Quote Ref #</th>
+                  <th>Customer Name</th>
+                  <th>Subtotal</th>
+                  <th>GST (18%)</th>
+                  <th>Total Amount</th>
+                  <th>Amount Paid</th>
+                  <th>Payment Status</th>
+                  <th>Method</th>
+                  <th>Screenshot Proof</th>
+                  <th style="text-align: right;">Verification & Sign-off</th>
+                </tr>
+              </thead>
+              <tbody id="table-payments-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 11. DATA MANAGEMENT & STORAGE OPTIMIZATION (Enterprise Multi-Module Partitioning) -->
+        <section id="tab-database" class="tab-pane" style="display: none;">
+          <div class="db-dashboard-container">
+            <!-- Header with Health Status & Action Buttons -->
+            <div class="section-header" style="margin-bottom: 0;">
+              <div>
+                <h2>Enterprise Data & Storage Management</h2>
+                <p>Intelligent multi-module sharding, automated 70 MiB soft-rotation, 100 MiB hard limit protection, cryptographic encryption at rest, and central indexing.</p>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span id="db-health-badge" class="health-status-pill healthy">
+                  <span class="pulse-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                  <span id="db-health-text">SYSTEM OPTIMAL</span>
+                </span>
+                <span class="badge" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5; font-size: 0.75rem; padding: 6px 12px; border-radius: 999px; font-weight: 700;">
+                  🔒 AES-256 Encrypted at Rest
+                </span>
+              </div>
+            </div>
+
+            <!-- Action Toolbar -->
+            <div class="db-action-toolbar">
+              <div>
+                <span style="font-weight: 700; color: var(--slate-700); font-size: 0.9rem;">Automated Storage Optimization Controls</span>
+                <div style="font-size: 0.78rem; color: var(--slate-500);">Run database health checks, generate full archives, or defragment storage shards.</div>
+              </div>
+              <div class="db-action-btns">
+                <button type="button" class="btn btn-secondary" onclick="triggerIntegrityCheck()" id="btn-db-integrity">
+                  <span>🛡️</span> Run Integrity Check
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="triggerDatabaseOptimization()" id="btn-db-optimize">
+                  <span>⚡</span> Optimize & VACUUM
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="triggerDatabaseBackup()" id="btn-db-backup">
+                  <span>📦</span> Create Backup Now
+                </button>
+                <button type="button" class="btn btn-primary" onclick="triggerSimulateGrowth()" id="btn-db-simulate">
+                  <span>🚀</span> Test Rotation (Simulate Growth)
+                </button>
+              </div>
+            </div>
+
+            <!-- Storage Overview Metric Tiles -->
+            <div class="storage-overview-grid">
+              <div class="storage-metric-tile success">
+                <div class="storage-metric-label">Total Storage Used</div>
+                <div class="storage-metric-val" id="db-stat-total-size">0.0 KiB</div>
+                <div class="storage-metric-sub">Distributed across 17 module directories</div>
+              </div>
+              <div class="storage-metric-tile blue">
+                <div class="storage-metric-label">Active Database Files</div>
+                <div class="storage-metric-val" id="db-stat-active-files">0</div>
+                <div class="storage-metric-sub">Routing live writes to active shards</div>
+              </div>
+              <div class="storage-metric-tile purple">
+                <div class="storage-metric-label">Archived Database Shards</div>
+                <div class="storage-metric-val" id="db-stat-archived-files">0</div>
+                <div class="storage-metric-sub">Preserved historically for read queries</div>
+              </div>
+              <div class="storage-metric-tile warning">
+                <div class="storage-metric-label">Central Indexed Records</div>
+                <div class="storage-metric-val" id="db-stat-total-records">0</div>
+                <div class="storage-metric-sub" id="db-stat-relationships">0 Cross-Module Links</div>
+              </div>
+              <div class="storage-metric-tile">
+                <div class="storage-metric-label">Last Secure Backup</div>
+                <div class="storage-metric-val" style="font-size: 1.1rem; line-height: 1.4;" id="db-stat-last-backup">—</div>
+                <div class="storage-metric-sub" id="db-stat-backups-count">0 Archives in /database/backups/</div>
+              </div>
+            </div>
+
+            <!-- Global Storage Capacity & Soft/Hard Limits -->
+            <div class="storage-summary-card">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                <h3 style="margin: 0; font-size: 1.05rem; color: var(--slate-800);">Active Shard Threshold & Rotation Monitor</h3>
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">
+                  Per-File Soft Limit: 70.0 MiB | Hard Cap: 100.0 MiB
+                </span>
+              </div>
+              <div class="storage-capacity-bar-wrap">
+                <div class="storage-capacity-bar-fill" id="db-global-capacity-bar" style="width: 2%;"></div>
+              </div>
+              <div class="storage-limit-markers">
+                <span>0 MiB (Initialization)</span>
+                <span style="color: #f59e0b;">⚠️ 70 MiB (Sequential Rotation Trigger)</span>
+                <span style="color: #ef4444;">🛑 100 MiB (Strict Hard Capacity Limit)</span>
+              </div>
+            </div>
+
+            <!-- Module Storage Allocation Grid (17 Modules) -->
+            <div class="card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0;">Modular Storage Breakdown (17 Dedicated Directories)</h3>
+                <span class="badge" style="background: var(--slate-100); color: var(--slate-700);">Automatic Routing & Data Consistency</span>
+              </div>
+              <div class="card-body">
+                <div class="db-modules-grid" id="db-modules-grid-container">
+                  <!-- Dynamically populated via JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Shard Files Table -->
+            <div class="card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h3 style="margin: 0;">Sequential Database Storage Files (<span id="db-files-count-badge">0</span> Files)</h3>
+                  <div style="font-size: 0.8rem; color: var(--slate-500);">Files auto-rotate sequentially (e.g. customers_001.db → customers_002.db) upon reaching ~70 MiB.</div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button type="button" class="btn btn-sm btn-secondary active" id="btn-filter-shards-all" onclick="filterShards('all')">All Shards</button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btn-filter-shards-active" onclick="filterShards('active')">Active Only</button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="btn-filter-shards-archived" onclick="filterShards('archived')">Archived Only</button>
+                </div>
+              </div>
+              <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Shard Database File</th>
+                        <th>Module Directory</th>
+                        <th>Seq #</th>
+                        <th>File Size</th>
+                        <th>Capacity Utilization (100 MiB)</th>
+                        <th>Records</th>
+                        <th>Status</th>
+                        <th>Created Date</th>
+                        <th>Last Integrity Check</th>
+                        <th style="text-align: right;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="db-shards-table-body">
+                      <!-- Injected via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Backups & Audit Logs Side-by-Side -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="db-bottom-grid">
+              <!-- Backups Table -->
+              <div class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                  <h3 style="margin: 0;">Secure Backups (/database/backups/)</h3>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="refreshDatabaseBackups()">Refresh</button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                  <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Backup File</th>
+                          <th>Size</th>
+                          <th>Created At</th>
+                          <th>Download</th>
+                        </tr>
+                      </thead>
+                      <tbody id="db-backups-table-body">
+                        <!-- Injected via JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Real-time Audit Logs -->
+              <div class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                  <h3 style="margin: 0;">Database Security & Operation Audit Trail</h3>
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="refreshDatabaseAuditLogs()">Refresh</button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                  <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Timestamp</th>
+                          <th>Action</th>
+                          <th>Module</th>
+                          <th>Details</th>
+                        </tr>
+                      </thead>
+                      <tbody id="db-audit-table-body">
+                        <!-- Injected via JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. SLAB MODAL (UNLIMITED SLABS) -->
+  <div class="modal-backdrop" id="modal-slab">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-slab-title">Add Commission Slab</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-slab')">&times;</button>
+      </div>
+      <form id="form-slab" onsubmit="saveSlab(event)">
+        <input type="hidden" id="slab-edit-id">
+        <input type="hidden" id="slab-currency" value="INR">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="slab-title">Slab Tier Title *</label>
+            <input type="text" id="slab-title" class="form-control" placeholder="e.g. Starter Deals" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="slab-min">Min Price *</label>
+              <input type="number" id="slab-min" class="form-control" placeholder="10000" min="0" required>
+            </div>
+            <div class="form-group">
+              <label for="slab-max">Max Price *</label>
+              <input type="number" id="slab-max" class="form-control" placeholder="25000" min="0" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="slab-rate">Commission % (Maximum 10%) *</label>
+            <input type="number" id="slab-rate" class="form-control" placeholder="8.5" min="0.1" max="10.0" step="0.1" required style="font-family: var(--font-mono); font-weight: 700;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-slab')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Slab</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. USER MODAL (GOOGLE ONLY + MULTIPLE MARKETING RESPONSIBILITIES) -->
+  <div class="modal-backdrop" id="modal-user">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="modal-user-title">Create User Account</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-user')">&times;</button>
+      </div>
+      <form id="form-user" onsubmit="saveUser(event)">
+        <input type="hidden" id="user-edit-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="user-name">Full Name *</label>
+            <input type="text" id="user-name" class="form-control" placeholder="e.g. Rajesh Kumar" required>
+          </div>
+          <div class="form-group">
+            <label for="user-email">Google Email Address *</label>
+            <input type="email" id="user-email" class="form-control" placeholder="e.g. rajesh.marketing@aivontraa.com" required>
+            <small style="color: var(--slate-500); font-size: 0.725rem;">Staff authenticate exclusively using Google Sign-In with this email.</small>
+          </div>
+          <div class="form-group">
+            <label for="user-role">Role Category *</label>
+            <select id="user-role" class="form-control" required onchange="onUserRoleSelectChanged()">
+              <option value="marketing">Marketing Team (Multiple Responsibilities)</option>
+              <option value="developer">Engineering Specialist (Developer)</option>
+            </select>
+          </div>
+
+          <!-- Multiple Marketing Responsibilities Interface -->
+          <div id="marketing-responsibilities-box" style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <span style="font-size: 0.775rem; text-transform: uppercase; font-weight: 800; color: var(--slate-700); letter-spacing: 0.05em;">
+                Marketing Responsibilities
+              </span>
+              <label style="font-size: 0.775rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                <input type="checkbox" id="resp-all-checkbox" onchange="toggleAllResponsibilities(this.checked)">
+                Select ALL (Excludes Admin)
+              </label>
+            </div>
+            <p style="font-size: 0.725rem; color: var(--slate-500); margin-bottom: 0.75rem;">
+              Assign duties to this executive. (Admin privileges strictly reserved for laxminivasmorishetty143@gmail.com).
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.825rem;" id="resp-checkboxes-container">
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Marketing Executive" class="resp-chk"> Marketing Executive
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Client Communication" class="resp-chk"> Client Communication
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Payment Collection" class="resp-chk"> Payment Collection
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Customer Follow-up" class="resp-chk"> Customer Follow-up
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Requirement Collection" class="resp-chk"> Requirement Collection
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Documentation" class="resp-chk"> Documentation
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Project Coordination" class="resp-chk"> Project Coordination
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input type="checkbox" name="mktg-resp" value="Other Responsibilities" class="resp-chk"> Other Responsibilities
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="user-status">Account Status *</label>
+            <select id="user-status" class="form-control">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-user')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save User Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. ADD-ON MODAL -->
+  <div class="modal-backdrop" id="modal-addon">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-addon-title">Configure Add-on</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-addon')">&times;</button>
+      </div>
+      <form id="form-addon" onsubmit="saveAddon(event)">
+        <input type="hidden" id="addon-edit-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="addon-name">Add-on Name *</label>
+            <input type="text" id="addon-name" class="form-control" placeholder="e.g. WhatsApp Integration" required>
+          </div>
+          <div class="form-group">
+            <label for="addon-desc">Description</label>
+            <textarea id="addon-desc" class="form-control" rows="2" placeholder="Brief technical deliverables..."></textarea>
+          </div>
+          
+          <div style="background: var(--slate-50); padding: 1rem; border-radius: 8px; border: 1px solid var(--slate-200); margin-bottom: 1rem;">
+            <div style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.5rem;">Indian Pricing (INR ₹)</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="addon-m-inr">Monthly Price (INR) *</label>
+                <input type="number" id="addon-m-inr" class="form-control" required placeholder="500">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="addon-y-inr">Yearly Price (INR) *</label>
+                <input type="number" id="addon-y-inr" class="form-control" required placeholder="5000">
+              </div>
+            </div>
+          </div>
+
+          <div style="background: var(--slate-50); padding: 1rem; border-radius: 8px; border: 1px solid var(--slate-200); margin-bottom: 1rem;">
+            <div style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: var(--slate-700); margin-bottom: 0.5rem;">Foreign Pricing (USD $)</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="addon-m-usd">Monthly Price (USD) *</label>
+                <input type="number" id="addon-m-usd" class="form-control" required placeholder="10">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="addon-y-usd">Yearly Price (USD) *</label>
+                <input type="number" id="addon-y-usd" class="form-control" required placeholder="100">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-addon')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Add-on</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. DEVELOPER ASSIGNMENT MODAL (With Active Project Count & Availability) -->
+  <div class="modal-backdrop" id="modal-assign">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3>Assign Project to Developer</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-assign')">&times;</button>
+      </div>
+      <form id="form-assign" onsubmit="confirmProjectAssignment(event)">
+        <input type="hidden" id="assign-proj-id">
+        <div class="modal-body">
+          <div style="background: var(--slate-50); border: 1px solid var(--slate-200); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500);">Project Details</div>
+            <div id="assign-client-info" style="font-size: 1rem; font-weight: 800; color: var(--slate-900); margin-top: 0.25rem;">-</div>
+            <div id="assign-details-sub" style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.25rem;">-</div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 700; margin-bottom: 0.5rem; display: block;">Select Available Developer *</label>
+            <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">Select</th>
+                    <th>Developer Name</th>
+                    <th>Email</th>
+                    <th>Active Projects</th>
+                    <th>Availability</th>
+                  </tr>
+                </thead>
+                <tbody id="table-devs-availability-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
+            <div class="form-group">
+              <label for="assign-start">Project Start Date *</label>
+              <input type="date" id="assign-start" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="assign-end">Expected Completion Date *</label>
+              <input type="date" id="assign-end" class="form-control" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-assign')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm & Assign Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. ADMIN PROJECT REVIEW & APPROVAL MODAL -->
+  <div class="modal-backdrop" id="modal-admin-review">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3>Project Testing & Final Review</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-admin-review')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="review-proj-id">
+        <div style="background: var(--slate-50); padding: 1rem; border-radius: 8px; margin-bottom: 1.25rem; border: 1px solid var(--slate-200);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h4 id="review-proj-name" style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">-</h4>
+              <div style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.25rem;" id="review-client-meta">-</div>
+            </div>
+            <span id="review-status-pill" class="pill">-</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div style="background: #ffffff; border: 1px solid var(--slate-200); padding: 0.85rem; border-radius: 8px;">
+            <label style="font-size: 0.725rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500); display: block;">First Testing Website:</label>
+            <div id="review-testing-link-box" style="margin-top: 0.35rem;">-</div>
+          </div>
+          <div style="background: #ffffff; border: 1px solid var(--slate-200); padding: 0.85rem; border-radius: 8px;">
+            <label style="font-size: 0.725rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500); display: block;">Final Production Website:</label>
+            <div id="review-final-link-box" style="margin-top: 0.35rem;">-</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500);">Developer Work Log & Remarks:</label>
+          <div id="review-dev-remarks" style="font-size: 0.85rem; color: var(--slate-700); background: var(--slate-50); padding: 0.75rem; border-radius: 6px; margin-top: 0.35rem; border: 1px solid var(--slate-200);">-</div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500);">Uploaded Project ZIP Files:</label>
+          <div id="review-zip-files-box" style="margin-top: 0.35rem;">-</div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--slate-500);">Change Requests History:</label>
+          <div id="review-change-requests-box" style="margin-top: 0.35rem; max-height: 140px; overflow-y: auto;">-</div>
+        </div>
+
+        <div class="form-group">
+          <label for="review-admin-remarks">Admin Review Remarks / Notes</label>
+          <textarea id="review-admin-remarks" class="form-control" rows="2" placeholder="Feedback, approval comments, or changes description..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-admin-review')">Close</button>
+        <button type="button" class="btn btn-danger" onclick="adminRequestChanges()">Request Changes</button>
+        <button type="button" class="btn btn-primary" onclick="adminApproveFinalWebsite()">Approve Final Website</button>
+        <button type="button" class="btn btn-success" id="btn-proceed-signoff" onclick="openSignOffModalFromReview()">Sign Off Project Completion →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. PAYMENT PROOF UPLOAD & EDIT MODAL -->
+  <div class="modal-backdrop" id="modal-payment">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="modal-payment-title">Project Payment Details</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-payment')">&times;</button>
+      </div>
+      <form id="form-payment" onsubmit="savePaymentDetails(event)">
+        <input type="hidden" id="pay-proj-id">
+        <div class="modal-body">
+          <div style="background: var(--slate-50); border: 1px solid var(--slate-200); padding: 0.85rem; border-radius: 6px; margin-bottom: 1rem;">
+            <div id="pay-client-summary" style="font-weight: 800; color: var(--slate-900); font-size: 0.95rem;">-</div>
+            <div id="pay-amount-summary" style="font-size: 0.8rem; color: var(--slate-600); margin-top: 0.2rem;">-</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="pay-amount-paid">Amount Paid *</label>
+              <input type="number" id="pay-amount-paid" class="form-control" placeholder="15000" min="0" step="1" required style="font-family: var(--font-mono); font-weight: 700;">
+            </div>
+            <div class="form-group">
+              <label for="pay-method">Payment Method *</label>
+              <select id="pay-method" class="form-control" required>
+                <option value="PhonePe">PhonePe</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer (NEFT/RTGS/IMPS)</option>
+                <option value="Cash">Cash</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label for="pay-date">Payment Date *</label>
+              <input type="date" id="pay-date" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="pay-ref">Transaction / Reference #</label>
+              <input type="text" id="pay-ref" class="form-control" placeholder="e.g. UTR9823487123" style="font-family: var(--font-mono);">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="pay-notes">Payment Notes</label>
+            <input type="text" id="pay-notes" class="form-control" placeholder="e.g. Customer paid ₹15,000 through PhonePe.">
+          </div>
+
+          <div class="form-group">
+            <label>Payment Screenshot Proof (JPG, PNG, PDF)</label>
+            <div id="pay-proof-current" style="margin-bottom: 0.5rem; display: none;"></div>
+            <input type="file" id="pay-file-input" class="form-control" accept=".jpg, .jpeg, .png, .pdf">
+            <small style="color: var(--slate-500); font-size: 0.75rem;">Maximum file size: 5 MB. Upload or replace customer transfer receipt.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-payment')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Payment Information</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. FINAL PROJECT COMPLETION SIGN-OFF MODAL -->
+  <div class="modal-backdrop" id="modal-signoff">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Approve Project Completion & Sign-off</h3>
+        <button class="modal-close-btn" onclick="API.closeModal('modal-signoff')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="signoff-proj-id">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏆</div>
+          <h4 style="font-size: 1.2rem; font-weight: 800; color: var(--slate-900);">Project Ready for Final Delivery</h4>
+          <p style="font-size: 0.85rem; color: var(--slate-600);">Both final website build and payment verification are validated.</p>
+        </div>
+
+        <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.25rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--slate-500); display: block; font-size: 0.725rem; text-transform: uppercase; font-weight: 700;">Customer Name</span>
+              <strong id="so-client" style="color: var(--slate-900);">-</strong>
+            </div>
+            <div>
+              <span style="color: var(--slate-500); display: block; font-size: 0.725rem; text-transform: uppercase; font-weight: 700;">Project Name</span>
+              <strong id="so-project" style="color: var(--slate-900);">-</strong>
+            </div>
+            <div style="grid-column: span 2;">
+              <span style="color: var(--slate-500); display: block; font-size: 0.725rem; text-transform: uppercase; font-weight: 700;">Final Website URL</span>
+              <a id="so-final-url" href="#" target="_blank" style="color: var(--emerald-600); font-weight: 700; word-break: break-all;">-</a>
+            </div>
+            <div>
+              <span style="color: var(--slate-500); display: block; font-size: 0.725rem; text-transform: uppercase; font-weight: 700;">Assigned Developer</span>
+              <strong id="so-dev" style="color: var(--purple-700);">-</strong>
+            </div>
+            <div>
+              <span style="color: var(--slate-500); display: block; font-size: 0.725rem; text-transform: uppercase; font-weight: 700;">Marketing Executive</span>
+              <strong id="so-mktg">-</strong>
+            </div>
+            <div>
+              <span style="color: var(--slate-500); display: block; font-size: 0.725rem; text-transform: uppercase; font-weight: 700;">Payment Status</span>
+              <span class="pill pill-success" id="so-payment-status">Payment Verified</span>
+            </div>
+            <div>
+              <span style="color: var(--slate-500); display: block; font-size: 0.725rem; text-transform: uppercase; font-weight: 700;">Completion Date</span>
+              <strong id="so-date">-</strong>
+            </div>
+          </div>
+
+          <!-- Final Sign-off Document Upload (.pdf, .docx) -->
+          <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--slate-300);">
+            <label style="font-size: 0.775rem; text-transform: uppercase; font-weight: 800; color: var(--slate-700); display: block; margin-bottom: 0.35rem;">
+              Upload Final Project Sign-off Document (.pdf, .docx) *
+            </label>
+            <p style="font-size: 0.75rem; color: var(--slate-500); margin-bottom: 0.5rem;">
+              Required for completion. Signed client handover form or formal delivery sign-off certificate.
+            </p>
+            <div id="so-existing-doc" style="margin-bottom: 0.5rem; display: none;"></div>
+            <input type="file" id="so-document-file" class="form-control" accept=".pdf, .docx">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="API.closeModal('modal-signoff')">Cancel</button>
+        <button type="button" class="btn btn-success" style="padding: 0.65rem 1.5rem;" onclick="confirmFinalSignOff()">
+          ✓ Confirm Final Sign-off
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    let currentQuotesFilter = 'All';
+    let currentActiveTab = 'overview';
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!API.requireAuth(['admin'])) return;
+
+      // Clean URL routing & History API initialization
+      currentActiveTab = API.initRouting('/admin', 'overview', (tabId) => {
+        switchTab(tabId, false);
+      });
+
+      switchTab(currentActiveTab, false);
+      await refreshAllData();
+    });
+
+    function handleNavClick(tabId, event, element) {
+      if (event) event.preventDefault();
+      switchTab(tabId, true);
+    }
+
+    function switchTab(tabId, pushHistory = true) {
+      currentActiveTab = tabId;
+      document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) {
+        target.style.display = 'block';
+      } else {
+        const fallback = document.getElementById('tab-overview');
+        if (fallback) fallback.style.display = 'block';
+        tabId = 'overview';
+      }
+
+      const activeNav = document.querySelector(`.nav-item[data-tab='${tabId}']`);
+      if (activeNav) activeNav.classList.add('active');
+
+      const headingMap = {
+        'overview': 'Dashboard Overview',
+        'categories': 'Category Management – Bulk Excel & References',
+        'assignments': 'Pending Project Assignments',
+        'slabs': 'Commission Slabs – Side-by-Side Layout',
+        'marketing-users': 'Marketing Team Management',
+        'dev-users': 'Developer Team Management',
+        'addons': 'Add-ons Configuration (Monthly & Yearly)',
+        'quotations': 'All Customer Quotations',
+        'projects': 'Project Management & Review',
+        'payments': 'Project Payment Details & Verification',
+        'database': 'Enterprise Data & Storage Management – Intelligent Multi-Module Sharding'
+      };
+      document.getElementById('page-heading').innerText = headingMap[tabId] || 'Admin Portal';
+
+      if (tabId === 'database') {
+        loadDatabaseManagement();
+      }
+
+      if (pushHistory) {
+        API.navigate('/admin', tabId, headingMap[tabId]);
+      }
+
+      if (window.innerWidth <= 860) {
+        document.querySelector('.sidebar').classList.remove('open');
+      }
+    }
+
+    async function refreshAllData() {
+      await API.syncState();
+      await renderStats();
+      renderCategories();
+      renderPendingAssignments();
+      renderSlabsSideBySide();
+      renderMarketingUsers();
+      renderDeveloperUsers();
+      renderAddons();
+      renderQuotations();
+      renderProjects();
+      renderPayments();
+    }
+
+    // -------------------------------------------------------------
+    // STATS
+    // -------------------------------------------------------------
+    async function renderStats() {
+      try {
+        const stats = await API.request('/api/stats');
+        document.getElementById('stat-categories').innerText = stats.totalCategories || 0;
+        document.getElementById('stat-marketing').innerText = stats.totalMarketingExecutives || 0;
+        document.getElementById('stat-quotations').innerText = stats.totalQuotations || 0;
+        document.getElementById('stat-accepted').innerText = stats.acceptedQuotations || 0;
+        document.getElementById('stat-rejected').innerText = stats.rejectedQuotations || 0;
+        document.getElementById('stat-active-projs').innerText = stats.activeProjects || 0;
+        document.getElementById('stat-completed-projs').innerText = stats.completedProjects || 0;
+        document.getElementById('stat-commission').innerText = `₹${(stats.totalCommissionINR || 0).toLocaleString()} + $${(stats.totalCommissionUSD || 0).toLocaleString()}`;
+
+        // Update pending assignments notification badge
+        const badge = document.getElementById('badge-pending-assignments');
+        if (badge) {
+          if (stats.pendingAssignmentsCount > 0) {
+            badge.innerText = stats.pendingAssignmentsCount;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch (e) {
+        console.warn('Stats fetch error:', e);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // CATEGORIES WITH REFERENCE WEBSITES & EXCEL
+    // -------------------------------------------------------------
+    function renderCategories() {
+      const tbody = document.getElementById('table-categories-body');
+      tbody.innerHTML = '';
+      const list = API.state.categories || [];
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--slate-400);">No categories created yet.</td></tr>`;
+        return;
+      }
+
+      list.forEach(c => {
+        const tr = document.createElement('tr');
+        const feats = (c.features || []).join(', ');
+        tr.innerHTML = `
+          <td><strong>${API.escapeHtml(c.name)}</strong></td>
+          <td><span class="pill pill-info">${c.classification || 'Website'}</span></td>
+          <td>
+            ${c.referenceUrl ? `<a href="${c.referenceUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">🔗 Preview Site</a>` : '<span style="color: var(--slate-400); font-size: 0.775rem;">None</span>'}
+          </td>
+          <td class="price-tag">₹${Number(c.basePriceINR).toLocaleString()}</td>
+          <td class="price-tag">$${Number(c.basePriceUSD).toLocaleString()}</td>
+          <td style="max-width: 280px; font-size: 0.775rem; color: var(--slate-600);">${API.escapeHtml(feats)}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function saveNewCategory(e) {
+      e.preventDefault();
+      const rawFeats = document.getElementById('cat-features').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const payload = {
+        name: document.getElementById('cat-name').value.trim(),
+        classification: document.getElementById('cat-classification').value,
+        desc: document.getElementById('cat-desc').value.trim(),
+        referenceUrl: document.getElementById('cat-ref-url').value.trim(),
+        basePriceINR: parseInt(document.getElementById('cat-price-inr').value, 10) || 0,
+        basePriceUSD: parseInt(document.getElementById('cat-price-usd').value, 10) || 0,
+        features: rawFeats
+      };
+
+      try {
+        await API.request('/api/categories', 'POST', payload);
+        API.showToast('Category and Reference Website saved');
+        document.getElementById('form-add-category').reset();
+        await refreshAllData();
+      } catch (err) {
+        alert('Failed to save category: ' + err.message);
+      }
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm('Are you sure you want to delete this category?')) return;
+      try {
+        await API.request(`/api/categories/${id}`, 'DELETE');
+        API.showToast('Category removed');
+        await refreshAllData();
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
+    }
+
+    function handleCategoryExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(firstSheet);
+
+          if (!rows || rows.length === 0) {
+            alert('No data rows found in uploaded Excel file');
+            return;
+          }
+
+          if (confirm(`Found ${rows.length} category records in file. Import them into database?`)) {
+            const res = await API.request('/api/categories/bulk-upload', 'POST', { categories: rows });
+            API.showToast(`Imported ${res.importedCount} categories`);
+            if (res.skippedDuplicates && res.skippedDuplicates.length > 0) {
+              alert(`Skipped ${res.skippedDuplicates.length} duplicate categories:\n` + res.skippedDuplicates.join(', '));
+            }
+            await refreshAllData();
+          }
+        } catch (err) {
+          alert('Excel parsing error: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // -------------------------------------------------------------
+    // PENDING PROJECT ASSIGNMENTS SECTION (NEW VERSION 3.0)
+    // -------------------------------------------------------------
+    function renderPendingAssignments() {
+      const tbody = document.getElementById('table-assignments-body');
+      tbody.innerHTML = '';
+      const projs = (API.state.projects || []).filter(p => p.assignmentStatus === 'pending_assignment' || !p.assignedDevId);
+
+      if (projs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 2rem; color: var(--slate-400);">No pending project assignments. All accepted projects are allocated.</td></tr>`;
+        return;
+      }
+
+      projs.forEach(p => {
+        const zips = p.zipFiles || [];
+        const reqs = (p.requirements || []).join(' • ');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color: var(--primary); font-family: var(--font-mono);">${API.escapeHtml(p.quoteNumber)}</strong></td>
+          <td><strong>${API.escapeHtml(p.clientName)}</strong></td>
+          <td>${API.escapeHtml(p.projectName || p.categoryName)}</td>
+          <td class="price-tag">${p.payment ? API.formatCurrency(p.payment.totalAmount, p.payment.currency) : '—'}</td>
+          <td>${API.escapeHtml(p.commExecutiveName || '—')}</td>
+          <td>${API.escapeHtml(p.docCoordinatorName || '—')}</td>
+          <td style="max-width: 200px; font-size: 0.775rem; color: var(--slate-600);">${API.escapeHtml(reqs)}</td>
+          <td>
+            ${zips.length > 0 ? `<span class="pill pill-info">${zips.length} ZIP file(s)</span>` : '<span style="color: var(--slate-400); font-size: 0.775rem;">None</span>'}
+          </td>
+          <td><span class="pill pill-warning">Pending Assignment</span></td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-primary btn-sm" onclick="openAssignDeveloperModal('${p.id}')">
+              📌 ASSIGN DEVELOPER
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function openAssignDeveloperModal(projId) {
+      const p = (API.state.projects || []).find(item => item.id === projId);
+      if (!p) return;
+
+      document.getElementById('assign-proj-id').value = p.id;
+      document.getElementById('assign-client-info').innerText = `${p.clientName} (${p.quoteNumber}) - ${p.projectName || p.categoryName}`;
+      document.getElementById('assign-details-sub').innerText = `Comm Exec: ${p.commExecutiveName || '—'} • Doc Coordinator: ${p.docCoordinatorName || '—'} • Ref Website: ${p.referenceUrl || 'None'}`;
+
+      const today = new Date().toISOString().split('T')[0];
+      const end = new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      document.getElementById('assign-start').value = p.startDate || today;
+      document.getElementById('assign-end').value = p.expectedEndDate || end;
+
+      // Fetch developers with workload availability
+      const tbody = document.getElementById('table-devs-availability-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 1rem;">Loading developer availability...</td></tr>';
+      API.openModal('modal-assign');
+
+      try {
+        const devs = await API.request('/api/admin/developers-availability');
+        tbody.innerHTML = '';
+        if (devs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 1rem; color: var(--rose-600);">No active developers found in the system. Add a developer first.</td></tr>';
+          return;
+        }
+
+        devs.forEach((d, idx) => {
+          const isAvailable = d.availability === 'Available';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <input type="radio" name="dev-radio" value="${d.id}" ${idx === 0 ? 'checked' : ''} style="cursor: pointer;">
+            </td>
+            <td><strong>${API.escapeHtml(d.name)}</strong></td>
+            <td style="font-family: var(--font-mono); font-size: 0.8rem;">${API.escapeHtml(d.email)}</td>
+            <td><span class="pill ${d.assignedProjectsCount === 0 ? 'pill-active' : 'pill-info'}">${d.assignedProjectsCount} Active</span></td>
+            <td>
+              <span class="pill ${isAvailable ? 'pill-active' : 'pill-warning'}">${d.availability}</span>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color: red; text-align: center;">${err.message}</td></tr>`;
+      }
+    }
+
+    async function confirmProjectAssignment(e) {
+      e.preventDefault();
+      const projId = document.getElementById('assign-proj-id').value;
+      const selectedRadio = document.querySelector('input[name="dev-radio"]:checked');
+
+      if (!selectedRadio) {
+        alert('Please select a developer');
+        return;
+      }
+
+      const payload = {
+        developerId: selectedRadio.value,
+        startDate: document.getElementById('assign-start').value,
+        expectedEndDate: document.getElementById('assign-end').value,
+        assignedBy: API.getCurrentUser()?.name || 'System Administrator'
+      };
+
+      try {
+        await API.request(`/api/projects/${projId}/assign`, 'POST', payload);
+        API.closeModal('modal-assign');
+        API.showToast('Developer successfully assigned to project');
+        await refreshAllData();
+        switchTab('projects', true);
+      } catch (err) {
+        alert('Assignment failed: ' + err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // COMMISSION SLABS (SIDE-BY-SIDE LAYOUT: INR & USD)
+    // -------------------------------------------------------------
+    function renderSlabsSideBySide() {
+      // Left side: INR
+      const tbodyINR = document.getElementById('table-slabs-inr-body');
+      tbodyINR.innerHTML = '';
+      const inrSlabs = API.state.commissionSlabsINR || [];
+      inrSlabs.forEach(s => {
+        const maxStr = s.maxPrice >= 9000000 ? 'and above' : `₹${Number(s.maxPrice).toLocaleString()}`;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${API.escapeHtml(s.title)}</strong></td>
+          <td class="price-tag">₹${Number(s.minPrice).toLocaleString()} – ${maxStr}</td>
+          <td><span class="pill pill-active">${s.rate}%</span></td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" onclick="editSlab('${s.id}', 'INR')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSlab('${s.id}')" style="margin-left: 0.25rem;">Delete</button>
+          </td>
+        `;
+        tbodyINR.appendChild(tr);
+      });
+
+      // Right side: USD
+      const tbodyUSD = document.getElementById('table-slabs-usd-body');
+      tbodyUSD.innerHTML = '';
+      const usdSlabs = API.state.commissionSlabsUSD || [];
+      usdSlabs.forEach(s => {
+        const maxStr = s.maxPrice >= 9000000 ? 'and above' : `$${Number(s.maxPrice).toLocaleString()}`;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${API.escapeHtml(s.title)}</strong></td>
+          <td class="price-tag">$${Number(s.minPrice).toLocaleString()} – ${maxStr}</td>
+          <td><span class="pill pill-active">${s.rate}%</span></td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" onclick="editSlab('${s.id}', 'USD')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSlab('${s.id}')" style="margin-left: 0.25rem;">Delete</button>
+          </td>
+        `;
+        tbodyUSD.appendChild(tr);
+      });
+    }
+
+    function openAddSlabModal(currency = 'INR') {
+      document.getElementById('modal-slab-title').innerText = `Add ${currency} Commission Slab`;
+      document.getElementById('slab-edit-id').value = '';
+      document.getElementById('slab-currency').value = currency;
+      document.getElementById('slab-title').value = '';
+      document.getElementById('slab-min').value = currency === 'INR' ? '10000' : '100';
+      document.getElementById('slab-max').value = currency === 'INR' ? '25000' : '300';
+      document.getElementById('slab-rate').value = '8.5';
+      API.openModal('modal-slab');
+    }
+
+    function editSlab(id, currency) {
+      const slabs = currency === 'USD' ? (API.state.commissionSlabsUSD || []) : (API.state.commissionSlabsINR || []);
+      const s = slabs.find(item => item.id === id);
+      if (!s) return;
+
+      document.getElementById('modal-slab-title').innerText = `Edit ${currency} Slab`;
+      document.getElementById('slab-edit-id').value = s.id;
+      document.getElementById('slab-currency').value = currency;
+      document.getElementById('slab-title').value = s.title;
+      document.getElementById('slab-min').value = s.minPrice;
+      document.getElementById('slab-max').value = s.maxPrice;
+      document.getElementById('slab-rate').value = s.rate;
+      API.openModal('modal-slab');
+    }
+
+    async function saveSlab(e) {
+      e.preventDefault();
+      const id = document.getElementById('slab-edit-id').value;
+      const currency = document.getElementById('slab-currency').value;
+      const rate = Math.min(10.0, parseFloat(document.getElementById('slab-rate').value) || 0);
+
+      const payload = {
+        title: document.getElementById('slab-title').value.trim(),
+        currency: currency,
+        minPrice: parseFloat(document.getElementById('slab-min').value) || 0,
+        maxPrice: parseFloat(document.getElementById('slab-max').value) || 0,
+        rate: rate
+      };
+
+      try {
+        if (id) {
+          await API.request(`/api/commission/slabs/${id}`, 'PUT', payload);
+        } else {
+          await API.request('/api/commission/slabs', 'POST', payload);
+        }
+        API.closeModal('modal-slab');
+        API.showToast('Commission slab saved');
+        await refreshAllData();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteSlab(id) {
+      if (!confirm('Delete this slab?')) return;
+      try {
+        await API.request(`/api/commission/slabs/${id}`, 'DELETE');
+        API.showToast('Slab deleted');
+        await refreshAllData();
+      } catch (err) { alert(err.message); }
+    }
+
+    // -------------------------------------------------------------
+    // USERS (MARKETING & DEVELOPERS)
+    // -------------------------------------------------------------
+    function renderMarketingUsers() {
+      const tbody = document.getElementById('table-marketing-users-body');
+      tbody.innerHTML = '';
+      const users = (API.state.users || []).filter(u => u.role.startsWith('marketing'));
+
+      if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--slate-400);">No marketing accounts created yet.</td></tr>`;
+        return;
+      }
+
+      users.forEach(u => {
+        const resps = u.responsibilities && u.responsibilities.length > 0 ? 
+          u.responsibilities : 
+          [u.assignedResponsibility || 'Marketing Executive'];
+
+        const respPills = resps.map(r => `<span class="resp-pill">${API.escapeHtml(r)}</span>`).join('');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${API.escapeHtml(u.name)}</strong></td>
+          <td><span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--slate-700);">${API.escapeHtml(u.email)}</span></td>
+          <td style="max-width: 320px;">${respPills}</td>
+          <td><span class="pill ${u.status === 'active' ? 'pill-active' : 'pill-inactive'}">${u.status}</span></td>
+          <td style="font-size: 0.8rem; color: var(--slate-500);">${u.createdAt || '—'}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" onclick="editUserResponsibilities('${u.id}')">
+              ✏️ Responsibilities
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleUserStatus('${u.id}')" style="margin-left: 0.25rem;">
+              ${u.status === 'active' ? 'Deactivate' : 'Activate'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')" style="margin-left: 0.25rem;">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderDeveloperUsers() {
+      const tbody = document.getElementById('table-dev-users-body');
+      tbody.innerHTML = '';
+      const devs = (API.state.users || []).filter(u => u.role === 'developer');
+
+      if (devs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--slate-400);">No developer accounts added yet.</td></tr>`;
+        return;
+      }
+
+      devs.forEach(u => {
+        const assignedCount = (API.state.projects || []).filter(p => (p.assignedDevId === u.id || p.assignedDevEmail === u.email) && p.status !== 'Project Completed').length;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${API.escapeHtml(u.name)}</strong></td>
+          <td><span style="font-family: var(--font-mono); font-size: 0.8rem;">${API.escapeHtml(u.email)}</span></td>
+          <td><span class="pill pill-info">${assignedCount} Active</span></td>
+          <td><span class="pill ${assignedCount < 2 ? 'pill-active' : 'pill-warning'}">${assignedCount < 2 ? 'Available' : 'Busy'}</span></td>
+          <td><span class="pill ${u.status === 'active' ? 'pill-active' : 'pill-inactive'}">${u.status}</span></td>
+          <td style="font-size: 0.8rem; color: var(--slate-500);">${u.createdAt || '—'}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" onclick="toggleUserStatus('${u.id}')">
+              ${u.status === 'active' ? 'Deactivate' : 'Activate'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')" style="margin-left: 0.25rem;">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function onUserRoleSelectChanged() {
+      const role = document.getElementById('user-role').value;
+      const respBox = document.getElementById('marketing-responsibilities-box');
+      if (respBox) {
+        respBox.style.display = role === 'marketing' ? 'block' : 'none';
+      }
+    }
+
+    function toggleAllResponsibilities(isChecked) {
+      document.querySelectorAll('#resp-checkboxes-container .resp-chk').forEach(chk => {
+        chk.checked = isChecked;
+      });
+    }
+
+    function openAddUserModal(defaultType = 'marketing') {
+      document.getElementById('modal-user-title').innerText = defaultType === 'developer' ? 'Add Developer' : 'Create Marketing User';
+      document.getElementById('user-edit-id').value = '';
+      document.getElementById('user-name').value = '';
+      document.getElementById('user-email').value = '';
+      document.getElementById('user-role').value = defaultType === 'developer' ? 'developer' : 'marketing';
+      document.getElementById('user-status').value = 'active';
+
+      // Reset checkboxes
+      document.querySelectorAll('#resp-checkboxes-container .resp-chk').forEach((chk, i) => {
+        chk.checked = i === 0; // Check "Marketing Executive" by default
+      });
+      const allChk = document.getElementById('resp-all-checkbox');
+      if (allChk) allChk.checked = false;
+
+      onUserRoleSelectChanged();
+      API.openModal('modal-user');
+    }
+
+    function editUserResponsibilities(userId) {
+      const u = (API.state.users || []).find(item => item.id === userId);
+      if (!u) return;
+
+      document.getElementById('modal-user-title').innerText = `Edit Responsibilities: ${u.name}`;
+      document.getElementById('user-edit-id').value = u.id;
+      document.getElementById('user-name').value = u.name;
+      document.getElementById('user-email').value = u.email;
+      document.getElementById('user-role').value = u.role.startsWith('marketing') ? 'marketing' : u.role;
+      document.getElementById('user-status').value = u.status || 'active';
+
+      const currentResps = u.responsibilities || [u.assignedResponsibility || 'Marketing Executive'];
+      let checkedCount = 0;
+      const totalCount = document.querySelectorAll('#resp-checkboxes-container .resp-chk').length;
+
+      document.querySelectorAll('#resp-checkboxes-container .resp-chk').forEach(chk => {
+        const isMatch = currentResps.includes(chk.value);
+        chk.checked = isMatch;
+        if (isMatch) checkedCount++;
+      });
+
+      const allChk = document.getElementById('resp-all-checkbox');
+      if (allChk) allChk.checked = (checkedCount === totalCount);
+
+      onUserRoleSelectChanged();
+      API.openModal('modal-user');
+    }
+
+    async function saveUser(e) {
+      e.preventDefault();
+      const editId = document.getElementById('user-edit-id').value;
+      const role = document.getElementById('user-role').value;
+
+      const checkedResps = Array.from(document.querySelectorAll('#resp-checkboxes-container .resp-chk:checked')).map(c => c.value);
+
+      if (role === 'marketing' && checkedResps.length === 0) {
+        alert('Please select at least one marketing responsibility.');
+        return;
+      }
+
+      const payload = {
+        name: document.getElementById('user-name').value.trim(),
+        email: document.getElementById('user-email').value.trim().toLowerCase(),
+        role: role,
+        responsibilities: role === 'marketing' ? checkedResps : [],
+        assignedResponsibility: role === 'marketing' ? checkedResps[0] : 'Software Engineering',
+        status: document.getElementById('user-status').value
+      };
+
+      try {
+        if (editId) {
+          await API.request(`/api/users/${editId}/responsibilities`, 'PUT', {
+            responsibilities: payload.responsibilities
+          });
+          API.showToast('User responsibilities updated successfully');
+        } else {
+          await API.request('/api/users', 'POST', payload);
+          API.showToast('User created successfully');
+        }
+        API.closeModal('modal-user');
+        await refreshAllData();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function toggleUserStatus(id) {
+      try {
+        await API.request(`/api/users/${id}/toggle-status`, 'POST');
+        API.showToast('Account status updated');
+        await refreshAllData();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Are you sure you want to delete this account? Historical quotations and projects are strictly preserved.')) return;
+      try {
+        const res = await API.request(`/api/users/${id}`, 'DELETE');
+        API.showToast(res.message || 'User deleted');
+        await refreshAllData();
+      } catch (err) { alert(err.message); }
+    }
+
+    function handleUserExcelUpload(event, type) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+          if (!rows || rows.length === 0) return alert('No rows in file');
+
+          if (confirm(`Import ${rows.length} users into system?`)) {
+            const res = await API.request('/api/users/bulk-upload', 'POST', { users: rows });
+            API.showToast(`Imported ${res.importedCount} users`);
+            await refreshAllData();
+          }
+        } catch (err) {
+          alert('Upload failed: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // -------------------------------------------------------------
+    // ADD-ONS CONFIGURATION
+    // -------------------------------------------------------------
+    function renderAddons() {
+      const tbody = document.getElementById('table-addons-body');
+      tbody.innerHTML = '';
+      (API.state.addons || []).forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong>${API.escapeHtml(a.name)}</strong>
+            <div style="font-size: 0.75rem; color: var(--slate-500);">${API.escapeHtml(a.desc || '')}</div>
+          </td>
+          <td class="price-tag">₹${Number(a.monthlyINR).toLocaleString()}</td>
+          <td class="price-tag">₹${Number(a.yearlyINR).toLocaleString()}</td>
+          <td class="price-tag">$${Number(a.monthlyUSD).toLocaleString()}</td>
+          <td class="price-tag">$${Number(a.yearlyUSD).toLocaleString()}</td>
+          <td><span class="pill ${a.status === 'active' ? 'pill-active' : 'pill-inactive'}">${a.status}</span></td>
+          <td style="text-align: right;">
+            <button class="btn btn-danger btn-sm" onclick="deleteAddon('${a.id}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openAddAddonModal() {
+      document.getElementById('addon-edit-id').value = '';
+      document.getElementById('addon-name').value = '';
+      document.getElementById('addon-desc').value = '';
+      document.getElementById('addon-m-inr').value = '500';
+      document.getElementById('addon-y-inr').value = '5000';
+      document.getElementById('addon-m-usd').value = '10';
+      document.getElementById('addon-y-usd').value = '100';
+      API.openModal('modal-addon');
+    }
+
+    async function saveAddon(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('addon-name').value.trim(),
+        desc: document.getElementById('addon-desc').value.trim(),
+        monthlyINR: parseInt(document.getElementById('addon-m-inr').value, 10) || 0,
+        yearlyINR: parseInt(document.getElementById('addon-y-inr').value, 10) || 0,
+        monthlyUSD: parseInt(document.getElementById('addon-m-usd').value, 10) || 0,
+        yearlyUSD: parseInt(document.getElementById('addon-y-usd').value, 10) || 0
+      };
+      try {
+        await API.request('/api/addons', 'POST', payload);
+        API.closeModal('modal-addon');
+        API.showToast('Add-on configuration saved');
+        await refreshAllData();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function deleteAddon(id) {
+      if (!confirm('Delete add-on?')) return;
+      await API.request(`/api/addons/${id}`, 'DELETE');
+      await refreshAllData();
+    }
+
+    // -------------------------------------------------------------
+    // ALL QUOTATIONS & ADMIN ACCESS (PERMANENT RETENTION - NO DELETE)
+    // -------------------------------------------------------------
+    function filterQuotationsTable(status, btn) {
+      currentQuotesFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderQuotations();
+    }
+
+    function renderQuotations() {
+      const tbody = document.getElementById('table-quotations-body');
+      tbody.innerHTML = '';
+      let quotes = API.state.quotations || [];
+
+      if (currentQuotesFilter !== 'All') {
+        quotes = quotes.filter(q => API.normalizeQuotationStatus(q.status) === currentQuotesFilter);
+      }
+
+      if (quotes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 2rem; color: var(--slate-400);">No quotations found matching filter.</td></tr>`;
+        return;
+      }
+
+      quotes.forEach(q => {
+        const normStatus = API.normalizeQuotationStatus(q.status);
+        const isAccepted = normStatus === 'Accepted';
+        const proj = (API.state.projects || []).find(p => p.quoteId === q.id || p.quoteNumber === q.quoteNumber);
+
+        const subtotal = q.subtotal || Math.round(q.totalPrice / 1.18);
+        const gst = q.gstAmount || Math.round(subtotal * 0.18);
+        const total = q.totalPrice;
+
+        const badgeClass = API.getLifecycleBadgeClass(normStatus);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color: var(--primary); font-family: var(--font-mono);">${API.escapeHtml(q.quoteNumber)}</strong></td>
+          <td><strong>${API.escapeHtml(q.clientName)}</strong></td>
+          <td><span style="font-size: 0.8rem; color: var(--slate-700);">${API.escapeHtml(q.commExecutiveName || q.executiveName || 'Executive')}</span></td>
+          <td><span style="font-size: 0.8rem; color: var(--slate-600);">${API.escapeHtml(q.categoryName || 'Solution')}</span></td>
+          <td class="price-tag">${API.formatCurrency(subtotal, q.currency)}</td>
+          <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${API.formatCurrency(gst, q.currency)}</td>
+          <td class="price-tag" style="color: var(--primary); font-weight: 800;">${API.formatCurrency(total, q.currency)}</td>
+          <td><span class="pill pill-active" style="font-size: 0.775rem;">${q.commissionRate}% (${API.formatCurrency(q.commissionAmount, q.currency)})</span></td>
+          <td style="font-size: 0.8rem; color: var(--slate-500);">${q.createdAt}</td>
+          <td><span class="badge-lifecycle ${badgeClass}">${normStatus}</span></td>
+          <td style="text-align: right; white-space: nowrap;">
+            ${isAccepted && (!proj || !proj.assignedDevId) ? `
+              <button class="btn btn-primary btn-sm" onclick="openAssignDeveloperModal('${proj ? proj.id : q.id}')">
+                📌 Assign Developer
+              </button>
+            ` : (proj && proj.assignedDevId ? `<span class="pill pill-info">${proj.assignedDevName}</span>` : '—')}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // PROJECT MANAGEMENT & REVIEW
+    // -------------------------------------------------------------
+    function renderProjects() {
+      const tbody = document.getElementById('table-projects-body');
+      tbody.innerHTML = '';
+      const projs = API.state.projects || [];
+
+      if (projs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--slate-400);">No projects launched yet.</td></tr>`;
+        return;
+      }
+
+      projs.forEach(p => {
+        const badgeCls = API.getStatusBadgeClass(p.status);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color: var(--primary); font-family: var(--font-mono);">${API.escapeHtml(p.quoteNumber)}</strong></td>
+          <td><strong>${API.escapeHtml(p.clientName)}</strong></td>
+          <td><strong style="color: var(--purple-700);">${API.escapeHtml(p.assignedDevName || 'Unassigned')}</strong></td>
+          <td>
+            ${p.testingUrl ? `<a href="${p.testingUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-size: 0.8rem; font-weight: 700;">🔗 Open Staging</a>` : '<span style="color: var(--slate-400); font-size: 0.775rem;">Not submitted</span>'}
+          </td>
+          <td>
+            ${p.finalUrl ? `<a href="${p.finalUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--emerald-600); font-size: 0.8rem; font-weight: 700;">🚀 Open Production</a>` : '<span style="color: var(--slate-400); font-size: 0.775rem;">Not submitted</span>'}
+          </td>
+          <td><span class="pill ${badgeCls}">${p.status}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div style="flex: 1; width: 60px; height: 6px; background: var(--slate-200); border-radius: 999px; overflow: hidden;">
+                <div style="height: 100%; width: ${p.progress || 0}%; background: var(--primary);"></div>
+              </div>
+              <span style="font-size: 0.75rem; font-weight: 700;">${p.progress || 0}%</span>
+            </div>
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" onclick="openAdminReviewModal('${p.id}')">
+              🔍 Review & Actions
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openAdminReviewModal(projId) {
+      const p = (API.state.projects || []).find(item => item.id === projId);
+      if (!p) return;
+
+      document.getElementById('review-proj-id').value = p.id;
+      document.getElementById('review-proj-name').innerText = `${p.projectName || p.categoryName} (${p.quoteNumber})`;
+      document.getElementById('review-client-meta').innerText = `Client: ${p.clientName} • Assigned: ${p.assignedDevName || 'Unassigned'} • Progress: ${p.progress || 0}%`;
+
+      const statusPill = document.getElementById('review-status-pill');
+      statusPill.className = `pill ${API.getStatusBadgeClass(p.status)}`;
+      statusPill.innerText = p.status;
+
+      document.getElementById('review-testing-link-box').innerHTML = p.testingUrl ? 
+        `<a href="${p.testingUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="color: var(--primary); font-weight: 700;">🔗 Open Staging Website (${p.testingUrl})</a>` : 
+        '<span style="color: var(--slate-400); font-style: italic; font-size: 0.8rem;">Developer has not submitted a testing link yet.</span>';
+
+      document.getElementById('review-final-link-box').innerHTML = p.finalUrl ? 
+        `<a href="${p.finalUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm" style="font-weight: 700;">🚀 Open Production Website (${p.finalUrl})</a>` : 
+        '<span style="color: var(--slate-400); font-style: italic; font-size: 0.8rem;">Developer has not submitted a final production link yet.</span>';
+
+      document.getElementById('review-dev-remarks').innerText = p.remarks || p.workDescription || 'No developer remarks submitted.';
+
+      const zipBox = document.getElementById('review-zip-files-box');
+      const zips = p.zipFiles || [];
+      if (zips.length === 0) {
+        zipBox.innerHTML = '<span style="color: var(--slate-400); font-style: italic; font-size: 0.8rem;">No ZIP requirement assets uploaded for this project.</span>';
+      } else {
+        zipBox.innerHTML = zips.map(z => `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.6rem; background: #ffffff; border: 1px solid var(--slate-200); border-radius: 6px; margin-bottom: 0.35rem; font-size: 0.8rem;">
+            <span>📦 <strong>${API.escapeHtml(z.originalName)}</strong> (${z.sizeKb} KB)</span>
+            <a href="/api/projects/${p.id}/files/${z.filename}" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;" download>Download</a>
+          </div>
+        `).join('');
+      }
+
+      const crBox = document.getElementById('review-change-requests-box');
+      const crs = p.changeRequests || [];
+      if (crs.length === 0) {
+        crBox.innerHTML = '<span style="color: var(--slate-400); font-style: italic; font-size: 0.8rem;">No change requests recorded.</span>';
+      } else {
+        crBox.innerHTML = crs.map(c => `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0.5rem; background: #ffffff; border: 1px solid var(--slate-200); border-radius: 6px; margin-bottom: 0.25rem; font-size: 0.775rem;">
+            <span>🔄 <strong>${API.escapeHtml(c.title)}</strong> (${c.priority})</span>
+            <span class="pill ${c.status === 'Completed' ? 'pill-active' : 'pill-warning'}" style="font-size: 0.7rem;">${c.status}</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('review-admin-remarks').value = '';
+
+      // Check payment status to adjust Sign-off button
+      const paymentStatus = p.payment ? p.payment.status : 'Payment Pending';
+      const btnSignoff = document.getElementById('btn-proceed-signoff');
+      if (paymentStatus === 'Payment Verified') {
+        btnSignoff.innerText = '✓ Approve Project Completion & Sign-off';
+        btnSignoff.className = 'btn btn-success';
+      } else {
+        btnSignoff.innerText = `Sign-off (${paymentStatus})`;
+        btnSignoff.className = 'btn btn-secondary';
+      }
+
+      API.openModal('modal-admin-review');
+    }
+
+    async function adminRequestChanges() {
+      const projId = document.getElementById('review-proj-id').value;
+      const remarks = document.getElementById('review-admin-remarks').value.trim();
+      if (!remarks) {
+        alert('Please enter change request details for the developer.');
+        return;
+      }
+
+      try {
+        await API.request(`/api/projects/${projId}/request-changes`, 'POST', { changeDescription: remarks });
+        API.closeModal('modal-admin-review');
+        API.showToast('Change request forwarded to developer');
+        await refreshAllData();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function adminApproveFinalWebsite() {
+      const projId = document.getElementById('review-proj-id').value;
+      const remarks = document.getElementById('review-admin-remarks').value.trim();
+
+      try {
+        await API.request(`/api/projects/${projId}/approve-website`, 'POST', { remarks });
+        API.closeModal('modal-admin-review');
+        API.showToast('Final website build approved! Proceed to payment verification.');
+        await refreshAllData();
+        switchTab('payments', true);
+      } catch (err) { alert(err.message); }
+    }
+
+    function openSignOffModalFromReview() {
+      const projId = document.getElementById('review-proj-id').value;
+      const p = (API.state.projects || []).find(item => item.id === projId);
+      if (!p) return;
+
+      const payment = p.payment || {};
+      if (payment.status !== 'Payment Verified') {
+        alert(`Cannot complete project sign-off!\nPayment status is currently "${payment.status}".\nFinal sign-off strictly requires "Payment Verified". Please verify payment in Project Payment Details first.`);
+        API.closeModal('modal-admin-review');
+        switchTab('payments', true);
+        return;
+      }
+
+      API.closeModal('modal-admin-review');
+      openSignOffModal(projId);
+    }
+
+    // -------------------------------------------------------------
+    // PROJECT PAYMENT DETAILS & VERIFICATION
+    // -------------------------------------------------------------
+    function renderPayments() {
+      const tbody = document.getElementById('table-payments-body');
+      tbody.innerHTML = '';
+      const projs = API.state.projects || [];
+
+      if (projs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 2rem; color: var(--slate-400);">No project payment records available.</td></tr>`;
+        return;
+      }
+
+      projs.forEach(p => {
+        const pay = p.payment || {
+          totalAmount: 0,
+          amountPaid: 0,
+          currency: 'INR',
+          status: 'Payment Pending',
+          method: 'PhonePe',
+          date: '—',
+          refNumber: '—',
+          screenshotUrl: ''
+        };
+
+        const total = pay.totalAmount || 0;
+        const subtotal = Math.round(total / 1.18);
+        const gst = total - subtotal;
+
+        const badgeClass = API.getPaymentBadgeClass(pay.status);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color: var(--primary); font-family: var(--font-mono);">${API.escapeHtml(p.quoteNumber)}</strong></td>
+          <td><strong>${API.escapeHtml(p.clientName)}</strong></td>
+          <td class="price-tag">${API.formatCurrency(subtotal, pay.currency)}</td>
+          <td class="price-tag" style="color: var(--slate-600); font-size: 0.825rem;">${API.formatCurrency(gst, pay.currency)}</td>
+          <td class="price-tag" style="color: var(--slate-900); font-weight: 800;">${API.formatCurrency(total, pay.currency)}</td>
+          <td class="price-tag" style="color: var(--emerald-600);">${API.formatCurrency(pay.amountPaid, pay.currency)}</td>
+          <td><span class="pill ${badgeClass}">${pay.status}</span></td>
+          <td><span class="pill pill-info">${API.escapeHtml(pay.method || 'PhonePe')}</span></td>
+          <td>
+            ${pay.screenshotUrl ? `
+              <a href="${pay.screenshotUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                🖼️ View Proof
+              </a>
+            ` : '<span style="color: var(--slate-400); font-size: 0.775rem;">Not uploaded</span>'}
+          </td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" onclick="openPaymentModal('${p.id}')">
+              💳 Edit / Proof
+            </button>
+            ${pay.status !== 'Payment Verified' ? `
+              <button class="btn btn-success btn-sm" onclick="verifyPayment('${p.id}', 'Verified')" style="margin-left: 0.25rem;">
+                ✓ Verify
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="verifyPayment('${p.id}', 'Rejected')" style="margin-left: 0.25rem;">
+                ✕ Reject
+              </button>
+            ` : `
+              <button class="btn btn-success btn-sm" onclick="openSignOffModal('${p.id}')" style="margin-left: 0.25rem;">
+                🏆 Final Sign-off
+              </button>
+            `}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openPaymentModal(projId) {
+      const p = (API.state.projects || []).find(item => item.id === projId);
+      if (!p) return;
+
+      const pay = p.payment || {};
+      document.getElementById('pay-proj-id').value = p.id;
+      document.getElementById('pay-client-summary').innerText = `${p.clientName} (${p.quoteNumber}) - ${p.projectName || p.categoryName}`;
+      document.getElementById('pay-amount-summary').innerText = `Total Quote Amount: ${API.formatCurrency(pay.totalAmount || 0, pay.currency || 'INR')} • Current Status: ${pay.status || 'Payment Pending'}`;
+
+      document.getElementById('pay-amount-paid').value = pay.amountPaid || pay.totalAmount || 0;
+      document.getElementById('pay-method').value = pay.method || 'PhonePe';
+      document.getElementById('pay-date').value = pay.date || new Date().toISOString().split('T')[0];
+      document.getElementById('pay-ref').value = pay.refNumber || '';
+      document.getElementById('pay-notes').value = pay.notes || '';
+
+      const currentProof = document.getElementById('pay-proof-current');
+      if (pay.screenshotUrl) {
+        currentProof.style.display = 'block';
+        currentProof.innerHTML = `<span style="font-size: 0.75rem; color: var(--slate-600);">Current Screenshot: <a href="${pay.screenshotUrl}" target="_blank" style="color: var(--primary); font-weight: 700;">View Attachment</a> (Select a new file below to replace it)</span>`;
+      } else {
+        currentProof.style.display = 'none';
+      }
+
+      document.getElementById('pay-file-input').value = '';
+      API.openModal('modal-payment');
+    }
+
+    async function savePaymentDetails(e) {
+      e.preventDefault();
+      const projId = document.getElementById('pay-proj-id').value;
+      const fileInput = document.getElementById('pay-file-input');
+      const file = fileInput.files[0];
+
+      const metadata = {
+        amountPaid: document.getElementById('pay-amount-paid').value,
+        method: document.getElementById('pay-method').value,
+        refNumber: document.getElementById('pay-ref').value,
+        notes: document.getElementById('pay-notes').value,
+        uploadedBy: API.getCurrentUser()?.name || 'Administrator'
+      };
+
+      try {
+        if (file) {
+          await API.uploadPaymentProof(projId, file, metadata);
+        } else {
+          await API.request(`/api/projects/${projId}/payment`, 'POST', {
+            amountPaid: parseFloat(metadata.amountPaid) || 0,
+            method: metadata.method,
+            refNumber: metadata.refNumber,
+            notes: metadata.notes,
+            date: document.getElementById('pay-date').value
+          });
+        }
+
+        API.closeModal('modal-payment');
+        API.showToast('Payment details updated');
+        await refreshAllData();
+      } catch (err) {
+        alert('Payment update failed: ' + err.message);
+      }
+    }
+
+    async function verifyPayment(projId, decision) {
+      const promptMsg = decision === 'Verified' ? 
+        'Enter verification remarks (optional):' : 
+        'Enter reason for payment proof rejection:';
+      const notes = prompt(promptMsg, decision === 'Verified' ? 'Payment confirmed by bank statement.' : 'Screenshot illegible or transaction ID not found.');
+      if (notes === null) return;
+
+      try {
+        await API.request(`/api/projects/${projId}/verify-payment`, 'POST', { decision, notes });
+        API.showToast(decision === 'Verified' ? 'Payment marked as Verified!' : 'Payment rejected.');
+        await refreshAllData();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // FINAL SIGN-OFF & COMPLETION MODAL (.pdf, .docx Upload Required)
+    // -------------------------------------------------------------
+    function openSignOffModal(projId) {
+      const p = (API.state.projects || []).find(item => item.id === projId);
+      if (!p) return;
+
+      const pay = p.payment || {};
+      if (pay.status !== 'Payment Verified') {
+        alert(`Cannot complete sign-off. Full payment must be verified first (Current: ${pay.status}).`);
+        return;
+      }
+
+      document.getElementById('signoff-proj-id').value = p.id;
+      document.getElementById('so-client').innerText = p.clientName;
+      document.getElementById('so-project').innerText = `${p.projectName || p.categoryName} (${p.quoteNumber})`;
+      const finalLink = document.getElementById('so-final-url');
+      finalLink.innerText = p.finalUrl || 'Not provided';
+      finalLink.href = p.finalUrl || '#';
+      document.getElementById('so-dev').innerText = p.assignedDevName || 'Assigned Developer';
+      document.getElementById('so-mktg').innerText = p.commExecutiveName || 'Marketing Executive';
+      document.getElementById('so-date').innerText = new Date().toISOString().split('T')[0];
+
+      const existingDocBox = document.getElementById('so-existing-doc');
+      if (p.signoffDocument) {
+        existingDocBox.style.display = 'block';
+        existingDocBox.innerHTML = `<span style="font-size: 0.8rem; color: var(--emerald-700); font-weight: 700;">✓ Current Sign-off File: <a href="/api/projects/${p.id}/files/${p.signoffDocument.filename}" target="_blank" download>${p.signoffDocument.originalName}</a></span>`;
+      } else {
+        existingDocBox.style.display = 'none';
+      }
+
+      const fileInput = document.getElementById('so-document-file');
+      if (fileInput) fileInput.value = '';
+
+      API.openModal('modal-signoff');
+    }
+
+    async function confirmFinalSignOff() {
+      const projId = document.getElementById('signoff-proj-id').value;
+      const p = (API.state.projects || []).find(item => item.id === projId);
+      const fileInput = document.getElementById('so-document-file');
+      const file = fileInput.files ? fileInput.files[0] : null;
+
+      if (!file && (!p || !p.signoffDocument)) {
+        alert('Final sign-off requires uploading a sign-off document (.pdf or .docx). Please choose a file.');
+        return;
+      }
+
+      try {
+        if (file) {
+          await API.uploadSignoffDocument(projId, file);
+        }
+        await API.request(`/api/projects/${projId}/sign-off`, 'POST');
+        API.closeModal('modal-signoff');
+        API.showToast('🏆 Project Completion & Sign-off Approved!');
+        await refreshAllData();
+        switchTab('projects', true);
+      } catch (err) {
+        alert('Sign-off failed: ' + err.message);
+      }
+    }
+
+    // ---------------------------------------------------------
+    // DATA MANAGEMENT & MULTI-MODULE SHARDING CONTROLS
+    // ---------------------------------------------------------
+    let currentDatabaseStats = null;
+    let currentShardFilter = 'all';
+
+    async function loadDatabaseManagement() {
+      try {
+        const stats = await API.getDatabaseStats();
+        currentDatabaseStats = stats;
+        renderDataManagement(stats);
+      } catch (err) {
+        console.error('Error loading database stats:', err);
+      }
+    }
+
+    function renderDataManagement(stats) {
+      if (!stats) return;
+
+      // 1. Metric Tiles
+      document.getElementById('db-stat-total-size').innerText = stats.totalStorageFormatted || '0.0 KiB';
+      document.getElementById('db-stat-active-files').innerText = stats.activeFilesCount || 0;
+      document.getElementById('db-stat-archived-files').innerText = stats.archivedFilesCount || 0;
+      document.getElementById('db-stat-total-records').innerText = (stats.totalRecords || 0).toLocaleString();
+      document.getElementById('db-stat-relationships').innerText = `${stats.totalRelationships || 0} Cross-Module Relations`;
+      document.getElementById('db-stat-last-backup').innerText = stats.lastBackupDate || 'None';
+      document.getElementById('db-stat-backups-count').innerText = `${stats.backupsCount || 0} Archives in /database/backups/`;
+
+      // 2. Health Badge
+      const healthBadge = document.getElementById('db-health-badge');
+      const healthText = document.getElementById('db-health-text');
+      if (stats.healthStatus === 'OPTIMAL') {
+        healthBadge.className = 'health-status-pill healthy';
+        healthText.innerText = 'SYSTEM OPTIMAL (100% HEALTHY)';
+      } else if (stats.healthStatus === 'ROTATION_REQUIRED') {
+        healthBadge.className = 'health-status-pill warning';
+        healthText.innerText = 'ROTATION TRIGGERED (~70 MiB)';
+      } else {
+        healthBadge.className = 'health-status-pill warning';
+        healthText.innerText = stats.healthStatus;
+      }
+
+      // 3. Global Capacity Bar
+      const totalBytes = stats.totalStorageBytes || 0;
+      const capacityPct = Math.min(100, Math.max(2, (totalBytes / (70 * 1024 * 1024)) * 100));
+      const barFill = document.getElementById('db-global-capacity-bar');
+      if (barFill) {
+        barFill.style.width = `${capacityPct}%`;
+        if (capacityPct > 70) {
+          barFill.style.background = 'linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)';
+        } else {
+          barFill.style.background = 'linear-gradient(90deg, #10b981 0%, #3b82f6 70%, #f59e0b 100%)';
+        }
+      }
+
+      // 4. Module Storage Grid
+      const modContainer = document.getElementById('db-modules-grid-container');
+      if (modContainer && stats.moduleStats) {
+        const moduleIcons = {
+          'admin': '⚙️', 'users': '👥', 'customers': '🏢', 'leads': '🎯',
+          'quotations': '📄', 'projects': '🚀', 'marketing': '💼', 'engineering': '💻',
+          'assignments': '📋', 'payments': '💳', 'invoices': '🧾', 'change_requests': '🔄',
+          'documents': '📁', 'notifications': '🔔', 'audit_logs': '🛡️', 'backups': '📦', 'system': '🖥️'
+        };
+
+        let html = '';
+        for (const [mod, mdata] of Object.entries(stats.moduleStats)) {
+          const icon = moduleIcons[mod] || '📁';
+          const sizeStr = API.formatBytes ? API.formatBytes(mdata.bytes) : `${Math.round(mdata.bytes / 1024)} KiB`;
+          html += `
+            <div class="db-module-card">
+              <div class="db-module-header">
+                <span class="db-module-name">${icon} /database/${mod}</span>
+                <span class="db-module-tag">${mdata.files} ${mdata.files === 1 ? 'file' : 'files'}</span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--slate-600);">
+                Active: <span style="font-family: var(--font-mono); font-weight: 700; color: var(--emerald-600);">${mdata.active_file || 'None'}</span>
+              </div>
+              <div class="db-module-stats">
+                <span><strong>${mdata.records}</strong> records</span>
+                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--slate-800);">${sizeStr}</span>
+              </div>
+            </div>
+          `;
+        }
+        modContainer.innerHTML = html;
+      }
+
+      // 5. Render Shard Files Table
+      renderShardsTable(stats.files || []);
+
+      // 6. Refresh Backups and Audit Logs
+      refreshDatabaseBackups();
+      refreshDatabaseAuditLogs();
+    }
+
+    function renderShardsTable(files) {
+      const tbody = document.getElementById('db-shards-table-body');
+      if (!tbody) return;
+
+      let filtered = files;
+      if (currentShardFilter === 'active') {
+        filtered = files.filter(f => f.isActive);
+      } else if (currentShardFilter === 'archived') {
+        filtered = files.filter(f => !f.isActive);
+      }
+
+      document.getElementById('db-files-count-badge').innerText = files.length;
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--slate-400); padding: 2rem;">No database shards matching the selected filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(f => {
+        const statusBadge = f.isActive
+          ? `<span class="shard-badge-active"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;"></span>ACTIVE</span>`
+          : `<span class="shard-badge-archived"><span style="width:6px;height:6px;border-radius:50%;background:#64748b;"></span>ARCHIVED</span>`;
+
+        const rotateBtn = f.isActive
+          ? `<button class="btn btn-sm btn-secondary" onclick="triggerShardRotation('${f.module}')" title="Rotate to next sequential file">Rotate</button>`
+          : `<span style="font-size: 0.75rem; color: var(--slate-400);">Locked (Read-Only)</span>`;
+
+        return `
+          <tr>
+            <td>
+              <div style="font-weight: 700; font-family: var(--font-mono); color: var(--slate-800);">${f.shardId}</div>
+              <div style="font-size: 0.7rem; color: var(--slate-400);">${f.filePath}</div>
+            </td>
+            <td><span class="badge" style="background: var(--slate-100); color: var(--slate-700); font-family: var(--font-mono);">${f.module}</span></td>
+            <td><strong style="font-family: var(--font-mono);">${String(f.sequence).padStart(3, '0')}</strong></td>
+            <td><strong style="font-family: var(--font-mono);">${f.sizeFormatted}</strong></td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div style="flex: 1; height: 6px; background: var(--slate-200); border-radius: 999px; overflow: hidden; min-width: 60px;">
+                  <div style="width: ${Math.min(100, Math.max(2, f.utilizationPct))}%; height: 100%; background: ${f.utilizationPct > 70 ? '#f59e0b' : '#10b981'};"></div>
+                </div>
+                <span style="font-size: 0.75rem; font-family: var(--font-mono); font-weight: 600;">${f.utilizationPct}%</span>
+              </div>
+              <div style="font-size: 0.68rem; color: var(--slate-400);">Limit: 100 MiB (Soft: 70 MiB)</div>
+            </td>
+            <td><strong>${f.recordCount}</strong></td>
+            <td>${statusBadge}</td>
+            <td style="font-size: 0.8rem; color: var(--slate-600);">${f.createdAt}</td>
+            <td style="font-size: 0.8rem; color: var(--slate-600);">${f.lastCheck}</td>
+            <td style="text-align: right;">${rotateBtn}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterShards(type) {
+      currentShardFilter = type;
+      ['all', 'active', 'archived'].forEach(t => {
+        const btn = document.getElementById(`btn-filter-shards-${t}`);
+        if (btn) {
+          if (t === type) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+      if (currentDatabaseStats && currentDatabaseStats.files) {
+        renderShardsTable(currentDatabaseStats.files);
+      }
+    }
+
+    async function triggerShardRotation(module) {
+      if (!confirm(`Are you sure you want to trigger controlled rotation for /database/${module}? This will archive the current active shard and create the next sequential storage file without any data loss.`)) {
+        return;
+      }
+      try {
+        const res = await API.rotateDatabaseShard(module, 'Admin manual rotation via dashboard');
+        API.showToast(res.message || `Successfully rotated ${module} shard!`);
+        await loadDatabaseManagement();
+      } catch (err) {
+        alert('Rotation failed: ' + err.message);
+      }
+    }
+
+    async function triggerIntegrityCheck() {
+      const btn = document.getElementById('btn-db-integrity');
+      const origText = btn.innerHTML;
+      btn.innerHTML = 'Scanning...';
+      btn.disabled = true;
+      try {
+        const res = await API.runDatabaseIntegrityCheck();
+        const report = res.report || {};
+        alert(`Integrity Scan Complete!\nStatus: ${report.overallStatus}\nDatabases Checked: ${report.totalChecked}\nAll SQLite B-Trees & HMAC-SHA256 Checksums Verified.`);
+        API.showToast(`🛡️ Integrity Check: ${report.overallStatus}`);
+        await loadDatabaseManagement();
+      } catch (err) {
+        alert('Integrity check failed: ' + err.message);
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function triggerDatabaseOptimization() {
+      const btn = document.getElementById('btn-db-optimize');
+      const origText = btn.innerHTML;
+      btn.innerHTML = 'Optimizing...';
+      btn.disabled = true;
+      try {
+        const res = await API.optimizeDatabases();
+        API.showToast(`⚡ ${res.message}`);
+        await loadDatabaseManagement();
+      } catch (err) {
+        alert('Optimization failed: ' + err.message);
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function triggerDatabaseBackup() {
+      const btn = document.getElementById('btn-db-backup');
+      const origText = btn.innerHTML;
+      btn.innerHTML = 'Creating Backup...';
+      btn.disabled = true;
+      try {
+        const res = await API.createDatabaseBackup();
+        API.showToast(`📦 Backup Created: ${res.backup ? res.backup.filename : 'Success'}`);
+        await loadDatabaseManagement();
+      } catch (err) {
+        alert('Backup creation failed: ' + err.message);
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function triggerSimulateGrowth() {
+      const module = prompt('Enter module to simulate growth into (e.g. customers, leads, quotations, payments):', 'customers');
+      if (!module) return;
+      const count = prompt('How many transactional simulation records to inject (1-100)?', '25');
+      if (!count) return;
+
+      try {
+        const res = await API.simulateDatabaseGrowth(module, parseInt(count, 10));
+        API.showToast(res.message);
+        await loadDatabaseManagement();
+      } catch (err) {
+        alert('Simulation failed: ' + err.message);
+      }
+    }
+
+    async function refreshDatabaseBackups() {
+      try {
+        const backups = await API.getDatabaseBackups();
+        const tbody = document.getElementById('db-backups-table-body');
+        if (!tbody) return;
+        if (!backups.length) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--slate-400); padding: 1rem;">No backups created yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = backups.map(b => `
+          <tr>
+            <td><strong style="font-family: var(--font-mono); font-size: 0.82rem;">${b.filename}</strong></td>
+            <td><span class="badge" style="background: var(--slate-100);">${b.sizeFormatted}</span></td>
+            <td style="font-size: 0.78rem; color: var(--slate-600);">${b.date}</td>
+            <td><a href="/api/database/backups/${b.filename}" class="btn btn-sm btn-secondary" download style="padding: 2px 8px; font-size: 0.75rem;">Download</a></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error refreshing backups:', err);
+      }
+    }
+
+    async function refreshDatabaseAuditLogs() {
+      try {
+        const logs = await API.getDatabaseAuditLogs(20);
+        const tbody = document.getElementById('db-audit-table-body');
+        if (!tbody) return;
+        if (!logs.length) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--slate-400); padding: 1rem;">No audit logs recorded yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = logs.map(l => `
+          <tr>
+            <td style="font-size: 0.75rem; color: var(--slate-500);">${l.timestamp}</td>
+            <td><span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #4338ca; font-size: 0.72rem;">${l.action}</span></td>
+            <td><span style="font-family: var(--font-mono); font-size: 0.75rem;">${l.module}</span></td>
+            <td style="font-size: 0.78rem; color: var(--slate-700); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${API.escapeHtml(l.details)}">${API.escapeHtml(l.details)}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error refreshing audit logs:', err);
+      }
+    }
+  </script>
+</body>
+</html>
