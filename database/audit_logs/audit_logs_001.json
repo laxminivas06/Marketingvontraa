@@ -5,9 +5,54 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 16:42:10"
+    "updated_at": "2026-11-12 16:43:03"
   },
   "records": [
+    {
+      "id": "aud_c168e7581d7e",
+      "timestamp": "2026-11-12 16:43:03",
+      "user_email": "system",
+      "action": "STORAGE_OPTIMIZATION",
+      "module": "system",
+      "details": "Compacted JSON storage. Reclaimed: 0 B",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_493ca1c9ccc7",
+      "timestamp": "2026-11-12 16:43:03",
+      "user_email": "system",
+      "action": "BACKUP_CREATED",
+      "module": "backups",
+      "details": "Archive test_json_verification_backup.zip (24.19 KiB)",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_192302e00202",
+      "timestamp": "2026-11-12 16:43:03",
+      "user_email": "system",
+      "action": "INTEGRITY_CHECK",
+      "module": "system",
+      "details": "Verified 21 JSON shards. Errors: 0",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_aae44afafb05",
+      "timestamp": "2026-11-12 16:43:03",
+      "user_email": "system@aivontraa.com",
+      "action": "SHARD_ROTATION",
+      "module": "leads",
+      "details": "Rotated from seq 4 to seq 5 (Test JSON Rotation)",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_b1f57f648926",
+      "timestamp": "2026-11-12 16:43:03",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
     {
       "id": "aud_b9af9d53c302",
       "timestamp": "2026-11-12 16:42:10",
