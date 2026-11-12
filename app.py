@@ -408,43 +408,163 @@ def api_categories_template():
         headers={"Content-disposition": "attachment; filename=aivontraa_categories_template.csv"}
     )
 
+def safe_parse_number(val, default=0):
+    if val is None:
+        return default
+    if isinstance(val, (int, float)):
+        return int(round(val))
+    s = str(val).strip()
+    if not s:
+        return default
+    s = s.replace('₹', '').replace('$', '').replace('€', '').replace('£', '').replace(',', '').strip()
+    try:
+        return int(round(float(s)))
+    except (ValueError, TypeError):
+        return default
+
+def get_flex_field(row: dict, candidate_keys: list, default=''):
+    if not isinstance(row, dict):
+        return default
+    clean_candidates = [k.lower().replace(' ', '').replace('_', '').replace('-', '') for k in candidate_keys]
+    
+    # 1. Exact match first
+    for k in candidate_keys:
+        if k in row and row[k] is not None and str(row[k]).strip() != '':
+            return row[k]
+            
+    # 2. Normalized match (handles headers with trailing spaces like 'Category Name ')
+    for row_key, val in row.items():
+        if val is None or str(val).strip() == '':
+            continue
+        clean_row_key = str(row_key).lower().replace(' ', '').replace('_', '').replace('-', '')
+        if clean_row_key in clean_candidates:
+            return val
+
+    return default
+
+def parse_features_list(raw_feats):
+    if raw_feats is None:
+        return []
+    if isinstance(raw_feats, list):
+        return [str(f).strip() for f in raw_feats if str(f).strip()]
+    s = str(raw_feats).strip()
+    if not s:
+        return []
+    parts = s.replace('\n', '|').replace(';', '|').replace(',', '|').replace('•', '|').split('|')
+    return [p.strip() for p in parts if p.strip()]
+
 @app.route('/api/categories/bulk-upload', methods=['POST'])
 def api_categories_bulk_upload():
-    payload = request.get_json() or {}
-    items = payload.get('categories', [])
-    if not items or not isinstance(items, list):
-        return jsonify({"success": False, "message": "No category records provided"}), 400
+    try:
+        payload = request.get_json() or {}
+        items = payload.get('categories', [])
+        if not items or not isinstance(items, list):
+            return jsonify({"success": False, "message": "No category records provided in uploaded Excel file"}), 400
 
-    db = load_db()
-    existing_cats = db.setdefault('categories', [])
-    existing_names = {c.get('name', '').lower() for c in existing_cats}
-    added, skipped = [], []
+        db = load_db()
+        existing_cats = db.setdefault('categories', [])
+        existing_names = {c.get('name', '').lower() for c in existing_cats}
+        added, skipped = [], []
 
-    for idx, row in enumerate(items, start=1):
-        name = str(row.get('name') or row.get('Category Name') or '').strip()
-        if not name or name.lower() in existing_names:
-            if name: skipped.append(name)
-            continue
+        for idx, row in enumerate(items, start=1):
+            if not isinstance(row, dict):
+                continue
 
-        raw_feats = row.get('features') or row.get('Included Features') or []
-        features = [f.strip() for f in raw_feats.replace(';', '|').replace(',', '|').split('|') if f.strip()] if isinstance(raw_feats, str) else list(raw_feats)
+            name = str(get_flex_field(row, ['Category Name', 'name', 'category', 'service name', 'title'])).strip()
+            if not name:
+                continue
 
-        new_cat = {
-            "id": f"cat-{uuid.uuid4().hex[:6]}",
-            "name": name,
-            "classification": str(row.get('classification') or row.get('Classification') or 'Website').strip(),
-            "desc": str(row.get('desc') or row.get('Description') or '').strip(),
-            "referenceUrl": str(row.get('referenceUrl') or row.get('Reference Website') or '').strip(),
-            "basePriceINR": int(row.get('basePriceINR') or row.get('INR Price') or 0),
-            "basePriceUSD": int(row.get('basePriceUSD') or row.get('USD Price') or 0),
-            "features": features
-        }
-        existing_cats.append(new_cat)
-        existing_names.add(name.lower())
-        added.append(new_cat)
+            if name.lower() in existing_names:
+                skipped.append(name)
+                continue
 
-    save_db(db)
-    return jsonify({"success": True, "importedCount": len(added), "skippedDuplicates": skipped})
+            raw_feats = get_flex_field(row, ['Included Features', 'features', 'key features', 'feature list'])
+            features = parse_features_list(raw_feats)
+
+            inr_val = get_flex_field(row, ['INR Price', 'basePriceINR', 'price inr', 'inr', 'price (inr)', 'base price inr', 'price', 'cost inr'])
+            usd_val = get_flex_field(row, ['USD Price', 'basePriceUSD', 'price usd', 'usd', 'price (usd)', 'base price usd', 'cost usd'])
+
+            classification = str(get_flex_field(row, ['Classification', 'classification', 'type', 'category type'], 'Website')).strip()
+            desc = str(get_flex_field(row, ['Description', 'desc', 'details', 'summary'], '')).strip()
+            ref_url = str(get_flex_field(row, ['Reference Website', 'referenceUrl', 'reference url', 'website', 'url', 'reference link'], '')).strip()
+
+            new_cat = {
+                "id": f"cat-{uuid.uuid4().hex[:6]}",
+                "name": name,
+                "classification": classification or "Website",
+                "desc": desc,
+                "referenceUrl": ref_url,
+                "basePriceINR": safe_parse_number(inr_val, 0),
+                "basePriceUSD": safe_parse_number(usd_val, 0),
+                "features": features
+            }
+            existing_cats.append(new_cat)
+            existing_names.add(name.lower())
+            added.append(new_cat)
+
+        save_db(db)
+        return jsonify({
+            "success": True,
+            "importedCount": len(added),
+            "skippedDuplicates": skipped,
+            "message": f"Successfully imported {len(added)} categories"
+        })
+    except Exception as e:
+        print("Error in api_categories_bulk_upload:", e)
+        return jsonify({"success": False, "message": f"Bulk upload failed: {str(e)}"}), 500
+
+@app.route('/api/users/bulk-upload', methods=['POST'])
+def api_users_bulk_upload():
+    try:
+        payload = request.get_json() or {}
+        items = payload.get('users', [])
+        if not items or not isinstance(items, list):
+            return jsonify({"success": False, "message": "No user records provided"}), 400
+
+        db = load_db()
+        users = db.setdefault('users', [])
+        existing_emails = {u.get('email', '').lower() for u in users}
+        added, skipped = [], []
+
+        for row in items:
+            if not isinstance(row, dict):
+                continue
+            email = str(get_flex_field(row, ['Google Email Address', 'email', 'Google Account Email', 'user email', 'mail'])).strip().lower()
+            name = str(get_flex_field(row, ['Full Name', 'name', 'user name', 'employee name'])).strip()
+            role = str(get_flex_field(row, ['Role Category', 'role', 'user role'], 'marketing')).strip().lower()
+            if not email or '@' not in email:
+                continue
+            if email in existing_emails:
+                skipped.append(email)
+                continue
+
+            raw_resp = get_flex_field(row, ['Assigned Responsibilities', 'responsibilities', 'responsibility', 'duties'])
+            resps = parse_features_list(raw_resp) if raw_resp else (["Full System Administration"] if role == 'admin' else ["Marketing Executive"])
+
+            new_user = {
+                "id": f"usr-{role[:3]}-{uuid.uuid4().hex[:6]}",
+                "name": name or email.split('@')[0],
+                "email": email,
+                "username": email.split('@')[0],
+                "role": role if role in ('admin', 'developer', 'marketing') else 'marketing',
+                "authMethod": "google",
+                "status": "active",
+                "responsibilities": resps,
+                "createdAt": datetime.now().strftime("%Y-%m-%d")
+            }
+            users.append(new_user)
+            existing_emails.add(email)
+            added.append(new_user)
+
+        save_db(db)
+        return jsonify({
+            "success": True,
+            "importedCount": len(added),
+            "skippedDuplicates": skipped
+        })
+    except Exception as e:
+        print("Error in api_users_bulk_upload:", e)
+        return jsonify({"success": False, "message": f"User bulk upload failed: {str(e)}"}), 500
 
 
 # -------------------------------------------------------------

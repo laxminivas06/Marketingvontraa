@@ -1452,10 +1452,10 @@
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(firstSheet);
+          const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '', raw: false });
 
           if (!rows || rows.length === 0) {
-            alert('No data rows found in uploaded Excel file');
+            alert('No data rows found in uploaded Excel file. Please ensure the file has a header row and content.');
             return;
           }
 
@@ -1468,7 +1468,9 @@
             await refreshAllData();
           }
         } catch (err) {
-          alert('Excel parsing error: ' + err.message);
+          alert('Excel parsing error: ' + (err.message || 'Server error during import'));
+        } finally {
+          event.target.value = '';
         }
       };
       reader.readAsArrayBuffer(file);
