@@ -5,9 +5,9 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 17:56:38",
-    "record_count": 2,
-    "checksum": "c1d84c6971df3385463d9f673a771542265eb7457b7fbd2b708a49f969607961"
+    "updated_at": "2026-11-12 17:58:20",
+    "record_count": 7,
+    "checksum": "0972967dd38b5bab72a65c1efa8c57b76ce68d18d8fc9e3a35d2db910aefe51c"
   },
   "records": [
     {
@@ -22,6 +22,93 @@
         "Full System Administration"
       ],
       "createdAt": "2026-01-10",
+      "_entity_type": "users"
+    },
+    {
+      "id": "usr-dev-sneha",
+      "name": "Sneha Patel",
+      "email": "sneha.dev@aivontraa.com",
+      "username": "sneha",
+      "role": "developer",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Frontend & QA"
+      ],
+      "createdAt": "2026-02-20",
+      "_entity_type": "users"
+    },
+    {
+      "id": "usr-mktg-all",
+      "name": "Vikram Singhania",
+      "email": "sales@aivontraa.com",
+      "username": "vikram",
+      "role": "marketing",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Marketing Executive",
+        "Client Communication",
+        "Payment Collection",
+        "Customer Follow-up",
+        "Requirement Collection",
+        "Documentation",
+        "Project Coordination",
+        "Other Responsibilities"
+      ],
+      "createdAt": "2026-02-20",
+      "_entity_type": "users"
+    },
+    {
+      "id": "usr-mktg-priya",
+      "name": "Priya Sharma",
+      "email": "priya.sales@aivontraa.com",
+      "username": "priya",
+      "role": "marketing",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Payment Collection",
+        "Customer Follow-up",
+        "Documentation",
+        "Project Coordination"
+      ],
+      "createdAt": "2026-02-15",
+      "_entity_type": "users"
+    },
+    {
+      "id": "usr-dev-arundhaya",
+      "name": "Arundhaya",
+      "email": "arundhaya.dev@aivontraa.com",
+      "username": "arundhaya",
+      "role": "developer",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Engineering Development"
+      ],
+      "createdAt": "2026-02-10",
+      "_entity_type": "users"
+    },
+    {
+      "id": "usr-mktg-rajesh",
+      "name": "Rajesh Kumar",
+      "email": "rajesh.marketing@aivontraa.com",
+      "username": "rajesh",
+      "role": "marketing",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Marketing Executive",
+        "Client Communication",
+        "Payment Collection",
+        "Customer Follow-up",
+        "Requirement Collection",
+        "Documentation",
+        "Project Coordination",
+        "Other Responsibilities"
+      ],
+      "createdAt": "2026-02-01",
       "_entity_type": "users"
     },
     {

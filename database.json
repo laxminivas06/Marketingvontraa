@@ -14,6 +14,88 @@
       "createdAt": "2026-01-10"
     },
     {
+      "id": "usr-dev-sneha",
+      "name": "Sneha Patel",
+      "email": "sneha.dev@aivontraa.com",
+      "username": "sneha",
+      "role": "developer",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Frontend & QA"
+      ],
+      "createdAt": "2026-02-20"
+    },
+    {
+      "id": "usr-mktg-all",
+      "name": "Vikram Singhania",
+      "email": "sales@aivontraa.com",
+      "username": "vikram",
+      "role": "marketing",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Marketing Executive",
+        "Client Communication",
+        "Payment Collection",
+        "Customer Follow-up",
+        "Requirement Collection",
+        "Documentation",
+        "Project Coordination",
+        "Other Responsibilities"
+      ],
+      "createdAt": "2026-02-20"
+    },
+    {
+      "id": "usr-mktg-priya",
+      "name": "Priya Sharma",
+      "email": "priya.sales@aivontraa.com",
+      "username": "priya",
+      "role": "marketing",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Payment Collection",
+        "Customer Follow-up",
+        "Documentation",
+        "Project Coordination"
+      ],
+      "createdAt": "2026-02-15"
+    },
+    {
+      "id": "usr-dev-arundhaya",
+      "name": "Arundhaya",
+      "email": "arundhaya.dev@aivontraa.com",
+      "username": "arundhaya",
+      "role": "developer",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Engineering Development"
+      ],
+      "createdAt": "2026-02-10"
+    },
+    {
+      "id": "usr-mktg-rajesh",
+      "name": "Rajesh Kumar",
+      "email": "rajesh.marketing@aivontraa.com",
+      "username": "rajesh",
+      "role": "marketing",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Marketing Executive",
+        "Client Communication",
+        "Payment Collection",
+        "Customer Follow-up",
+        "Requirement Collection",
+        "Documentation",
+        "Project Coordination",
+        "Other Responsibilities"
+      ],
+      "createdAt": "2026-02-01"
+    },
+    {
       "id": "usr-admin-root",
       "name": "Aivontraa Administrator",
       "email": "admin@aivontraa.com",

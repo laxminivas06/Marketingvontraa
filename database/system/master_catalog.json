@@ -2,7 +2,7 @@
   "format": "PURE_JSON",
   "engine": "Aivontraa JSON Sharding Engine v3.5",
   "created_at": "2026-11-12 17:48:47",
-  "updated_at": "2026-11-12 17:56:38",
+  "updated_at": "2026-11-12 17:58:20",
   "shard_registry": {
     "users_001.json": {
       "shard_id": "users_001.json",
@@ -11,8 +11,8 @@
       "file_path": "/database/users/users_001.json",
       "absolute_path": "C:\\Users\\laxmi\\OneDrive\\Documents\\apps\\marketing\\database\\users\\users_001.json",
       "is_active": 1,
-      "record_count": 2,
-      "file_size_bytes": 1048,
+      "record_count": 7,
+      "file_size_bytes": 3444,
       "soft_limit_bytes": 73400320,
       "hard_limit_bytes": 104857600,
       "status": "ACTIVE",
@@ -107,53 +107,106 @@
       "record_id": "usr-admin-root",
       "shard_id": "users_001.json",
       "key_field": "admin@aivontraa.com",
-      "updated_at": "2026-11-12 17:56:38"
+      "updated_at": "2026-11-12 17:58:20"
+    },
+    "users:usr-dev-sneha": {
+      "module": "users",
+      "record_id": "usr-dev-sneha",
+      "shard_id": "users_001.json",
+      "key_field": "sneha.dev@aivontraa.com",
+      "updated_at": "2026-11-12 17:58:20"
+    },
+    "users:usr-mktg-all": {
+      "module": "users",
+      "record_id": "usr-mktg-all",
+      "shard_id": "users_001.json",
+      "key_field": "sales@aivontraa.com",
+      "updated_at": "2026-11-12 17:58:20"
+    },
+    "users:usr-mktg-priya": {
+      "module": "users",
+      "record_id": "usr-mktg-priya",
+      "shard_id": "users_001.json",
+      "key_field": "priya.sales@aivontraa.com",
+      "updated_at": "2026-11-12 17:58:20"
+    },
+    "users:usr-dev-arundhaya": {
+      "module": "users",
+      "record_id": "usr-dev-arundhaya",
+      "shard_id": "users_001.json",
+      "key_field": "arundhaya.dev@aivontraa.com",
+      "updated_at": "2026-11-12 17:58:20"
+    },
+    "users:usr-mktg-rajesh": {
+      "module": "users",
+      "record_id": "usr-mktg-rajesh",
+      "shard_id": "users_001.json",
+      "key_field": "rajesh.marketing@aivontraa.com",
+      "updated_at": "2026-11-12 17:58:20"
     },
     "marketing:slab-inr-1": {
       "module": "marketing",
       "record_id": "slab-inr-1",
       "shard_id": "marketing_001.json",
       "key_field": "slab-inr-1",
-      "updated_at": "2026-11-12 17:56:38"
+      "updated_at": "2026-11-12 17:58:20"
     },
     "marketing:slab-inr-2": {
       "module": "marketing",
       "record_id": "slab-inr-2",
       "shard_id": "marketing_001.json",
       "key_field": "slab-inr-2",
-      "updated_at": "2026-11-12 17:56:38"
+      "updated_at": "2026-11-12 17:58:20"
     },
     "marketing:slab-inr-3": {
       "module": "marketing",
       "record_id": "slab-inr-3",
       "shard_id": "marketing_001.json",
       "key_field": "slab-inr-3",
-      "updated_at": "2026-11-12 17:56:38"
+      "updated_at": "2026-11-12 17:58:20"
     },
     "marketing:slab-usd-1": {
       "module": "marketing",
       "record_id": "slab-usd-1",
       "shard_id": "marketing_001.json",
       "key_field": "slab-usd-1",
-      "updated_at": "2026-11-12 17:56:38"
+      "updated_at": "2026-11-12 17:58:20"
     },
     "marketing:slab-usd-2": {
       "module": "marketing",
       "record_id": "slab-usd-2",
       "shard_id": "marketing_001.json",
       "key_field": "slab-usd-2",
-      "updated_at": "2026-11-12 17:56:38"
+      "updated_at": "2026-11-12 17:58:20"
     },
     "marketing:slab-usd-3": {
       "module": "marketing",
       "record_id": "slab-usd-3",
       "shard_id": "marketing_001.json",
       "key_field": "slab-usd-3",
-      "updated_at": "2026-11-12 17:56:38"
+      "updated_at": "2026-11-12 17:58:20"
     }
   },
   "cross_module_relationships": [],
   "audit_trail": [
+    {
+      "id": "aud_467d72b69b90",
+      "timestamp": "2026-11-12 17:58:20",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
+    {
+      "id": "aud_3122e7365b88",
+      "timestamp": "2026-11-12 17:57:30",
+      "user_email": "system@aivontraa.com",
+      "action": "MIGRATION_JSON",
+      "module": "system",
+      "details": "Synchronized database state to 17 pure JSON module shards",
+      "status": "SUCCESS"
+    },
     {
       "id": "aud_1759f987808f",
       "timestamp": "2026-11-12 17:56:38",
