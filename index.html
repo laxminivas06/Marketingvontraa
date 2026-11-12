@@ -297,6 +297,7 @@
     async function loginWithEmail(email) {
       const b = document.getElementById('login-error');
       if (b) b.style.display = 'none';
+      if (!email) return;
       try {
         const user = await API.loginWithGoogleEmail(email, email.split('@')[0]);
         API.showToast(`Welcome back, ${user.name || user.email}!`);

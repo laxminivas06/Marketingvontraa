@@ -37,6 +37,11 @@
           <span class="nav-icon">📊</span>
           <span>Dashboard Overview</span>
         </a>
+        <a href="/admin/admin-users" class="nav-item" data-tab="admin-users" onclick="handleNavClick('admin-users', event, this)">
+          <span class="nav-icon">🛡️</span>
+          <span>Administrators</span>
+          <span class="nav-badge-count" id="badge-admin-count" style="display: none; background: #fee2e2; color: #b91c1c;">0</span>
+        </a>
         <a href="/admin/assignments" class="nav-item" data-tab="assignments" onclick="handleNavClick('assignments', event, this)">
           <span class="nav-icon">📌</span>
           <span>Project Assignments</span>
@@ -382,6 +387,39 @@
                 </table>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- 4b. ADMINISTRATOR USERS MANAGEMENT (MULTI-ADMIN SUPPORT) -->
+        <section id="tab-admin-users" class="tab-pane" style="display: none;">
+          <div class="section-header">
+            <div>
+              <h2>System Administrators</h2>
+              <p>Manage all authorized administrator accounts with full portal and configuration access. Multiple admin emails can log in simultaneously.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-primary btn-sm" onclick="openAddUserModal('admin')">
+                🛡️ + Add Administrator
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Administrator</th>
+                  <th>Google Account Email</th>
+                  <th>Privilege Level</th>
+                  <th>Account Status</th>
+                  <th>Date Created</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-admin-users-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -849,6 +887,7 @@
           <div class="form-group">
             <label for="user-role">Role Category *</label>
             <select id="user-role" class="form-control" required onchange="onUserRoleSelectChanged()">
+              <option value="admin">Administrator (Full System Control & Settings)</option>
               <option value="marketing">Marketing Team (Multiple Responsibilities)</option>
               <option value="developer">Engineering Specialist (Developer)</option>
             </select>
@@ -862,11 +901,11 @@
               </span>
               <label style="font-size: 0.775rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
                 <input type="checkbox" id="resp-all-checkbox" onchange="toggleAllResponsibilities(this.checked)">
-                Select ALL (Excludes Admin)
+                Select ALL
               </label>
             </div>
             <p style="font-size: 0.725rem; color: var(--slate-500); margin-bottom: 0.75rem;">
-              Assign duties to this executive. (Admin privileges strictly reserved for laxminivasmorishetty143@gmail.com).
+              Assign duties to this executive.
             </p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.825rem;" id="resp-checkboxes-container">
               <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
@@ -1223,6 +1262,16 @@
     window.addEventListener('DOMContentLoaded', async () => {
       if (!API.requireAuth(['admin'])) return;
 
+      const currentUser = API.getCurrentUser();
+      if (currentUser) {
+        const nameEl = document.getElementById('header-user-name');
+        const emailEl = document.getElementById('header-user-email');
+        const avatarEl = document.getElementById('header-user-avatar');
+        if (nameEl) nameEl.textContent = currentUser.name || 'Administrator';
+        if (emailEl) emailEl.textContent = currentUser.email || 'admin@aivontraa.com';
+        if (avatarEl) avatarEl.textContent = (currentUser.name || currentUser.email || 'A').charAt(0).toUpperCase();
+      }
+
       // Clean URL routing & History API initialization
       currentActiveTab = API.initRouting('/admin', 'overview', (tabId) => {
         switchTab(tabId, false);
@@ -1256,6 +1305,7 @@
 
       const headingMap = {
         'overview': 'Dashboard Overview',
+        'admin-users': 'System Administrators – Multi-Admin Management',
         'categories': 'Category Management – Bulk Excel & References',
         'assignments': 'Pending Project Assignments',
         'slabs': 'Commission Slabs – Side-by-Side Layout',
@@ -1286,6 +1336,7 @@
       renderCategories();
       renderPendingAssignments();
       renderSlabsSideBySide();
+      renderAdminUsers();
       renderMarketingUsers();
       renderDeveloperUsers();
       renderAddons();
@@ -1645,8 +1696,53 @@
     }
 
     // -------------------------------------------------------------
-    // USERS (MARKETING & DEVELOPERS)
+    // USERS (ADMINISTRATORS, MARKETING & DEVELOPERS)
     // -------------------------------------------------------------
+    function renderAdminUsers() {
+      const tbody = document.getElementById('table-admin-users-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const admins = (API.state.users || []).filter(u => u.role === 'admin');
+
+      const badge = document.getElementById('badge-admin-count');
+      if (badge) {
+        badge.innerText = admins.length;
+        badge.style.display = admins.length > 0 ? 'inline-block' : 'none';
+      }
+
+      if (admins.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--slate-400);">No administrator accounts configured.</td></tr>`;
+        return;
+      }
+
+      const rootAdminEmail = "laxminivasmorishetty143@gmail.com";
+
+      admins.forEach(u => {
+        const isRoot = (u.email.toLowerCase() === rootAdminEmail.toLowerCase());
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong>${API.escapeHtml(u.name)}</strong>
+            ${isRoot ? '<span class="pill pill-primary" style="margin-left: 0.5rem; font-size: 0.65rem; background: #eff6ff; color: #1d4ed8; font-weight: 700;">Primary Root Admin</span>' : '<span class="pill pill-secondary" style="margin-left: 0.5rem; font-size: 0.65rem;">System Co-Admin</span>'}
+          </td>
+          <td><span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--slate-700);">${API.escapeHtml(u.email)}</span></td>
+          <td><span class="pill pill-danger" style="background: #fef2f2; color: #b91c1c; font-weight: 700;">Full Administrator Privileges</span></td>
+          <td><span class="pill ${u.status === 'active' ? 'pill-active' : 'pill-inactive'}">${u.status}</span></td>
+          <td style="font-size: 0.8rem; color: var(--slate-500);">${u.createdAt || '—'}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            ${isRoot ? 
+              `<span style="font-size: 0.75rem; color: var(--slate-400); font-weight: 600;">System Protected</span>` :
+              `<button class="btn btn-secondary btn-sm" onclick="toggleUserStatus('${u.id}')">
+                ${u.status === 'active' ? 'Deactivate' : 'Activate'}
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')" style="margin-left: 0.25rem;">Delete</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
     function renderMarketingUsers() {
       const tbody = document.getElementById('table-marketing-users-body');
       tbody.innerHTML = '';
@@ -1731,11 +1827,20 @@
     }
 
     function openAddUserModal(defaultType = 'marketing') {
-      document.getElementById('modal-user-title').innerText = defaultType === 'developer' ? 'Add Developer' : 'Create Marketing User';
+      let modalTitle = 'Create Marketing User';
+      let targetRole = 'marketing';
+      if (defaultType === 'admin') {
+        modalTitle = 'Add System Administrator';
+        targetRole = 'admin';
+      } else if (defaultType === 'developer') {
+        modalTitle = 'Add Developer';
+        targetRole = 'developer';
+      }
+      document.getElementById('modal-user-title').innerText = modalTitle;
       document.getElementById('user-edit-id').value = '';
       document.getElementById('user-name').value = '';
       document.getElementById('user-email').value = '';
-      document.getElementById('user-role').value = defaultType === 'developer' ? 'developer' : 'marketing';
+      document.getElementById('user-role').value = targetRole;
       document.getElementById('user-status').value = 'active';
 
       // Reset checkboxes
@@ -1789,12 +1894,13 @@
         return;
       }
 
+      const defaultResp = (role === 'admin') ? 'Full System Administration' : ((role === 'marketing') ? checkedResps[0] : 'Software Engineering');
       const payload = {
         name: document.getElementById('user-name').value.trim(),
         email: document.getElementById('user-email').value.trim().toLowerCase(),
         role: role,
-        responsibilities: role === 'marketing' ? checkedResps : [],
-        assignedResponsibility: role === 'marketing' ? checkedResps[0] : 'Software Engineering',
+        responsibilities: role === 'marketing' ? checkedResps : [defaultResp],
+        assignedResponsibility: defaultResp,
         status: document.getElementById('user-status').value
       };
 

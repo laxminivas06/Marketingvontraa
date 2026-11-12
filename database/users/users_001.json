@@ -5,11 +5,25 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 16:49:03",
-    "record_count": 6,
-    "checksum": "39fc3e3daaf9a06bdfd363f7a14b350170e2344c282dade2bcc55700bc12891c"
+    "updated_at": "2026-11-12 17:14:20",
+    "record_count": 7,
+    "checksum": "0972967dd38b5bab72a65c1efa8c57b76ce68d18d8fc9e3a35d2db910aefe51c"
   },
   "records": [
+    {
+      "id": "usr-admin-root",
+      "name": "Laxminivas Morishetty",
+      "email": "laxminivasmorishetty143@gmail.com",
+      "username": "laxminivas",
+      "role": "admin",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Full System Administration"
+      ],
+      "createdAt": "2026-01-10",
+      "_entity_type": "users"
+    },
     {
       "id": "usr-dev-sneha",
       "name": "Sneha Patel",
@@ -99,9 +113,9 @@
     },
     {
       "id": "usr-admin-root",
-      "name": "Laxminivas Morishetty",
-      "email": "laxminivasmorishetty143@gmail.com",
-      "username": "laxminivas",
+      "name": "Aivontraa Administrator",
+      "email": "admin@aivontraa.com",
+      "username": "admin",
       "role": "admin",
       "authMethod": "google",
       "status": "active",

@@ -12,7 +12,8 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 
 COMPANY_NAME = "Aivontraa Automation Pvt. Ltd."
 COMPANY_WEBSITE = "www.aivontraa.com"
-ROOT_ADMIN_EMAIL = "laxminivasmorishetty143@gmail.com"
+ROOT_ADMIN_EMAIL = os.environ.get("ROOT_ADMIN_EMAIL", "laxminivasmorishetty143@gmail.com")
+ADMIN_EMAILS = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "laxminivasmorishetty143@gmail.com,admin@aivontraa.com").split(",") if e.strip()}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, 'database.json')
@@ -174,7 +175,7 @@ def api_auth_login():
 def api_auth_google():
     """
     Validates Google Authentication against the registered users database.
-    Admin account: laxminivasmorishetty143@gmail.com
+    Supports multiple administrator emails (including primary root admin and team admins).
     """
     payload = request.get_json() or {}
     email = payload.get('email', '').strip().lower()
@@ -196,17 +197,18 @@ def api_auth_google():
     users = db.get('users', [])
     user = next((u for u in users if u.get('email', '').lower() == email), None)
 
-    # Root Admin Auto-Initialization if logging in for the first time
-    if not user and email == ROOT_ADMIN_EMAIL:
+    # Admin Auto-Initialization if logging in for the first time
+    if not user and (email == ROOT_ADMIN_EMAIL.lower() or email in ADMIN_EMAILS):
+        is_root = (email == ROOT_ADMIN_EMAIL.lower())
         user = {
-            "id": "usr-admin-root",
-            "name": name or "Laxminivas Morishetty",
-            "email": ROOT_ADMIN_EMAIL,
-            "username": "laxminivas",
+            "id": "usr-admin-root" if is_root else f"usr-admin-{uuid.uuid4().hex[:6]}",
+            "name": name or ("Laxminivas Morishetty" if is_root else "System Administrator"),
+            "email": email,
+            "username": email.split('@')[0],
             "role": "admin",
             "authMethod": "google",
             "status": "active",
-            "responsibilities": [],
+            "responsibilities": ["Full System Administration"],
             "createdAt": datetime.now().strftime("%Y-%m-%d")
         }
         users.insert(0, user)
@@ -225,14 +227,19 @@ def api_auth_google():
             "message": "Access Restricted. Your account has been deactivated by the administrator."
         }), 403
 
+    # If the user is configured in ADMIN_EMAILS or already role 'admin', ensure role is admin
+    user_role = user.get("role", "marketing")
+    if email == ROOT_ADMIN_EMAIL.lower() or email in ADMIN_EMAILS:
+        user_role = "admin"
+
     safe_user = {
         "id": user["id"],
         "name": user.get("name", name or user.get("username", "")),
         "email": user.get("email", email),
         "username": user.get("username", ""),
-        "role": user.get("role", "marketing"),
+        "role": user_role,
         "authMethod": "google",
-        "responsibilities": user.get("responsibilities", [])
+        "responsibilities": user.get("responsibilities", ["Full System Administration"] if user_role == "admin" else [])
     }
     redirect_url = "/admin" if safe_user["role"] == "admin" else ("/developer" if safe_user["role"] == "developer" else "/marketing")
     return jsonify({"success": True, "user": safe_user, "redirectUrl": redirect_url})
@@ -507,14 +514,14 @@ def api_users():
         return jsonify({"success": False, "message": f"Email '{email}' is already registered"}), 400
 
     new_user = {
-        "id": f"usr-{uuid.uuid4().hex[:6]}",
+        "id": f"usr-{role[:3]}-{uuid.uuid4().hex[:6]}",
         "name": name,
         "email": email,
         "username": email.split('@')[0],
         "role": role,
         "authMethod": "google",
-        "status": "active",
-        "responsibilities": resps,
+        "status": payload.get('status', 'active'),
+        "responsibilities": resps if role == 'marketing' else (["Full System Administration"] if role == 'admin' else ["Software Engineering"]),
         "createdAt": datetime.now().strftime("%Y-%m-%d")
     }
     users.append(new_user)
@@ -541,8 +548,9 @@ def api_user_item(user_id):
         return jsonify({"success": True, "user": users[idx]})
 
     elif request.method == 'DELETE':
-        if users[idx].get('email') == ROOT_ADMIN_EMAIL or users[idx].get('role') == 'admin':
-            return jsonify({"success": False, "message": "Cannot delete root admin account"}), 400
+        user_email = users[idx].get('email', '').lower()
+        if user_email == ROOT_ADMIN_EMAIL.lower():
+            return jsonify({"success": False, "message": "Cannot delete primary root administrator account"}), 400
         deleted = users.pop(idx)
         save_db(db)
         return jsonify({"success": True, "deleted": deleted})
@@ -550,8 +558,7 @@ def api_user_item(user_id):
 @app.route('/api/users/<user_id>/responsibilities', methods=['PUT'])
 def api_update_user_responsibilities(user_id):
     """
-    Updates marketing employee responsibilities.
-    Supports 'All' option (assigns all marketing responsibilities, strictly excluding Administrator).
+    Updates employee responsibilities.
     """
     db = load_db()
     users = db.get('users', [])
@@ -578,8 +585,12 @@ def api_user_toggle_status(user_id):
     user = next((u for u in users if u['id'] == user_id), None)
     if not user:
         return jsonify({"success": False, "message": "User not found"}), 404
-    if user.get('email') == ROOT_ADMIN_EMAIL:
-        return jsonify({"success": False, "message": "Cannot deactivate root admin"}), 400
+    if user.get('email', '').lower() == ROOT_ADMIN_EMAIL.lower():
+        return jsonify({"success": False, "message": "Cannot deactivate primary root admin"}), 400
+
+    user['status'] = 'inactive' if user.get('status') == 'active' else 'active'
+    save_db(db)
+    return jsonify({"success": True, "status": user['status']})
 
     user['status'] = 'inactive' if user.get('status') == 'active' else 'active'
     save_db(db)
@@ -1612,11 +1623,19 @@ def api_stats():
 # DATABASE MANAGEMENT & STORAGE OPTIMIZATION API (Enterprise)
 # -------------------------------------------------------------
 def require_admin_auth():
-    """Restricts database management strictly to Administrators or Root Admin"""
-    role = request.headers.get('X-User-Role')
+    """Restricts database management strictly to Administrators or Root Admin (supports multiple admin emails)"""
+    role = (request.headers.get('X-User-Role') or '').strip().lower()
     user_email = (request.headers.get('X-User-Email') or request.headers.get('X-User-Name') or '').strip().lower()
-    if role == 'Administrator' or user_email == ROOT_ADMIN_EMAIL.lower():
+
+    if role in ('admin', 'administrator') or user_email == ROOT_ADMIN_EMAIL.lower() or user_email in ADMIN_EMAILS:
         return True
+
+    if user_email:
+        db = load_db()
+        matched = next((u for u in db.get('users', []) if u.get('email', '').lower() == user_email and u.get('status') == 'active'), None)
+        if matched and matched.get('role') == 'admin':
+            return True
+
     if request.remote_addr in ('127.0.0.1', 'localhost', '::1') and not role:
         return True
     return False

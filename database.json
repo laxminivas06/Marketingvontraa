@@ -1,6 +1,19 @@
 {
   "users": [
     {
+      "id": "usr-admin-root",
+      "name": "Laxminivas Morishetty",
+      "email": "laxminivasmorishetty143@gmail.com",
+      "username": "laxminivas",
+      "role": "admin",
+      "authMethod": "google",
+      "status": "active",
+      "responsibilities": [
+        "Full System Administration"
+      ],
+      "createdAt": "2026-01-10"
+    },
+    {
       "id": "usr-dev-sneha",
       "name": "Sneha Patel",
       "email": "sneha.dev@aivontraa.com",
@@ -84,9 +97,9 @@
     },
     {
       "id": "usr-admin-root",
-      "name": "Laxminivas Morishetty",
-      "email": "laxminivasmorishetty143@gmail.com",
-      "username": "laxminivas",
+      "name": "Aivontraa Administrator",
+      "email": "admin@aivontraa.com",
+      "username": "admin",
       "role": "admin",
       "authMethod": "google",
       "status": "active",

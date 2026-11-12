@@ -1,7 +1,7 @@
 # Smart Pricing Calculator & Enterprise Management Portal (Final Release)
 ### Aivontraa Automation Pvt. Ltd.
 **Website**: [www.aivontraa.com](https://www.aivontraa.com)  
-**Root Administrator**: `laxminivasmorishetty143@gmail.com`  
+**Root Administrator**: `laxminivasmorishetty143@gmail.com` (Supports Multiple Admin Emails)  
 **Official Logo**: `https://aivontraa.com/assets/images/ai.png` (clean white background)
 
 A clean, modern, fully responsive SaaS platform built with **modular HTML, CSS, and Vanilla JavaScript** frontend, backed by a **Python Flask REST API** and persistent **JSON database (`database.json`)** with data encryption at rest.
@@ -21,14 +21,14 @@ A clean, modern, fully responsive SaaS platform built with **modular HTML, CSS, 
 - Corporate credentials:
   - CIN: `U72900DL2026PTC001234`
   - GSTIN: `36AAICA1234F1Z9`
-  - Email: `laxminivasmorishetty143@gmail.com`
+  - Email: `sales@aivontraa.com`
   - Website: `www.aivontraa.com`
 
 ### 3. Pure Google Authentication (Google-Only)
 - Username and password authentication **completely removed**.
 - Staff authenticate exclusively through **Google Sign-In**.
 - Role-based automatic redirection:
-  - Root Administrator (`laxminivasmorishetty143@gmail.com`) ➔ `/admin`
+  - Administrators (`laxminivasmorishetty143@gmail.com`, `admin@aivontraa.com`, and configured co-admins) ➔ `/admin`
   - Marketing Team Members ➔ `/marketing`
   - Engineering Specialists ➔ `/developer`
 
@@ -73,7 +73,7 @@ A clean, modern, fully responsive SaaS platform built with **modular HTML, CSS, 
   - `Project Coordination`
   - `Other Responsibilities`
 - Includes a quick **"Select ALL (Excludes Admin)"** option.
-- Administrator role remains strictly exclusive to `laxminivasmorishetty143@gmail.com`.
+- Administrator role remains strictly exclusive to designated administrators (e.g. `admin@aivontraa.com`).
 
 ### 10. Payment Verification & Final Sign-Off
 - Active after quotation acceptance.
@@ -126,6 +126,7 @@ http://localhost:5000
 | Role | Name | Google Account Email | Permitted Portal |
 | :--- | :--- | :--- | :--- |
 | **System Administrator (Root)** | Laxminivas Morishetty | `laxminivasmorishetty143@gmail.com` | `/admin` |
+| **System Co-Administrator** | Aivontraa Administrator | `admin@aivontraa.com` | `/admin` |
 | **Marketing Lead** | Rajesh Kumar | `rajesh.marketing@aivontraa.com` | `/marketing` |
 | **Client Communication & Sales** | Priya Sharma | `priya.sales@aivontraa.com` | `/marketing` |
 | **Operations & Payments** | Vikram Singhania | `vikram.ops@aivontraa.com` | `/marketing` |
