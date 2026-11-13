@@ -647,6 +647,42 @@ def api_auth_google():
 
 # -------------------------------------------------------------
 # FULL STATE API (With Marketing Privacy Masking)
+def normalize_categories(cats):
+    normalized = []
+    for c in cats:
+        item = dict(c)
+        # Default payment frequencies only if completely missing
+        if 'enableOneTime' not in item and 'enableMonthly' not in item and 'enableAnnual' not in item:
+            item['enableOneTime'] = True
+            item['enableMonthly'] = True
+            item['enableAnnual'] = True
+        else:
+            item['enableOneTime'] = bool(item.get('enableOneTime', True))
+            item['enableMonthly'] = bool(item.get('enableMonthly', False))
+            item['enableAnnual'] = bool(item.get('enableAnnual', False))
+            if not (item['enableOneTime'] or item['enableMonthly'] or item['enableAnnual']):
+                item['enableOneTime'] = True
+
+        base_inr = int(item.get('basePriceINR', 0))
+        base_usd = int(item.get('basePriceUSD', 0))
+
+        item['priceOneTimeINR'] = int(item.get('priceOneTimeINR') if item.get('priceOneTimeINR') is not None else base_inr)
+        item['priceOneTimeUSD'] = int(item.get('priceOneTimeUSD') if item.get('priceOneTimeUSD') is not None else base_usd)
+        item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') if item.get('priceMonthlyINR') is not None else (round(item['priceOneTimeINR'] / 10) if item['priceOneTimeINR'] else 0))
+        item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') if item.get('priceMonthlyUSD') is not None else (round(item['priceOneTimeUSD'] / 10) if item['priceOneTimeUSD'] else 0))
+        item['priceAnnualINR'] = int(item.get('priceAnnualINR') if item.get('priceAnnualINR') is not None else (item['priceOneTimeINR'] or 0))
+        item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') if item.get('priceAnnualUSD') is not None else (item['priceOneTimeUSD'] or 0))
+        item['basePriceINR'] = item['priceOneTimeINR']
+        item['basePriceUSD'] = item['priceOneTimeUSD']
+        
+        # Explicit bundle metadata
+        is_bundle = bool(item.get('isBundle', False) or item.get('classification') == 'Website Bundle')
+        item['isBundle'] = is_bundle
+        item['bundleApps'] = item.get('bundleApps', []) if is_bundle else []
+        item['features'] = item.get('features', [])
+        normalized.append(item)
+    return normalized
+
 # -------------------------------------------------------------
 @app.route('/api/state', methods=['GET'])
 def api_state():
@@ -671,7 +707,7 @@ def api_state():
         projects = masked_projs
 
     return jsonify({
-        "categories": db.get('categories', []),
+        "categories": normalize_categories(db.get('categories', [])),
         "commissionSlabsINR": db.get('commissionSlabsINR', []),
         "commissionSlabsUSD": db.get('commissionSlabsUSD', []),
         "addons": db.get('addons', []),
@@ -702,40 +738,7 @@ def api_categories():
     db = load_db()
     if request.method == 'GET':
         cats = db.get('categories', [])
-        normalized = []
-        for c in cats:
-            item = dict(c)
-            # Default payment frequencies only if completely missing
-            if 'enableOneTime' not in item and 'enableMonthly' not in item and 'enableAnnual' not in item:
-                item['enableOneTime'] = True
-                item['enableMonthly'] = True
-                item['enableAnnual'] = True
-            else:
-                item['enableOneTime'] = bool(item.get('enableOneTime', True))
-                item['enableMonthly'] = bool(item.get('enableMonthly', False))
-                item['enableAnnual'] = bool(item.get('enableAnnual', False))
-                if not (item['enableOneTime'] or item['enableMonthly'] or item['enableAnnual']):
-                    item['enableOneTime'] = True
-
-            base_inr = int(item.get('basePriceINR', 0))
-            base_usd = int(item.get('basePriceUSD', 0))
-
-            item['priceOneTimeINR'] = int(item.get('priceOneTimeINR') if item.get('priceOneTimeINR') is not None else base_inr)
-            item['priceOneTimeUSD'] = int(item.get('priceOneTimeUSD') if item.get('priceOneTimeUSD') is not None else base_usd)
-            item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') if item.get('priceMonthlyINR') is not None else (round(item['priceOneTimeINR'] / 10) if item['priceOneTimeINR'] else 0))
-            item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') if item.get('priceMonthlyUSD') is not None else (round(item['priceOneTimeUSD'] / 10) if item['priceOneTimeUSD'] else 0))
-            item['priceAnnualINR'] = int(item.get('priceAnnualINR') if item.get('priceAnnualINR') is not None else (item['priceOneTimeINR'] or 0))
-            item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') if item.get('priceAnnualUSD') is not None else (item['priceOneTimeUSD'] or 0))
-            item['basePriceINR'] = item['priceOneTimeINR']
-            item['basePriceUSD'] = item['priceOneTimeUSD']
-            
-            # Explicit bundle metadata
-            is_bundle = bool(item.get('isBundle', False) or item.get('classification') == 'Website Bundle')
-            item['isBundle'] = is_bundle
-            item['bundleApps'] = item.get('bundleApps', []) if is_bundle else []
-            item['features'] = item.get('features', [])
-            normalized.append(item)
-        return jsonify(normalized)
+        return jsonify(normalize_categories(cats))
 
     payload = request.get_json() or {}
     name = payload.get('name', '').strip()

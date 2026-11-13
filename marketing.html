@@ -119,7 +119,8 @@
 
                 <div class="form-group">
                   <label for="calc-client-name">Customer / Business Name *</label>
-                  <input type="text" id="calc-client-name" class="form-control" placeholder="e.g. Apex Global Logistics Ltd." required oninput="calculateTotal()">
+                  <input type="text" id="calc-client-name" list="customer-accounts-datalist" class="form-control" placeholder="e.g. Apex Global Logistics Ltd." required oninput="onCustomerInput()" onchange="onCustomerSelected(this.value)">
+                  <datalist id="customer-accounts-datalist"></datalist>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -873,6 +874,7 @@
 
     async function refreshData() {
       await API.syncState();
+      populateCustomerAccountsDatalist();
       filterCategoriesByClassification();
       renderAvailableAddons();
       renderReferences();
@@ -882,27 +884,115 @@
       renderCommissionPolicy();
     }
 
+    function populateCustomerAccountsDatalist() {
+      const dl = document.getElementById('customer-accounts-datalist');
+      if (!dl) return;
+      dl.innerHTML = '';
+      const quotes = API.state.quotations || [];
+      const seen = new Set();
+      quotes.forEach(q => {
+        const name = (q.clientName || '').trim();
+        if (name && !seen.has(name.toLowerCase())) {
+          seen.add(name.toLowerCase());
+          const opt = document.createElement('option');
+          opt.value = name;
+          if (q.quoteNumber) opt.label = `${q.quoteNumber} (${q.categoryName || 'Solution'})`;
+          dl.appendChild(opt);
+        }
+      });
+    }
+
+    function onCustomerInput() {
+      calculateTotal();
+    }
+
+    function onCustomerSelected(name) {
+      if (!name) return;
+      const quotes = API.state.quotations || [];
+      const matched = quotes.find(q => (q.clientName || '').trim().toLowerCase() === name.trim().toLowerCase());
+      if (matched) {
+        const commEl = document.getElementById('calc-comm-exec');
+        if (commEl && !commEl.value && matched.commExecutiveName) {
+          commEl.value = matched.commExecutiveName;
+        }
+        const docEl = document.getElementById('calc-doc-coordinator');
+        if (docEl && !docEl.value && matched.docCoordinatorName) {
+          docEl.value = matched.docCoordinatorName;
+        }
+        const domEl = document.getElementById('calc-domain-name');
+        if (domEl && !domEl.value && matched.domainName) {
+          domEl.value = matched.domainName;
+        }
+      }
+      calculateTotal();
+    }
+
     // -------------------------------------------------------------
     // CALCULATOR & CATEGORIES
     // -------------------------------------------------------------
+    function matchesClassification(cat, selectedClass) {
+      if (!cat) return false;
+      if (!selectedClass || selectedClass === 'All') return true;
+
+      const rawClass = String(cat.classification || '').trim();
+      const rawType = String(cat.type || '').trim();
+      const isBundle = Boolean(cat.isBundle || rawClass === 'Website Bundle' || rawClass.toLowerCase().includes('bundle'));
+
+      if (selectedClass === 'Website Bundle') {
+        return isBundle;
+      }
+
+      // Individual web solutions are not bundles
+      if (isBundle) return false;
+
+      const normClass = rawClass.toLowerCase();
+      const normType = rawType.toLowerCase();
+      const normTarget = selectedClass.toLowerCase();
+
+      if (normTarget === 'website') {
+        return normClass.startsWith('website') || normClass.includes('website') || normType === 'website';
+      }
+
+      if (normTarget === 'software application' || normTarget === 'software') {
+        return normClass.includes('software') || 
+               normClass.includes('web application') || 
+               normClass.includes('saas') || 
+               normClass.includes('crm') || 
+               normClass.includes('dashboard') || 
+               normType === 'software application' ||
+               normType === 'software';
+      }
+
+      if (normTarget === 'mobile application' || normTarget === 'mobile') {
+        return normClass.includes('mobile') || normType.includes('mobile');
+      }
+
+      if (normTarget === 'other') {
+        return !matchesClassification(cat, 'Website') &&
+               !matchesClassification(cat, 'Website Bundle') &&
+               !matchesClassification(cat, 'Software Application') &&
+               !matchesClassification(cat, 'Mobile Application');
+      }
+
+      return normClass === normTarget || normType === normTarget;
+    }
+
     function filterCategoriesByClassification() {
       const cls = document.getElementById('calc-classification').value;
       const select = document.getElementById('calc-category');
       select.innerHTML = '';
 
       const cats = API.state.categories || [];
-      const filtered = cls === 'All' ? cats : (
-        cls === 'Website Bundle' ? cats.filter(c => c.isBundle || c.classification === 'Website Bundle') :
-        cats.filter(c => c.classification === cls)
-      );
+      const filtered = cats.filter(c => matchesClassification(c, cls));
 
       if (filtered.length === 0) {
         select.innerHTML = '<option value="">No solutions in this classification</option>';
+        onCategoryChanged();
         return;
       }
 
       filtered.forEach(c => {
-        const isBundle = Boolean(c.isBundle || c.classification === 'Website Bundle');
+        const isBundle = Boolean(c.isBundle || (c.classification && c.classification.includes('Bundle')));
         const icon = isBundle ? '📦 ' : '';
         select.innerHTML += `<option value="${c.id}">${icon}${API.escapeHtml(c.name)} (${c.classification || (isBundle ? 'Website Bundle' : 'Website')})</option>`;
       });
@@ -926,22 +1016,35 @@
 
     function getWebsitePriceForPeriod(cat, period, currency) {
       if (!cat) return 0;
+      const curr = (currency || activeCurrency || 'INR').toUpperCase();
+      const isUSD = curr === 'USD';
+
+      const basePrice = isUSD 
+        ? Number(cat.priceOneTimeUSD != null ? cat.priceOneTimeUSD : (cat.basePriceUSD || 0))
+        : Number(cat.priceOneTimeINR != null ? cat.priceOneTimeINR : (cat.basePriceINR || 0));
+
       if (period === 'Monthly') {
-        return currency === 'USD' ? Number(cat.priceMonthlyUSD || 0) : Number(cat.priceMonthlyINR || 0);
+        const mo = isUSD ? cat.priceMonthlyUSD : cat.priceMonthlyINR;
+        if (mo != null && Number(mo) > 0) return Number(mo);
+        return Math.round(basePrice / 10);
       }
-      if (period === 'Annually') {
-        return currency === 'USD' ? Number(cat.priceAnnualUSD || 0) : Number(cat.priceAnnualINR || 0);
+      if (period === 'Annually' || period === 'Annual') {
+        const an = isUSD ? cat.priceAnnualUSD : cat.priceAnnualINR;
+        if (an != null && Number(an) > 0) return Number(an);
+        return basePrice;
       }
       // One-Time
-      return currency === 'USD' ? 
-        Number(cat.priceOneTimeUSD != null ? cat.priceOneTimeUSD : (cat.basePriceUSD || 0)) : 
-        Number(cat.priceOneTimeINR != null ? cat.priceOneTimeINR : (cat.basePriceINR || 0));
+      return basePrice;
     }
 
     function updateCategoryDisplayPrice() {
       const catId = document.getElementById('calc-category').value;
       const cat = (API.state.categories || []).find(c => c.id === catId);
-      if (!cat) return;
+      if (!cat) {
+        const priceElem = document.getElementById('cat-disp-price');
+        if (priceElem) priceElem.innerText = API.formatCurrency(0, activeCurrency);
+        return;
+      }
 
       const price = getWebsitePriceForPeriod(cat, selectedPaymentPeriod, activeCurrency);
       const badge = document.getElementById('cat-disp-payment-badge');
@@ -985,13 +1088,29 @@
     function onCategoryChanged() {
       const catId = document.getElementById('calc-category').value;
       const cat = (API.state.categories || []).find(c => c.id === catId);
-      if (!cat) return;
+      if (!cat) {
+        document.getElementById('cat-disp-name').innerText = 'No solution selected';
+        document.getElementById('cat-disp-desc').innerText = 'Select a solution category above to view specifications and pricing.';
+        document.getElementById('cat-disp-price').innerText = API.formatCurrency(0, activeCurrency);
+        const btnsContainer = document.getElementById('cat-payment-period-buttons');
+        if (btnsContainer) btnsContainer.innerHTML = '<span style="font-size: 0.75rem; color: var(--slate-400); font-style: italic;">No payment models available</span>';
+        const featsList = document.getElementById('cat-disp-features');
+        if (featsList) featsList.innerHTML = '';
+        const refBox = document.getElementById('cat-disp-ref-box');
+        if (refBox) refBox.style.display = 'none';
+        const bndBox = document.getElementById('cat-disp-bundle-box');
+        if (bndBox) bndBox.style.display = 'none';
+        updateSelectedAddonsList();
+        renderAvailableAddons();
+        calculateTotal();
+        return;
+      }
 
       // Determine available payment models for this category / bundle
       const availablePeriods = [];
       if (cat.enableOneTime !== false) availablePeriods.push('One-Time');
-      if (cat.enableMonthly) availablePeriods.push('Monthly');
-      if (cat.enableAnnual) availablePeriods.push('Annually');
+      if (cat.enableMonthly !== false) availablePeriods.push('Monthly');
+      if (cat.enableAnnual !== false) availablePeriods.push('Annually');
       if (availablePeriods.length === 0) availablePeriods.push('One-Time');
 
       if (!availablePeriods.includes(selectedPaymentPeriod)) {
@@ -1058,10 +1177,10 @@
     }
 
     function calculateTotal() {
-      const catId = document.getElementById('calc-category').value;
+      const catId = document.getElementById('calc-category')?.value;
       const cat = (API.state.categories || []).find(c => c.id === catId);
       const websitePrice = getWebsitePriceForPeriod(cat, selectedPaymentPeriod, activeCurrency);
-      const domainAmount = Number(document.getElementById('calc-domain-amount').value) || 0;
+      const domainAmount = Number(document.getElementById('calc-domain-amount')?.value) || 0;
 
       // Segregate add-ons
       const onetimeAddons = selectedAddons.filter(a => (a.billingCycle || '').toLowerCase() === 'one-time');
@@ -1082,13 +1201,20 @@
       const oneTimeGST = activeCurrency === 'USD' ? Math.round(oneTimeSubtotal * 0.18 * 100) / 100 : Math.round(oneTimeSubtotal * 0.18);
       const oneTimeTotal = Math.round((oneTimeSubtotal + oneTimeGST) * 100) / 100;
 
-      document.getElementById('sum-base-price').innerText = selectedPaymentPeriod === 'One-Time' ? 
-        API.formatCurrency(websiteOneTime, activeCurrency) : 
-        `$0 (${selectedPaymentPeriod} selected)`.replace('$', activeCurrency === 'USD' ? '$' : '₹');
-      document.getElementById('sum-domain-price').innerText = API.formatCurrency(domainAmount, activeCurrency);
-      document.getElementById('sum-onetime-subtotal').innerText = API.formatCurrency(oneTimeSubtotal, activeCurrency);
-      document.getElementById('sum-onetime-gst').innerText = API.formatCurrency(oneTimeGST, activeCurrency);
-      document.getElementById('sum-onetime-total').innerText = `${API.formatCurrency(oneTimeTotal, activeCurrency)} (One-Time)`;
+      const sumBaseElem = document.getElementById('sum-base-price');
+      if (sumBaseElem) {
+        sumBaseElem.innerText = selectedPaymentPeriod === 'One-Time' ? 
+          API.formatCurrency(websiteOneTime, activeCurrency) : 
+          `$0 (${selectedPaymentPeriod} selected)`.replace('$', activeCurrency === 'USD' ? '$' : '₹');
+      }
+      const sumDomElem = document.getElementById('sum-domain-price');
+      if (sumDomElem) sumDomElem.innerText = API.formatCurrency(domainAmount, activeCurrency);
+      const sumSubElem = document.getElementById('sum-onetime-subtotal');
+      if (sumSubElem) sumSubElem.innerText = API.formatCurrency(oneTimeSubtotal, activeCurrency);
+      const sumGstElem = document.getElementById('sum-onetime-gst');
+      if (sumGstElem) sumGstElem.innerText = API.formatCurrency(oneTimeGST, activeCurrency);
+      const sumTotElem = document.getElementById('sum-onetime-total');
+      if (sumTotElem) sumTotElem.innerText = `${API.formatCurrency(oneTimeTotal, activeCurrency)} (One-Time)`;
 
       // 2. MONTHLY RECURRING COST
       const websiteMonthly = selectedPaymentPeriod === 'Monthly' ? websitePrice : 0;
@@ -1107,7 +1233,7 @@
       const monthlyItems = [];
       if (selectedPaymentPeriod === 'Monthly' && websiteMonthly > 0) {
         monthlyItems.push(`<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-          <span style="font-weight: 700; color: var(--slate-800); max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• ${API.escapeHtml(cat.name)} (Sub)</span>
+          <span style="font-weight: 700; color: var(--slate-800); max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• ${API.escapeHtml(cat ? cat.name : 'Solution')} (Sub)</span>
           <strong style="font-family: var(--font-mono); color: #0284c7;">${API.formatCurrency(websiteMonthly, activeCurrency)} / mo</strong>
         </div>`);
       }
@@ -1119,10 +1245,12 @@
         </div>`);
       });
 
-      if (monthlyItems.length === 0) {
-        monthlyCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No monthly costs</div>';
-      } else {
-        monthlyCont.innerHTML = monthlyItems.join('');
+      if (monthlyCont) {
+        if (monthlyItems.length === 0) {
+          monthlyCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No monthly costs</div>';
+        } else {
+          monthlyCont.innerHTML = monthlyItems.join('');
+        }
       }
 
       let monthlyTotalStr = '';
@@ -1135,7 +1263,8 @@
       } else {
         monthlyTotalStr = (activeCurrency === 'USD' ? '$0' : '₹0') + ' / Month';
       }
-      document.getElementById('sum-monthly-total').innerText = monthlyTotalStr;
+      const sumMoTotElem = document.getElementById('sum-monthly-total');
+      if (sumMoTotElem) sumMoTotElem.innerText = monthlyTotalStr;
 
       // 3. ANNUAL RECURRING COST
       const websiteAnnual = selectedPaymentPeriod === 'Annually' ? websitePrice : 0;
@@ -1154,7 +1283,7 @@
       const annualItems = [];
       if (selectedPaymentPeriod === 'Annually' && websiteAnnual > 0) {
         annualItems.push(`<div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-          <span style="font-weight: 700; color: var(--slate-800); max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• ${API.escapeHtml(cat.name)} (Sub)</span>
+          <span style="font-weight: 700; color: var(--slate-800); max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• ${API.escapeHtml(cat ? cat.name : 'Solution')} (Sub)</span>
           <strong style="font-family: var(--font-mono); color: #7c3aed;">${API.formatCurrency(websiteAnnual, activeCurrency)} / yr</strong>
         </div>`);
       }
@@ -1166,10 +1295,12 @@
         </div>`);
       });
 
-      if (annualItems.length === 0) {
-        annualCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No annual costs</div>';
-      } else {
-        annualCont.innerHTML = annualItems.join('');
+      if (annualCont) {
+        if (annualItems.length === 0) {
+          annualCont.innerHTML = '<div style="font-style: italic; color: var(--slate-400);">No annual costs</div>';
+        } else {
+          annualCont.innerHTML = annualItems.join('');
+        }
       }
 
       let annualTotalStr = '';
@@ -1182,13 +1313,17 @@
       } else {
         annualTotalStr = (activeCurrency === 'USD' ? '$0' : '₹0') + ' / Year';
       }
-      document.getElementById('sum-annual-total').innerText = annualTotalStr;
+      const sumAnTotElem = document.getElementById('sum-annual-total');
+      if (sumAnTotElem) sumAnTotElem.innerText = annualTotalStr;
 
       // Internal Commission (Calculated on website price)
       const comm = API.calculateCommission(websitePrice, activeCurrency);
-      document.getElementById('sum-comm-rate').innerText = `${comm.rate}%`;
-      document.getElementById('sum-comm-slab-title').innerText = comm.slabTitle;
-      document.getElementById('sum-comm-amount').innerText = comm.formattedCommission;
+      const commRateElem = document.getElementById('sum-comm-rate');
+      if (commRateElem) commRateElem.innerText = `${comm.rate}%`;
+      const commSlabElem = document.getElementById('sum-comm-slab-title');
+      if (commSlabElem) commSlabElem.innerText = comm.slabTitle;
+      const commAmtElem = document.getElementById('sum-comm-amount');
+      if (commAmtElem) commAmtElem.innerText = comm.formattedCommission;
 
       currentCalculatedQuote = {
         selectedPaymentPeriod,
@@ -1214,6 +1349,8 @@
         billingCadence: selectedPaymentPeriod,
         cat
       };
+
+      return currentCalculatedQuote;
     }
 
     // -------------------------------------------------------------
@@ -1316,6 +1453,15 @@
       // Switch to calculator tab
       switchTab('calculator', true);
 
+      // Ensure classification filter includes this category
+      const classSelect = document.getElementById('calc-classification');
+      if (classSelect) {
+        if (!matchesClassification(cat, classSelect.value)) {
+          classSelect.value = 'All';
+          filterCategoriesByClassification();
+        }
+      }
+
       // Select category in dropdown
       const catSelect = document.getElementById('calc-category');
       if (catSelect) {
@@ -1345,12 +1491,12 @@
       const filterType = document.getElementById('ref-filter-type')?.value || 'All';
 
       const filtered = cats.filter(c => {
-        const matchesType = filterType === 'All' || c.classification === filterType;
+        const matchesType = matchesClassification(c, filterType);
         const matchesSearch = !search || 
           c.name.toLowerCase().includes(search) || 
           (c.desc && c.desc.toLowerCase().includes(search)) || 
           (c.referenceUrl && c.referenceUrl.toLowerCase().includes(search)) ||
-          (c.features && c.features.some(f => f.toLowerCase().includes(search)));
+          (c.features && c.features.some(f => String(f).toLowerCase().includes(search)));
         return matchesType && matchesSearch;
       });
 
@@ -1644,50 +1790,117 @@
     // GENERATE OFFICIAL QUOTATION (WITH SEPARATE GST & 3 INDEPENDENT PRICING CATEGORIES)
     // -------------------------------------------------------------
     async function generateOfficialQuotation() {
-      const clientName = document.getElementById('calc-client-name').value.trim();
+      // Validate customer name
+      const clientName = document.getElementById('calc-client-name')?.value.trim();
       if (!clientName) {
-        alert('Please enter Customer / Business Name');
-        document.getElementById('calc-client-name').focus();
+        alert('⚠️ Please enter a Customer / Business Name before generating the quotation.');
+        document.getElementById('calc-client-name')?.focus();
         return;
       }
 
-      const catId = document.getElementById('calc-category').value;
+      // Validate that categories are loaded
+      if (!API.state.categories || API.state.categories.length === 0) {
+        alert('⚠️ Website solutions are still loading. Please wait a moment and try again.');
+        return;
+      }
+
+      // Validate category selection
+      const catId = document.getElementById('calc-category')?.value;
+      if (!catId) {
+        alert('⚠️ Please select a solution category from the list.');
+        document.getElementById('calc-category')?.focus();
+        return;
+      }
       const cat = (API.state.categories || []).find(c => c.id === catId);
       if (!cat) {
-        alert('Please select a solution category');
+        alert('⚠️ The selected solution was not found. Please re-select a website solution from the dropdown.');
+        document.getElementById('calc-category')?.focus();
         return;
       }
 
-      const commExec = document.getElementById('calc-comm-exec').value.trim() || 'Marketing Executive';
-      const docCoord = document.getElementById('calc-doc-coordinator').value.trim() || 'Documentation Coordinator';
-      const domainName = document.getElementById('calc-domain-name').value.trim();
+      // Ensure pricing calculation is always up to date
+      let calc = null;
+      try {
+        calc = calculateTotal();
+      } catch (calcErr) {
+        console.warn('calculateTotal error:', calcErr);
+      }
+      calc = calc || currentCalculatedQuote;
+      if (!calc) {
+        // Reconstruct a minimal calc object from available data
+        const wsPrice = getWebsitePriceForPeriod(cat, selectedPaymentPeriod, activeCurrency) || 0;
+        const domAmt = Number(document.getElementById('calc-domain-amount')?.value) || 0;
+        const sub = selectedPaymentPeriod === 'One-Time' ? Math.round((wsPrice + domAmt) * 100) / 100 : domAmt;
+        const gst = activeCurrency === 'USD' ? Math.round(sub * 0.18 * 100) / 100 : Math.round(sub * 0.18);
+        calc = {
+          basePrice: wsPrice,
+          domainAmount: domAmt,
+          oneTimeSubtotal: sub,
+          oneTimeGST: gst,
+          oneTimeTotal: Math.round((sub + gst) * 100) / 100,
+          onetimeAddons: [],
+          monthlyAddons: [],
+          annualAddons: [],
+          monthlyINR: 0,
+          monthlyUSD: 0,
+          annualINR: 0,
+          annualUSD: 0,
+          monthlyTotalStr: (activeCurrency === 'USD' ? '$0' : '₹0') + ' / Month',
+          annualTotalStr: (activeCurrency === 'USD' ? '$0' : '₹0') + ' / Year'
+        };
+      }
+
+      const commExec = document.getElementById('calc-comm-exec')?.value.trim() || 'Marketing Executive';
+      const docCoord = document.getElementById('calc-doc-coordinator')?.value.trim() || 'Documentation Coordinator';
+      const domainName = document.getElementById('calc-domain-name')?.value.trim();
+
+      // Safely resolve all pricing values with null checks
+      const websitePrice = (typeof calc.basePrice === 'number' && !isNaN(calc.basePrice))
+        ? calc.basePrice
+        : (getWebsitePriceForPeriod(cat, selectedPaymentPeriod, activeCurrency) || 0);
+      const basePrice = websitePrice;
+      const domainAmount = (typeof calc.domainAmount === 'number' && !isNaN(calc.domainAmount))
+        ? calc.domainAmount
+        : (Number(document.getElementById('calc-domain-amount')?.value) || 0);
+
+      const oneTimeSubtotal = (calc.oneTimeSubtotal != null && !isNaN(calc.oneTimeSubtotal))
+        ? calc.oneTimeSubtotal
+        : (selectedPaymentPeriod === 'One-Time' ? Math.round((basePrice + domainAmount) * 100) / 100 : domainAmount);
+
+      const oneTimeGST = calc?.oneTimeGST != null && !isNaN(calc.oneTimeGST)
+        ? calc.oneTimeGST
+        : Math.round(oneTimeSubtotal * 0.18 * 100) / 100;
+
+      const oneTimeTotal = calc?.oneTimeTotal != null && !isNaN(calc.oneTimeTotal)
+        ? calc.oneTimeTotal
+        : Math.round((oneTimeSubtotal + oneTimeGST) * 100) / 100;
 
       const payload = {
         clientName,
-        classification: cat.classification,
+        classification: cat.classification || 'Website',
         categoryId: cat.id,
         categoryName: cat.name,
         currency: activeCurrency,
-        selectedPaymentPeriod: selectedPaymentPeriod,
-        basePrice: currentCalculatedQuote.basePrice,
-        domainAmount: currentCalculatedQuote.domainAmount,
-        oneTimeSubtotal: currentCalculatedQuote.oneTimeSubtotal,
-        oneTimeGST: currentCalculatedQuote.oneTimeGST,
-        oneTimeTotal: currentCalculatedQuote.oneTimeTotal,
-        addons: selectedAddons,
-        onetimeAddons: currentCalculatedQuote.onetimeAddons,
-        monthlyAddons: currentCalculatedQuote.monthlyAddons,
-        monthlyINR: currentCalculatedQuote.monthlyINR,
-        monthlyUSD: currentCalculatedQuote.monthlyUSD,
-        monthlyTotalStr: currentCalculatedQuote.monthlyTotalStr,
-        annualAddons: currentCalculatedQuote.annualAddons,
-        annualINR: currentCalculatedQuote.annualINR,
-        annualUSD: currentCalculatedQuote.annualUSD,
-        annualTotalStr: currentCalculatedQuote.annualTotalStr,
-        subtotal: currentCalculatedQuote.oneTimeSubtotal,
-        gstAmount: currentCalculatedQuote.oneTimeGST,
-        totalPrice: currentCalculatedQuote.oneTimeTotal,
-        billingCadence: selectedPaymentPeriod,
+        selectedPaymentPeriod: selectedPaymentPeriod || 'One-Time',
+        basePrice: basePrice,
+        domainAmount: domainAmount,
+        oneTimeSubtotal: oneTimeSubtotal,
+        oneTimeGST: oneTimeGST,
+        oneTimeTotal: oneTimeTotal,
+        addons: selectedAddons || [],
+        onetimeAddons: calc?.onetimeAddons || [],
+        monthlyAddons: calc?.monthlyAddons || [],
+        monthlyINR: calc?.monthlyINR || 0,
+        monthlyUSD: calc?.monthlyUSD || 0,
+        monthlyTotalStr: calc?.monthlyTotalStr || ((activeCurrency === 'USD' ? '$0' : '₹0') + ' / Month'),
+        annualAddons: calc?.annualAddons || [],
+        annualINR: calc?.annualINR || 0,
+        annualUSD: calc?.annualUSD || 0,
+        annualTotalStr: calc?.annualTotalStr || ((activeCurrency === 'USD' ? '$0' : '₹0') + ' / Year'),
+        subtotal: oneTimeSubtotal,
+        gstAmount: oneTimeGST,
+        totalPrice: oneTimeTotal,
+        billingCadence: selectedPaymentPeriod || 'One-Time',
         commExecutiveName: commExec,
         docCoordinatorName: docCoord,
         status: 'Generated'
@@ -1729,11 +1942,11 @@
 
       const quoteCurr = quote.currency || activeCurrency;
       const paymentPeriod = quote.selectedPaymentPeriod || quote.billingCadence || 'One-Time';
-      const basePrice = quote.basePrice !== undefined ? quote.basePrice : currentCalculatedQuote.basePrice;
-      const domainAmount = quote.domainAmount !== undefined ? quote.domainAmount : currentCalculatedQuote.domainAmount;
-      const oneTimeSubtotal = quote.oneTimeSubtotal !== undefined ? quote.oneTimeSubtotal : currentCalculatedQuote.oneTimeSubtotal;
-      const oneTimeGST = quote.oneTimeGST !== undefined ? quote.oneTimeGST : currentCalculatedQuote.oneTimeGST;
-      const oneTimeTotal = quote.oneTimeTotal !== undefined ? quote.oneTimeTotal : currentCalculatedQuote.oneTimeTotal;
+      const basePrice = quote.basePrice !== undefined ? quote.basePrice : (currentCalculatedQuote?.basePrice || 0);
+      const domainAmount = quote.domainAmount !== undefined ? quote.domainAmount : (currentCalculatedQuote?.domainAmount || 0);
+      const oneTimeSubtotal = quote.oneTimeSubtotal !== undefined ? quote.oneTimeSubtotal : (currentCalculatedQuote?.oneTimeSubtotal || 0);
+      const oneTimeGST = quote.oneTimeGST !== undefined ? quote.oneTimeGST : (currentCalculatedQuote?.oneTimeGST || 0);
+      const oneTimeTotal = quote.oneTimeTotal !== undefined ? quote.oneTimeTotal : (currentCalculatedQuote?.oneTimeTotal || 0);
 
       const quoteAddons = quote.addons || selectedAddons || [];
       const onetimeAddons = quoteAddons.filter(a => (a.billingCycle || '').toLowerCase() === 'one-time');
@@ -1878,10 +2091,10 @@
       document.getElementById('doc-total-price').innerText = API.formatCurrency(oneTimeTotal, quoteCurr);
 
       const docMonthly = document.getElementById('doc-monthly-total');
-      if (docMonthly) docMonthly.innerText = quote.monthlyTotalStr || currentCalculatedQuote.monthlyTotalStr || '$0 / Month';
+      if (docMonthly) docMonthly.innerText = quote.monthlyTotalStr || currentCalculatedQuote?.monthlyTotalStr || '$0 / Month';
 
       const docAnnual = document.getElementById('doc-annual-total');
-      if (docAnnual) docAnnual.innerText = quote.annualTotalStr || currentCalculatedQuote.annualTotalStr || '$0 / Year';
+      if (docAnnual) docAnnual.innerText = quote.annualTotalStr || currentCalculatedQuote?.annualTotalStr || '$0 / Year';
 
       switchTab('quotation-view', true);
     }
