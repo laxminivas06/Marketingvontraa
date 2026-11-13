@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" width="160" height="40">
+  <defs>
+    <linearGradient id="aivGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="4" width="32" height="32" rx="8" fill="url(#aivGrad)"/>
+  <path d="M18 10 L10 28 L15 28 L16.8 23.5 L23.2 23.5 L25 28 L30 28 Z M18 14.5 L21.8 20 L14.2 20 Z" fill="#ffffff" font-weight="bold"/>
+  <text x="42" y="24" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" font-size="17" font-weight="800" fill="#0f172a" letter-spacing="-0.5">Aivontraa</text>
+  <text x="42" y="33" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" font-size="7.5" font-weight="700" fill="#64748b" letter-spacing="0.5">AUTOMATION</text>
+</svg>

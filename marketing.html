@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="/js/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <div id="app-layout">
@@ -20,7 +20,7 @@
       <div class="sidebar-header">
         <div class="sidebar-brand">
           <div class="brand-logo-card">
-            <img src="https://aivontraa.com/assets/images/ai.png" alt="Aivontraa Logo" class="brand-logo-img">
+            <img src="/assets/mark.svg" alt="Aivontraa Logo" class="brand-logo-img">
           </div>
           <div>
             <div style="font-size: 0.85rem; font-weight: 800; color: var(--slate-900); line-height: 1.1;">Aivontraa</div>
@@ -419,7 +419,7 @@
               <h2>Official Customer Proposal Document</h2>
               <p>Review and download professional client quotation. Neatly fits within 1–2 pages.</p>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button class="btn btn-secondary btn-sm" onclick="switchTab('calculator', true)">
                 ← Edit Parameters
               </button>
@@ -428,6 +428,9 @@
               </button>
               <button class="btn btn-primary btn-sm" onclick="downloadQuotationPDF()">
                 📥 Download PDF
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="downloadServerPDF()">
+                ⚡ Official PDF (Direct)
               </button>
               <button class="btn btn-success btn-sm" onclick="shareQuotation()">
                 🔗 Share Proposal
@@ -440,7 +443,7 @@
             <div class="quotation-header">
               <div style="display: flex; align-items: center; gap: 1rem;">
                 <div class="brand-logo-card">
-                  <img src="https://aivontraa.com/assets/images/ai.png" alt="Aivontraa Logo" class="brand-logo-img" style="height: 38px;">
+                  <img src="/assets/logo.svg" alt="Aivontraa Logo" class="brand-logo-img" style="height: 36px; width: auto;" crossorigin="anonymous">
                 </div>
                 <div>
                   <div class="company-title">AIVONTRAA AUTOMATION PVT. LTD.</div>
@@ -1883,17 +1886,55 @@
       switchTab('quotation-view', true);
     }
 
-    function downloadQuotationPDF() {
+    function downloadQuotationPDF(quoteId) {
+      const qNum = document.getElementById('doc-quote-number')?.innerText || 'Quotation';
       const element = document.getElementById('quotation-print-area');
-      const opt = {
-        margin: [8, 8, 8, 8],
-        filename: `${document.getElementById('doc-quote-number').innerText}_Quotation.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
+      
       API.showToast('Generating official PDF proposal...');
+      
+      if (typeof html2pdf !== 'undefined') {
+        const opt = {
+          margin: [8, 8, 8, 8],
+          filename: `${qNum}_Quotation.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save().then(() => {
+          API.showToast('Quotation PDF generated successfully!');
+        }).catch(err => {
+          console.warn('html2pdf generation error, falling back to server PDF:', err);
+          downloadServerPDF(quoteId || qNum);
+        });
+      } else {
+        downloadServerPDF(quoteId || qNum);
+      }
+    }
+
+    function downloadServerPDF(quoteId) {
+      const target = quoteId || document.getElementById('doc-quote-number')?.innerText || '';
+      if (!target || target === '-') {
+        window.print();
+        return;
+      }
+      API.showToast('Downloading official PDF from server...');
+      window.location.href = `/api/quotations/${encodeURIComponent(target)}/pdf`;
+    }
+
+    function viewQuotationDetails(quoteId) {
+      const quote = (API.state.quotations || []).find(q => q.id === quoteId || q.quoteNumber === quoteId);
+      if (!quote) {
+        alert('Quotation not found');
+        return;
+      }
+      const cat = (API.state.categories || []).find(c => c.id === quote.categoryId) || {
+        name: quote.categoryName || 'Solution Platform',
+        desc: 'Custom Web & Software Development',
+        classification: quote.classification || 'Website',
+        referenceUrl: quote.referenceUrl || '',
+        features: quote.features || ['Full Responsive Design', 'Custom Architecture', 'Security & Basic SEO']
+      };
+      displayGeneratedQuotation(quote, cat, quote.domainName || '');
     }
 
     function shareQuotation() {
@@ -2011,6 +2052,12 @@
             </select>
           </td>
           <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-secondary btn-sm" style="margin-right: 0.35rem;" onclick="viewQuotationDetails('${q.id}')">
+              📄 View / PDF
+            </button>
+            <a class="btn btn-outline btn-sm" style="margin-right: 0.35rem;" href="/api/quotations/${encodeURIComponent(q.id)}/pdf" download title="Download Official PDF">
+              📥 PDF
+            </a>
             ${isAccepted ? (
               proj && proj.assignedDevId ?
               `<span class="pill pill-info">Engineering Team Assigned</span>` :
