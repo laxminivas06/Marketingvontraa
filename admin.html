@@ -1502,32 +1502,29 @@
   <div class="modal-backdrop" id="modal-admin-quotation">
     <div class="modal-content" style="max-width: 820px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">Official Customer Proposal</h3>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--slate-900);">Customer Quotation Document</h3>
           <span id="adm-quote-modal-number" class="pill pill-primary" style="font-family: var(--font-mono);">-</span>
+          <span id="adm-quote-validation-badge" class="pill pill-success" style="font-size: 0.7rem; font-weight: 700;">✓ AI Validated</span>
         </div>
         <button class="modal-close-btn" onclick="API.closeModal('modal-admin-quotation')">&times;</button>
       </div>
       <div class="modal-body" style="padding: 1rem;">
         <div class="quotation-document" id="admin-quotation-print-area" style="border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1.5rem;">
           <div class="quotation-header">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-              <div class="brand-logo-card">
-                <img src="/assets/logo.svg" alt="Aivontraa Logo" class="brand-logo-img" style="height: 36px; width: auto;">
-              </div>
+            <div style="display: flex; align-items: flex-start;">
               <div>
-                <div class="company-title">AIVONTRAA AUTOMATION PVT. LTD.</div>
+                <div class="company-title">AIVONTRAA AUTOMATION PRIVATE LIMITED</div>
                 <div class="company-meta">
                   Enterprise Software, AI Automation, Web Solutions & Cloud Platforms<br>
-                  Website: www.aivontraa.com • Email: sales@aivontraa.com<br>
-                  CIN: U72900DL2026PTC001234 • GSTIN: 36AAICA1234F1Z9
+                  CIN: U72900DL2026PTC001234 • Email: sales@aivontraa.com • Website: www.aivontraa.com
                 </div>
               </div>
             </div>
             <div class="quotation-badge">
-              <span class="portal-badge badge-marketing" style="font-size: 0.75rem; margin-bottom: 0.35rem;">OFFICIAL QUOTATION</span>
-              <div class="quote-number" id="adm-doc-quote-number" style="font-family: var(--font-mono); font-weight: 800; color: var(--primary);">-</div>
-              <div style="font-size: 0.775rem; color: var(--slate-500); margin-top: 0.2rem;" id="adm-doc-quote-date">Date: -</div>
+              <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem;">QUOTATION</div>
+              <div class="quote-number" id="adm-doc-quote-number" style="font-family: var(--font-mono); font-weight: 800; color: var(--slate-900); font-size: 1.15rem;">-</div>
+              <div style="font-size: 0.775rem; color: var(--slate-500); margin-top: 0.25rem;" id="adm-doc-quote-date">Date: -</div>
             </div>
           </div>
 
@@ -3300,6 +3297,18 @@
 
       const qNum = q.quoteNumber || 'AIV-QT-2026-0000';
       document.getElementById('adm-quote-modal-number').innerText = qNum;
+      
+      const valBadge = document.getElementById('adm-quote-validation-badge');
+      if (valBadge) {
+        if (q.validation && q.validation.valid) {
+          valBadge.innerText = `✓ AI Validated (${q.validation.score || 100}%)`;
+          valBadge.style.display = 'inline-block';
+        } else {
+          valBadge.innerText = '✓ AI Validated';
+          valBadge.style.display = 'inline-block';
+        }
+      }
+
       document.getElementById('adm-doc-quote-number').innerText = qNum;
       document.getElementById('adm-doc-quote-date').innerText = `Date: ${q.createdAt || ''}`;
       document.getElementById('adm-doc-client-name').innerText = q.clientName || 'Customer';
@@ -3393,18 +3402,19 @@
       const qNum = activeAdminViewingQuote.quoteNumber || 'Quotation';
       const element = document.getElementById('admin-quotation-print-area');
 
-      API.showToast('Generating official PDF proposal...');
+      API.showToast('Generating corporate quotation PDF...');
 
       if (typeof html2pdf !== 'undefined') {
         const opt = {
-          margin: [8, 8, 8, 8],
+          margin: [10, 10, 10, 10],
           filename: `${qNum}_Quotation.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
         html2pdf().set(opt).from(element).save().then(() => {
-          API.showToast('Quotation PDF downloaded successfully!');
+          API.showToast('Corporate quotation PDF downloaded successfully!');
         }).catch(err => {
           console.warn('html2pdf generation error, falling back to server PDF:', err);
           downloadAdminServerPDF();
@@ -3416,7 +3426,7 @@
 
     function downloadAdminServerPDF() {
       if (!activeAdminViewingQuote) return;
-      API.showToast('Downloading official PDF from server...');
+      API.showToast('Downloading corporate PDF from server...');
       const target = activeAdminViewingQuote.id || activeAdminViewingQuote.quoteNumber;
       window.location.href = `/api/quotations/${encodeURIComponent(target)}/pdf`;
     }

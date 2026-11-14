@@ -16,6 +16,8 @@ ROOT_ADMIN_EMAIL = os.environ.get("ROOT_ADMIN_EMAIL", "laxminivasmorishetty143@g
 ADMIN_EMAILS = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "laxminivasmorishetty143@gmail.com,admin@aivontraa.com").split(",") if e.strip()}
 
 from config import Config
+from quotation_validator import validate_quotation_for_pdf
+from quotation_pdf_generator import generate_corporate_quotation_pdf
 
 BASE_DIR = Config.BASE_DIR
 DB_FILE = Config.DATABASE_FILE
@@ -1429,7 +1431,18 @@ def api_quotations():
     if not client_name:
         return jsonify({"success": False, "message": "Client Name is required"}), 400
 
-    quote_num = payload.get('quoteNumber') or f"AIV-QT-2026-{uuid.uuid4().hex[:4].upper()}"
+    existing_nums = {q.get('quoteNumber') for q in db.get('quotations', []) if q.get('quoteNumber')}
+    passed_num = str(payload.get('quoteNumber', '')).strip()
+    if passed_num and passed_num not in existing_nums and passed_num != '-':
+        quote_num = passed_num
+    else:
+        year = datetime.now().year
+        cand = None
+        for _ in range(500):
+            cand = f"AIV-QT-{year}-{uuid.uuid4().hex[:4].upper()}"
+            if cand not in existing_nums:
+                break
+        quote_num = cand or f"AIV-QT-{year}-{uuid.uuid4().hex[:6].upper()}"
     today_str = datetime.now().strftime("%Y-%m-%d")
 
     currency = payload.get('currency', 'INR').upper()
@@ -1629,190 +1642,47 @@ def api_quotations():
         "updatedAt": today_str
     }
 
+    # AI-Based PDF & Quotation Validation Check
+    validation_report = validate_quotation_for_pdf(new_quote, db.get('quotations', []))
+    new_quote['validation'] = {
+        "valid": validation_report["valid"],
+        "score": validation_report["score"],
+        "passed_checks": validation_report["passed_checks"],
+        "estimated_pages": validation_report["estimated_pages"],
+        "checks": validation_report["checks"],
+        "warnings": validation_report["warnings"]
+    }
+
     db.setdefault('quotations', []).insert(0, new_quote)
     save_db(db)
     return jsonify({"success": True, "quotation": new_quote}), 201
 
 def generate_quotation_pdf(q):
-    import fpdf
-    curr = q.get('currency', 'INR')
-    sym = '$' if curr == 'USD' else 'INR '
+    """Generates premium corporate quotation PDF using reconstructed engine"""
+    return generate_corporate_quotation_pdf(q)
 
-    def clean_txt(t):
-        if not t:
-            return ''
-        t = str(t).replace('₹', 'INR ').replace('—', '-').replace('–', '-')
-        return t.encode('latin-1', 'replace').decode('latin-1')
+@app.route('/api/quotations/validate', methods=['POST'])
+def api_validate_quotation():
+    """AI-Based pre-validation of quotation before creation or PDF generation"""
+    db = load_db()
+    payload = request.get_json() or {}
+    validation = validate_quotation_for_pdf(payload, db.get('quotations', []))
+    return jsonify(validation)
 
-    pdf = fpdf.FPDF(format='A4', unit='mm')
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-
-    # Header
-    pdf.set_font('Arial', 'B', 16)
-    pdf.set_text_color(37, 99, 235)
-    pdf.cell(120, 8, clean_txt('AIVONTRAA AUTOMATION PVT. LTD.'), 0, 0, 'L')
-
-    pdf.set_font('Arial', 'B', 10)
-    pdf.set_text_color(225, 29, 72)
-    pdf.cell(70, 8, clean_txt('OFFICIAL PROPOSAL'), 0, 1, 'R')
-
-    pdf.set_font('Arial', '', 8)
-    pdf.set_text_color(100, 116, 139)
-    pdf.cell(120, 4, clean_txt('Enterprise Software, AI Automation, Web Solutions & Cloud Platforms'), 0, 0, 'L')
-    pdf.set_font('Arial', 'B', 9)
-    pdf.set_text_color(15, 23, 42)
-    pdf.cell(70, 4, clean_txt('Quote #: ' + q.get('quoteNumber', '')), 0, 1, 'R')
-
-    pdf.set_font('Arial', '', 8)
-    pdf.set_text_color(100, 116, 139)
-    pdf.cell(120, 4, clean_txt('CIN: U72900DL2026PTC001234 | GSTIN: 36AAICA1234F1Z9'), 0, 0, 'L')
-    pdf.cell(70, 4, clean_txt('Date: ' + q.get('createdAt', '')), 0, 1, 'R')
-
-    pdf.cell(120, 4, clean_txt('Email: sales@aivontraa.com | Website: www.aivontraa.com'), 0, 1, 'L')
-
-    pdf.ln(4)
-    pdf.set_draw_color(226, 232, 240)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(4)
-
-    # Client & Project Info Box
-    pdf.set_fill_color(248, 250, 252)
-    pdf.rect(10, pdf.get_y(), 190, 24, 'F')
-    
-    cur_y = pdf.get_y() + 2
-    pdf.set_xy(14, cur_y)
-    pdf.set_font('Arial', 'B', 8)
-    pdf.set_text_color(100, 116, 139)
-    pdf.cell(90, 4, 'PREPARED FOR:', 0, 0)
-    pdf.cell(90, 4, 'CLIENT SUCCESS TEAM:', 0, 1)
-
-    pdf.set_x(14)
-    pdf.set_font('Arial', 'B', 11)
-    pdf.set_text_color(15, 23, 42)
-    pdf.cell(90, 6, clean_txt(q.get('clientName', '-')), 0, 0)
-    pdf.set_font('Arial', 'B', 10)
-    pdf.cell(90, 6, clean_txt(q.get('commExecutiveName', 'Lead Executive')), 0, 1)
-
-    pdf.set_x(14)
-    pdf.set_font('Arial', '', 8)
-    pdf.set_text_color(71, 85, 105)
-    pdf.cell(90, 4, clean_txt('Solution: ' + q.get('categoryName', '-')), 0, 0)
-    pdf.cell(90, 4, clean_txt('Documentation: ' + q.get('docCoordinatorName', 'Coordinator')), 0, 1)
-
-    pdf.set_y(cur_y + 26)
-
-    # Section 1: Core Solution
-    pdf.set_font('Arial', 'B', 10)
-    pdf.set_text_color(30, 41, 59)
-    pdf.cell(190, 7, clean_txt('1. Scope of Solution & Deliverables'), 0, 1, 'L')
-
-    pdf.set_font('Arial', '', 8.5)
-    pdf.set_text_color(71, 85, 105)
-    cat_desc = q.get('categoryName', '')
-    if q.get('classification'):
-        cat_desc += f" ({q.get('classification')})"
-    pdf.cell(190, 5, clean_txt('Category: ' + cat_desc), 0, 1)
-    if q.get('referenceUrl'):
-        pdf.cell(190, 5, clean_txt('Benchmark Reference: ' + q.get('referenceUrl', '')), 0, 1)
-
-    pdf.ln(3)
-
-    # Deliverables & Items Table Header
-    pdf.set_fill_color(241, 245, 249)
-    pdf.set_font('Arial', 'B', 8.5)
-    pdf.set_text_color(15, 23, 42)
-    pdf.cell(140, 7, '  Description / Deliverable Item', 1, 0, 'L', fill=True)
-    pdf.cell(50, 7, 'Amount  ', 1, 1, 'R', fill=True)
-
-    pdf.set_font('Arial', '', 8.5)
-    pdf.set_text_color(30, 41, 59)
-
-    # Base item
-    bp = q.get('basePrice', 0)
-    pay_period = q.get('selectedPaymentPeriod') or q.get('billingCadence') or 'One-Time'
-    pdf.cell(140, 6, clean_txt(f"  {q.get('categoryName', '')} - Core Implementation ({pay_period})"), 1, 0, 'L')
-    pdf.cell(50, 6, clean_txt(sym + f'{bp:,.2f}  '), 1, 1, 'R')
-
-    # Domain
-    dom = q.get('domainAmount', 0)
-    if dom > 0:
-        pdf.cell(140, 6, '  Custom Domain Registration & DNS Setup (One-Time)', 1, 0, 'L')
-        pdf.cell(50, 6, clean_txt(sym + f'{dom:,.2f}  '), 1, 1, 'R')
-
-    # Addons
-    for a in q.get('addons', []):
-        aname = a.get('name', 'Add-on')
-        acycle = a.get('billingCycle', 'One-Time')
-        aprice = a.get('price', 0)
-        asym = '$' if a.get('currency') == 'USD' else 'INR '
-        pdf.cell(140, 6, clean_txt(f'  {aname} ({acycle})'), 1, 0, 'L')
-        pdf.cell(50, 6, clean_txt(f'{asym}{aprice:,.2f}  '), 1, 1, 'R')
-
-    # Financial Totals Table
-    sub = q.get('oneTimeSubtotal', q.get('subtotal', 0))
-    gst = q.get('oneTimeGST', q.get('gstAmount', 0))
-    tot = q.get('oneTimeTotal', q.get('totalPrice', 0))
-
-    pdf.set_font('Arial', 'B', 8.5)
-    pdf.cell(140, 6, '  One-Time Subtotal', 1, 0, 'L')
-    pdf.cell(50, 6, clean_txt(sym + f'{sub:,.2f}  '), 1, 1, 'R')
-
-    pdf.cell(140, 6, '  Applicable GST (18%)', 1, 0, 'L')
-    pdf.cell(50, 6, clean_txt(sym + f'{gst:,.2f}  '), 1, 1, 'R')
-
-    pdf.set_fill_color(238, 242, 255)
-    pdf.set_text_color(37, 99, 235)
-    pdf.cell(140, 7, '  Total One-Time Application Investment (incl. GST)', 1, 0, 'L', fill=True)
-    pdf.cell(50, 7, clean_txt(sym + f'{tot:,.2f}  '), 1, 1, 'R', fill=True)
-
-    # Recurring Costs if present
-    m_str = q.get('monthlyTotalStr')
-    if m_str and m_str not in ['$0 / Month', 'INR 0 / Month', '₹0 / Month']:
-        pdf.set_fill_color(240, 249, 255)
-        pdf.set_text_color(2, 132, 199)
-        pdf.cell(140, 7, '  Monthly Recurring Subscription Total', 1, 0, 'L', fill=True)
-        pdf.cell(50, 7, clean_txt(m_str + '  '), 1, 1, 'R', fill=True)
-
-    a_str = q.get('annualTotalStr')
-    if a_str and a_str not in ['$0 / Year', 'INR 0 / Year', '₹0 / Year']:
-        pdf.set_fill_color(250, 245, 255)
-        pdf.set_text_color(124, 58, 237)
-        pdf.cell(140, 7, '  Annual Recurring Subscription Total', 1, 0, 'L', fill=True)
-        pdf.cell(50, 7, clean_txt(a_str + '  '), 1, 1, 'R', fill=True)
-
-    pdf.ln(5)
-    pdf.set_font('Arial', 'B', 8)
-    pdf.set_text_color(100, 116, 139)
-    pdf.cell(190, 5, 'TERMS & CONDITIONS:', 0, 1)
-    pdf.set_font('Arial', '', 7.5)
-    pdf.set_text_color(100, 116, 139)
-    terms_list = [
-        '1. 50% advance upon project kickoff; balance 50% upon final staging review and deployment.',
-        '2. Production schedule commences immediately upon receipt of client assets, credentials, and requirements brief.',
-        '3. All deliverables carry 30-day post-launch warranty and technical defect support.',
-        '4. Recurring subscriptions (if applicable) are billed according to chosen monthly/annual billing cycle.'
-    ]
-    for term in terms_list:
-        pdf.cell(190, 4, clean_txt(term), 0, 1)
-
-    pdf.ln(6)
-    # Signatures
-    pdf.set_font('Arial', 'B', 8)
-    pdf.set_text_color(30, 41, 59)
-    pdf.cell(95, 4, 'For AIVONTRAA AUTOMATION PVT. LTD.', 0, 0, 'L')
-    pdf.cell(95, 4, 'CLIENT ACCEPTANCE SIGN-OFF', 0, 1, 'R')
-    pdf.ln(8)
-    pdf.set_font('Arial', '', 7.5)
-    pdf.set_text_color(100, 116, 139)
-    pdf.cell(95, 4, 'Authorized Signatory (Commercial Operations)', 0, 0, 'L')
-    pdf.cell(95, 4, 'Authorized Representative Signature & Date', 0, 1, 'R')
-
-    return pdf.output(dest='S').encode('latin1')
+@app.route('/api/quotations/<quote_id>/validate', methods=['GET'])
+def api_validate_existing_quotation(quote_id):
+    """Validates an existing quotation against all corporate PDF criteria"""
+    db = load_db()
+    quotations = db.get('quotations', [])
+    quote = next((q for q in quotations if q.get('id') == quote_id or q.get('quoteNumber') == quote_id), None)
+    if not quote:
+        return jsonify({"success": False, "message": "Quotation not found"}), 404
+    validation = validate_quotation_for_pdf(quote, quotations)
+    return jsonify(validation)
 
 @app.route('/api/quotations/<quote_id>/pdf', methods=['GET'])
 def api_download_quotation_pdf(quote_id):
-    """Generates and downloads or views official quotation PDF"""
+    """Generates and downloads or views reconstructed corporate quotation PDF"""
     db = load_db()
     quotations = db.get('quotations', [])
     quote = next((q for q in quotations if q.get('id') == quote_id or q.get('quoteNumber') == quote_id), None)
@@ -1820,6 +1690,11 @@ def api_download_quotation_pdf(quote_id):
         return jsonify({"success": False, "message": "Quotation not found"}), 404
 
     try:
+        # Pre-validate before generating final PDF
+        validation = validate_quotation_for_pdf(quote, quotations)
+        if not validation["valid"]:
+            print(f"[PDF VALIDATION WARNING] Quote {quote.get('quoteNumber')}: {validation['errors']}")
+
         pdf_bytes = generate_quotation_pdf(quote)
         view_inline = request.args.get('view') == '1'
         disposition = 'inline' if view_inline else 'attachment'

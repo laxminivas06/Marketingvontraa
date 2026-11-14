@@ -5,11 +5,755 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 21:21:24",
-    "record_count": 24,
-    "checksum": "16f3104cef4ee3c0e118f80e5ae8c276bb7d50288777a57d87cc43ebfa809e52"
+    "updated_at": "2026-11-13 23:57:50",
+    "record_count": 30,
+    "checksum": "9ae04799ef927e2c39bfccf5188bf49c256707ba747db165818e57968fb94ba1"
   },
   "records": [
+    {
+      "id": "qt-0eaeae",
+      "quoteNumber": "AIV-QT-2026-1490",
+      "clientName": "Dynamic Monthly Client",
+      "classification": "Website – Basic",
+      "categoryId": "cat-84f130",
+      "categoryName": "Basic Business Website",
+      "referenceUrl": "https://wix.com",
+      "currency": "INR",
+      "selectedPaymentPeriod": "Monthly",
+      "billingCadence": "Monthly",
+      "websitePrice": 1200.0,
+      "basePrice": 1200.0,
+      "domainAmount": 1000.0,
+      "websiteOneTime": 0.0,
+      "onetimeAddons": [],
+      "oneTimeSubtotal": 1000.0,
+      "oneTimeGST": 180.0,
+      "oneTimeTotal": 1180.0,
+      "oneTimeTotal_INR": 1180.0,
+      "oneTimeTotal_USD": 0.0,
+      "oneTimeTotalStr": "₹1,180.00 (One-Time)",
+      "websiteMonthly": 1200.0,
+      "monthlyAddons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "INR",
+          "id": "test-monthly-addon",
+          "name": "AI Voice Bot",
+          "price": 1500
+        }
+      ],
+      "monthlyINR": 2700.0,
+      "monthlyUSD": 0,
+      "monthlyGST_INR": 486.0,
+      "monthlyGST_USD": 0.0,
+      "monthlyTotal_INR": 3186.0,
+      "monthlyTotal_USD": 0.0,
+      "monthlyTotalStr": "₹2,700.00 / Month",
+      "websiteAnnual": 0.0,
+      "annualAddons": [],
+      "annualINR": 0.0,
+      "annualUSD": 0,
+      "annualGST_INR": 0.0,
+      "annualGST_USD": 0.0,
+      "annualTotal_INR": 0.0,
+      "annualTotal_USD": 0.0,
+      "annualTotalStr": "₹0 / Year",
+      "addons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "INR",
+          "id": "test-monthly-addon",
+          "name": "AI Voice Bot",
+          "price": 1500
+        }
+      ],
+      "subtotal": 1000.0,
+      "gstRate": 18.0,
+      "gstAmount": 180.0,
+      "totalPrice": 1180.0,
+      "commissionRate": 7.0,
+      "commissionAmount": 84.0,
+      "commExecutiveName": "Marketing Rep",
+      "docCoordinatorName": "Coordinator",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-13",
+      "updatedAt": "2026-11-13",
+      "validation": {
+        "valid": true,
+        "score": 100,
+        "passed_checks": "7/7",
+        "estimated_pages": 1,
+        "checks": {
+          "company_info": {
+            "passed": true,
+            "message": "Company full legal name verified. GST number removed cleanly without empty placeholders.",
+            "errors": [],
+            "warnings": []
+          },
+          "customer_info": {
+            "passed": true,
+            "message": "Customer name and project solution verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "quotation_number": {
+            "passed": true,
+            "message": "Quotation number 'AIV-QT-2026-1490' format and uniqueness verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "investment_schedule": {
+            "passed": true,
+            "message": "Deliverable items and pricing structure verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "financial_calculations": {
+            "passed": true,
+            "message": "Subtotals, taxes, and final payable amount mathematically verified with 100% precision.",
+            "errors": [],
+            "warnings": []
+          },
+          "field_integrity": {
+            "passed": true,
+            "message": "No null, undefined, NaN, or corrupted values detected.",
+            "errors": [],
+            "warnings": []
+          },
+          "layout_overflow": {
+            "passed": true,
+            "estimated_pages": 1,
+            "message": "Layout verified. Estimated printable length: 1 page. Clean pagination guaranteed.",
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "warnings": []
+      },
+      "_entity_type": "quotations"
+    },
+    {
+      "id": "qt-68ccf4",
+      "quoteNumber": "AIV-QT-2026-912D",
+      "clientName": "Test Customer Gamma",
+      "classification": "Website",
+      "categoryId": "",
+      "categoryName": "",
+      "referenceUrl": "",
+      "currency": "INR",
+      "selectedPaymentPeriod": "Annually",
+      "billingCadence": "Annually",
+      "websitePrice": 12000.0,
+      "basePrice": 12000.0,
+      "domainAmount": 0.0,
+      "websiteOneTime": 0.0,
+      "onetimeAddons": [],
+      "oneTimeSubtotal": 0.0,
+      "oneTimeGST": 0.0,
+      "oneTimeTotal": 0.0,
+      "oneTimeTotal_INR": 0.0,
+      "oneTimeTotal_USD": 0.0,
+      "oneTimeTotalStr": "₹0",
+      "websiteMonthly": 0.0,
+      "monthlyAddons": [],
+      "monthlyINR": 0.0,
+      "monthlyUSD": 0,
+      "monthlyGST_INR": 0.0,
+      "monthlyGST_USD": 0.0,
+      "monthlyTotal_INR": 0.0,
+      "monthlyTotal_USD": 0.0,
+      "monthlyTotalStr": "₹0 / Month",
+      "websiteAnnual": 12000.0,
+      "annualAddons": [],
+      "annualINR": 12000.0,
+      "annualUSD": 0,
+      "annualGST_INR": 2160.0,
+      "annualGST_USD": 0.0,
+      "annualTotal_INR": 14160.0,
+      "annualTotal_USD": 0.0,
+      "annualTotalStr": "₹14,160.00 / Year",
+      "addons": [],
+      "subtotal": 0.0,
+      "gstRate": 18.0,
+      "gstAmount": 0.0,
+      "totalPrice": 0.0,
+      "commissionRate": 7.0,
+      "commissionAmount": 840.0,
+      "commExecutiveName": "Client Communication Exec",
+      "docCoordinatorName": "Project Documentation Coordinator",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-13",
+      "updatedAt": "2026-11-13",
+      "validation": {
+        "valid": false,
+        "score": 85,
+        "passed_checks": "6/7",
+        "estimated_pages": 1,
+        "checks": {
+          "company_info": {
+            "passed": true,
+            "message": "Company full legal name verified. GST number removed cleanly without empty placeholders.",
+            "errors": [],
+            "warnings": []
+          },
+          "customer_info": {
+            "passed": false,
+            "message": "Customer info missing or invalid.",
+            "errors": [
+              "Project / Solution Category is required."
+            ],
+            "warnings": []
+          },
+          "quotation_number": {
+            "passed": true,
+            "message": "Quotation number 'AIV-QT-2026-912D' format and uniqueness verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "investment_schedule": {
+            "passed": true,
+            "message": "Deliverable items and pricing structure verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "financial_calculations": {
+            "passed": true,
+            "message": "Subtotals, taxes, and final payable amount mathematically verified with 100% precision.",
+            "errors": [],
+            "warnings": []
+          },
+          "field_integrity": {
+            "passed": true,
+            "message": "No null, undefined, NaN, or corrupted values detected.",
+            "errors": [],
+            "warnings": []
+          },
+          "layout_overflow": {
+            "passed": true,
+            "estimated_pages": 1,
+            "message": "Layout verified. Estimated printable length: 1 page. Clean pagination guaranteed.",
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "warnings": []
+      },
+      "_entity_type": "quotations"
+    },
+    {
+      "id": "qt-978c46",
+      "quoteNumber": "AIV-QT-2026-3E17",
+      "clientName": "Test Customer Beta",
+      "classification": "Website",
+      "categoryId": "",
+      "categoryName": "",
+      "referenceUrl": "",
+      "currency": "INR",
+      "selectedPaymentPeriod": "Monthly",
+      "billingCadence": "Monthly",
+      "websitePrice": 1200.0,
+      "basePrice": 1200.0,
+      "domainAmount": 1200.0,
+      "websiteOneTime": 0.0,
+      "onetimeAddons": [],
+      "oneTimeSubtotal": 1200.0,
+      "oneTimeGST": 216.0,
+      "oneTimeTotal": 1416.0,
+      "oneTimeTotal_INR": 1416.0,
+      "oneTimeTotal_USD": 0.0,
+      "oneTimeTotalStr": "₹1,416.00 (One-Time)",
+      "websiteMonthly": 1200.0,
+      "monthlyAddons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "INR",
+          "id": "add-attend",
+          "name": "Attendance",
+          "price": 2000
+        }
+      ],
+      "monthlyINR": 3200.0,
+      "monthlyUSD": 0,
+      "monthlyGST_INR": 576.0,
+      "monthlyGST_USD": 0.0,
+      "monthlyTotal_INR": 3776.0,
+      "monthlyTotal_USD": 0.0,
+      "monthlyTotalStr": "₹3,776.00 / Month",
+      "websiteAnnual": 0.0,
+      "annualAddons": [],
+      "annualINR": 0.0,
+      "annualUSD": 0,
+      "annualGST_INR": 0.0,
+      "annualGST_USD": 0.0,
+      "annualTotal_INR": 0.0,
+      "annualTotal_USD": 0.0,
+      "annualTotalStr": "₹0 / Year",
+      "addons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "INR",
+          "id": "add-attend",
+          "name": "Attendance",
+          "price": 2000
+        }
+      ],
+      "subtotal": 1200.0,
+      "gstRate": 18.0,
+      "gstAmount": 216.0,
+      "totalPrice": 1416.0,
+      "commissionRate": 7.0,
+      "commissionAmount": 84.0,
+      "commExecutiveName": "Client Communication Exec",
+      "docCoordinatorName": "Project Documentation Coordinator",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-13",
+      "updatedAt": "2026-11-13",
+      "validation": {
+        "valid": false,
+        "score": 85,
+        "passed_checks": "6/7",
+        "estimated_pages": 1,
+        "checks": {
+          "company_info": {
+            "passed": true,
+            "message": "Company full legal name verified. GST number removed cleanly without empty placeholders.",
+            "errors": [],
+            "warnings": []
+          },
+          "customer_info": {
+            "passed": false,
+            "message": "Customer info missing or invalid.",
+            "errors": [
+              "Project / Solution Category is required."
+            ],
+            "warnings": []
+          },
+          "quotation_number": {
+            "passed": true,
+            "message": "Quotation number 'AIV-QT-2026-3E17' format and uniqueness verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "investment_schedule": {
+            "passed": true,
+            "message": "Deliverable items and pricing structure verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "financial_calculations": {
+            "passed": true,
+            "message": "Subtotals, taxes, and final payable amount mathematically verified with 100% precision.",
+            "errors": [],
+            "warnings": []
+          },
+          "field_integrity": {
+            "passed": true,
+            "message": "No null, undefined, NaN, or corrupted values detected.",
+            "errors": [],
+            "warnings": []
+          },
+          "layout_overflow": {
+            "passed": true,
+            "estimated_pages": 1,
+            "message": "Layout verified. Estimated printable length: 1 page. Clean pagination guaranteed.",
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "warnings": []
+      },
+      "_entity_type": "quotations"
+    },
+    {
+      "id": "qt-7dfadc",
+      "quoteNumber": "AIV-QT-2026-6D3E",
+      "clientName": "Test Customer Alpha",
+      "classification": "Website",
+      "categoryId": "",
+      "categoryName": "",
+      "referenceUrl": "",
+      "currency": "INR",
+      "selectedPaymentPeriod": "One-Time",
+      "billingCadence": "One-Time",
+      "websitePrice": 12000.0,
+      "basePrice": 12000.0,
+      "domainAmount": 1200.0,
+      "websiteOneTime": 12000.0,
+      "onetimeAddons": [
+        {
+          "billingCycle": "One-Time",
+          "currency": "INR",
+          "id": "add-auth",
+          "name": "Google Auth",
+          "price": 2000
+        }
+      ],
+      "oneTimeSubtotal": 15200.0,
+      "oneTimeGST": 2736.0,
+      "oneTimeTotal": 17936.0,
+      "oneTimeTotal_INR": 17936.0,
+      "oneTimeTotal_USD": 0.0,
+      "oneTimeTotalStr": "₹17,936.00 (One-Time)",
+      "websiteMonthly": 0.0,
+      "monthlyAddons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "USD",
+          "id": "add-ai",
+          "name": "AI Voice",
+          "price": 20
+        }
+      ],
+      "monthlyINR": 0.0,
+      "monthlyUSD": 20.0,
+      "monthlyGST_INR": 0.0,
+      "monthlyGST_USD": 3.6,
+      "monthlyTotal_INR": 0.0,
+      "monthlyTotal_USD": 23.6,
+      "monthlyTotalStr": "$23.60 / Month",
+      "websiteAnnual": 0.0,
+      "annualAddons": [
+        {
+          "billingCycle": "Annually",
+          "currency": "USD",
+          "id": "add-ana",
+          "name": "Analytics",
+          "price": 100
+        }
+      ],
+      "annualINR": 0.0,
+      "annualUSD": 100.0,
+      "annualGST_INR": 0.0,
+      "annualGST_USD": 18.0,
+      "annualTotal_INR": 0.0,
+      "annualTotal_USD": 118.0,
+      "annualTotalStr": "$118.00 / Year",
+      "addons": [
+        {
+          "billingCycle": "Monthly",
+          "currency": "USD",
+          "id": "add-ai",
+          "name": "AI Voice",
+          "price": 20
+        },
+        {
+          "billingCycle": "Annually",
+          "currency": "USD",
+          "id": "add-ana",
+          "name": "Analytics",
+          "price": 100
+        },
+        {
+          "billingCycle": "One-Time",
+          "currency": "INR",
+          "id": "add-auth",
+          "name": "Google Auth",
+          "price": 2000
+        }
+      ],
+      "subtotal": 15200.0,
+      "gstRate": 18.0,
+      "gstAmount": 2736.0,
+      "totalPrice": 17936.0,
+      "commissionRate": 7.0,
+      "commissionAmount": 840.0,
+      "commExecutiveName": "Lead Rep",
+      "docCoordinatorName": "Doc Coord",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-13",
+      "updatedAt": "2026-11-13",
+      "validation": {
+        "valid": false,
+        "score": 85,
+        "passed_checks": "6/7",
+        "estimated_pages": 1,
+        "checks": {
+          "company_info": {
+            "passed": true,
+            "message": "Company full legal name verified. GST number removed cleanly without empty placeholders.",
+            "errors": [],
+            "warnings": []
+          },
+          "customer_info": {
+            "passed": false,
+            "message": "Customer info missing or invalid.",
+            "errors": [
+              "Project / Solution Category is required."
+            ],
+            "warnings": []
+          },
+          "quotation_number": {
+            "passed": true,
+            "message": "Quotation number 'AIV-QT-2026-6D3E' format and uniqueness verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "investment_schedule": {
+            "passed": true,
+            "message": "Deliverable items and pricing structure verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "financial_calculations": {
+            "passed": true,
+            "message": "Subtotals, taxes, and final payable amount mathematically verified with 100% precision.",
+            "errors": [],
+            "warnings": []
+          },
+          "field_integrity": {
+            "passed": true,
+            "message": "No null, undefined, NaN, or corrupted values detected.",
+            "errors": [],
+            "warnings": []
+          },
+          "layout_overflow": {
+            "passed": true,
+            "estimated_pages": 1,
+            "message": "Layout verified. Estimated printable length: 1 page. Clean pagination guaranteed.",
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "warnings": []
+      },
+      "_entity_type": "quotations"
+    },
+    {
+      "id": "qt-149d2e",
+      "quoteNumber": "AIV-QT-2026-FF62",
+      "clientName": "Test Client Inc",
+      "classification": "Website",
+      "categoryId": "",
+      "categoryName": "E-Commerce",
+      "referenceUrl": "",
+      "currency": "USD",
+      "selectedPaymentPeriod": "One-Time",
+      "billingCadence": "One-Time",
+      "websitePrice": 1000.0,
+      "basePrice": 1000.0,
+      "domainAmount": 0.0,
+      "websiteOneTime": 1000.0,
+      "onetimeAddons": [],
+      "oneTimeSubtotal": 1000.0,
+      "oneTimeGST": 180.0,
+      "oneTimeTotal": 1180.0,
+      "oneTimeTotal_INR": 0.0,
+      "oneTimeTotal_USD": 1180.0,
+      "oneTimeTotalStr": "$1,180.00 (One-Time)",
+      "websiteMonthly": 0.0,
+      "monthlyAddons": [],
+      "monthlyINR": 0,
+      "monthlyUSD": 0.0,
+      "monthlyGST_INR": 0.0,
+      "monthlyGST_USD": 0.0,
+      "monthlyTotal_INR": 0.0,
+      "monthlyTotal_USD": 0.0,
+      "monthlyTotalStr": "$0 / Month",
+      "websiteAnnual": 0.0,
+      "annualAddons": [],
+      "annualINR": 0,
+      "annualUSD": 0.0,
+      "annualGST_INR": 0.0,
+      "annualGST_USD": 0.0,
+      "annualTotal_INR": 0.0,
+      "annualTotal_USD": 0.0,
+      "annualTotalStr": "$0 / Year",
+      "addons": [],
+      "subtotal": 1000.0,
+      "gstRate": 18.0,
+      "gstAmount": 180.0,
+      "totalPrice": 1180.0,
+      "commissionRate": 10.0,
+      "commissionAmount": 100.0,
+      "commExecutiveName": "Client Communication Exec",
+      "docCoordinatorName": "Project Documentation Coordinator",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-13",
+      "updatedAt": "2026-11-13",
+      "validation": {
+        "valid": true,
+        "score": 100,
+        "passed_checks": "7/7",
+        "estimated_pages": 1,
+        "checks": {
+          "company_info": {
+            "passed": true,
+            "message": "Company full legal name verified. GST number removed cleanly without empty placeholders.",
+            "errors": [],
+            "warnings": []
+          },
+          "customer_info": {
+            "passed": true,
+            "message": "Customer name and project solution verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "quotation_number": {
+            "passed": true,
+            "message": "Quotation number 'AIV-QT-2026-FF62' format and uniqueness verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "investment_schedule": {
+            "passed": true,
+            "message": "Deliverable items and pricing structure verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "financial_calculations": {
+            "passed": true,
+            "message": "Subtotals, taxes, and final payable amount mathematically verified with 100% precision.",
+            "errors": [],
+            "warnings": []
+          },
+          "field_integrity": {
+            "passed": true,
+            "message": "No null, undefined, NaN, or corrupted values detected.",
+            "errors": [],
+            "warnings": []
+          },
+          "layout_overflow": {
+            "passed": true,
+            "estimated_pages": 1,
+            "message": "Layout verified. Estimated printable length: 1 page. Clean pagination guaranteed.",
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "warnings": []
+      },
+      "_entity_type": "quotations"
+    },
+    {
+      "id": "qt-4b2757",
+      "quoteNumber": "AIV-QT-2026-CA7E",
+      "clientName": "Test Client Inc",
+      "classification": "Website",
+      "categoryId": "",
+      "categoryName": "E-Commerce",
+      "referenceUrl": "",
+      "currency": "USD",
+      "selectedPaymentPeriod": "One-Time",
+      "billingCadence": "One-Time",
+      "websitePrice": 1000.0,
+      "basePrice": 1000.0,
+      "domainAmount": 0.0,
+      "websiteOneTime": 1000.0,
+      "onetimeAddons": [],
+      "oneTimeSubtotal": 1000.0,
+      "oneTimeGST": 180.0,
+      "oneTimeTotal": 1180.0,
+      "oneTimeTotal_INR": 0.0,
+      "oneTimeTotal_USD": 1180.0,
+      "oneTimeTotalStr": "$1,180.00 (One-Time)",
+      "websiteMonthly": 0.0,
+      "monthlyAddons": [],
+      "monthlyINR": 0,
+      "monthlyUSD": 0.0,
+      "monthlyGST_INR": 0.0,
+      "monthlyGST_USD": 0.0,
+      "monthlyTotal_INR": 0.0,
+      "monthlyTotal_USD": 0.0,
+      "monthlyTotalStr": "$0 / Month",
+      "websiteAnnual": 0.0,
+      "annualAddons": [],
+      "annualINR": 0,
+      "annualUSD": 0.0,
+      "annualGST_INR": 0.0,
+      "annualGST_USD": 0.0,
+      "annualTotal_INR": 0.0,
+      "annualTotal_USD": 0.0,
+      "annualTotalStr": "$0 / Year",
+      "addons": [],
+      "subtotal": 1000.0,
+      "gstRate": 18.0,
+      "gstAmount": 180.0,
+      "totalPrice": 1180.0,
+      "commissionRate": 10.0,
+      "commissionAmount": 100.0,
+      "commExecutiveName": "Client Communication Exec",
+      "docCoordinatorName": "Project Documentation Coordinator",
+      "assignedMarketing": [],
+      "requirementsFiles": [],
+      "status": "Generated",
+      "assignmentStatus": "none",
+      "terms": "Pricing structure reflects selected one-time and recurring subscriptions. All prices subject to 18% GST.",
+      "createdAt": "2026-11-13",
+      "updatedAt": "2026-11-13",
+      "validation": {
+        "valid": true,
+        "score": 100,
+        "passed_checks": "7/7",
+        "estimated_pages": 1,
+        "checks": {
+          "company_info": {
+            "passed": true,
+            "message": "Company full legal name verified. GST number removed cleanly without empty placeholders.",
+            "errors": [],
+            "warnings": []
+          },
+          "customer_info": {
+            "passed": true,
+            "message": "Customer name and project solution verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "quotation_number": {
+            "passed": true,
+            "message": "Quotation number 'AIV-QT-2026-CA7E' format and uniqueness verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "investment_schedule": {
+            "passed": true,
+            "message": "Deliverable items and pricing structure verified.",
+            "errors": [],
+            "warnings": []
+          },
+          "financial_calculations": {
+            "passed": true,
+            "message": "Subtotals, taxes, and final payable amount mathematically verified with 100% precision.",
+            "errors": [],
+            "warnings": []
+          },
+          "field_integrity": {
+            "passed": true,
+            "message": "No null, undefined, NaN, or corrupted values detected.",
+            "errors": [],
+            "warnings": []
+          },
+          "layout_overflow": {
+            "passed": true,
+            "estimated_pages": 1,
+            "message": "Layout verified. Estimated printable length: 1 page. Clean pagination guaranteed.",
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "warnings": []
+      },
+      "_entity_type": "quotations"
+    },
     {
       "id": "qt-3da1df",
       "quoteNumber": "AIV-QT-2026-4422",

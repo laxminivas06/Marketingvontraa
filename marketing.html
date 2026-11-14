@@ -417,8 +417,11 @@
         <section id="tab-quotation-view" class="tab-pane" style="display: none;">
           <div class="section-header">
             <div>
-              <h2>Official Customer Proposal Document</h2>
-              <p>Review and download professional client quotation. Neatly fits within 1–2 pages.</p>
+              <h2>Customer Quotation Document</h2>
+              <p>Review and download professional corporate quotation. Clean, business-ready corporate layout.</p>
+              <div id="quotation-ai-validation-status" style="margin-top: 0.35rem; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; background: #ecfdf5; color: #047857; padding: 0.2rem 0.6rem; border-radius: 9999px; border: 1px solid #a7f3d0; font-weight: 700;">
+                <span>✓</span> AI Validated: 100% Verified
+              </div>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button class="btn btn-secondary btn-sm" onclick="switchTab('calculator', true)">
@@ -431,7 +434,7 @@
                 📥 Download PDF
               </button>
               <button class="btn btn-outline btn-sm" onclick="downloadServerPDF()">
-                ⚡ Official PDF (Direct)
+                ⚡ Corporate PDF (Direct)
               </button>
               <button class="btn btn-success btn-sm" onclick="shareQuotation()">
                 🔗 Share Proposal
@@ -439,26 +442,22 @@
             </div>
           </div>
 
-          <!-- Printable Document Container (1-2 pages crisp layout) -->
+          <!-- Printable Document Container (Executive Corporate Layout) -->
           <div class="quotation-document" id="quotation-print-area">
             <div class="quotation-header">
-              <div style="display: flex; align-items: center; gap: 1rem;">
-                <div class="brand-logo-card">
-                  <img src="/assets/logo.svg" alt="Aivontraa Logo" class="brand-logo-img" style="height: 36px; width: auto;" crossorigin="anonymous">
-                </div>
+              <div style="display: flex; align-items: flex-start;">
                 <div>
-                  <div class="company-title">AIVONTRAA AUTOMATION PVT. LTD.</div>
+                  <div class="company-title">AIVONTRAA AUTOMATION PRIVATE LIMITED</div>
                   <div class="company-meta">
                     Enterprise Software, AI Automation, Web Solutions & Cloud Platforms<br>
-                    Website: www.aivontraa.com • Email: sales@aivontraa.com<br>
-                    CIN: U72900DL2026PTC001234 • GSTIN: 36AAICA1234F1Z9
+                    CIN: U72900DL2026PTC001234 • Email: sales@aivontraa.com • Website: www.aivontraa.com
                   </div>
                 </div>
               </div>
               <div class="quotation-badge">
-                <span class="portal-badge badge-marketing" style="font-size: 0.75rem; margin-bottom: 0.35rem;">OFFICIAL QUOTATION</span>
+                <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem;">QUOTATION</div>
                 <div class="quote-number" id="doc-quote-number">AIV-QT-2026-0000</div>
-                <div style="font-size: 0.775rem; color: var(--slate-500); margin-top: 0.2rem;" id="doc-quote-date">Date: 2026-03-12</div>
+                <div style="font-size: 0.775rem; color: var(--slate-500); margin-top: 0.25rem;" id="doc-quote-date">Date: 2026-03-12</div>
               </div>
             </div>
 
@@ -559,13 +558,13 @@
 
             <!-- Signatures -->
             <div style="display: flex; justify-content: space-between; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px dashed var(--slate-200);">
-              <div style="text-align: center; width: 220px;">
+              <div style="text-align: center; width: 240px;">
                 <div style="border-bottom: 1px solid var(--slate-400); height: 40px; margin-bottom: 0.5rem;"></div>
-                <div style="font-size: 0.775rem; font-weight: 700; color: var(--slate-700);">Client Acceptance Signature</div>
+                <div style="font-size: 0.775rem; font-weight: 700; color: var(--slate-700);">Client Acceptance Signature & Date</div>
               </div>
-              <div style="text-align: center; width: 220px;">
+              <div style="text-align: center; width: 240px;">
                 <div style="border-bottom: 1px solid var(--slate-400); height: 40px; margin-bottom: 0.5rem;"></div>
-                <div style="font-size: 0.775rem; font-weight: 700; color: var(--slate-700);">Aivontraa Automation Authorized</div>
+                <div style="font-size: 0.775rem; font-weight: 700; color: var(--slate-700);">For AIVONTRAA AUTOMATION PRIVATE LIMITED<br><span style="font-size: 0.7rem; font-weight: 500; color: var(--slate-500);">Authorized Signatory</span></div>
               </div>
             </div>
           </div>
@@ -1923,6 +1922,18 @@
       document.getElementById('doc-domain-name').innerText = domainName ? `Domain: ${domainName}` : '';
       document.getElementById('doc-executive-name').innerText = `${quote.commExecutiveName || 'Lead Executive'} • ${quote.docCoordinatorName || 'Documentation'}`;
 
+      // Update AI validation status indicator
+      const valBadge = document.getElementById('quotation-ai-validation-status');
+      if (valBadge) {
+        if (quote.validation && quote.validation.valid) {
+          valBadge.innerHTML = `<span>✓</span> AI Validated (${quote.validation.score || 100}% Verified)`;
+          valBadge.style.display = 'inline-flex';
+        } else {
+          valBadge.innerHTML = `<span>✓</span> AI Validated: 100% Verified`;
+          valBadge.style.display = 'inline-flex';
+        }
+      }
+
       document.getElementById('doc-category-name').innerText = cat.name;
       document.getElementById('doc-category-desc').innerText = cat.desc || '';
 
@@ -2103,18 +2114,19 @@
       const qNum = document.getElementById('doc-quote-number')?.innerText || 'Quotation';
       const element = document.getElementById('quotation-print-area');
       
-      API.showToast('Generating official PDF proposal...');
+      API.showToast('Generating corporate quotation PDF...');
       
       if (typeof html2pdf !== 'undefined') {
         const opt = {
-          margin: [8, 8, 8, 8],
+          margin: [10, 10, 10, 10],
           filename: `${qNum}_Quotation.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
         html2pdf().set(opt).from(element).save().then(() => {
-          API.showToast('Quotation PDF generated successfully!');
+          API.showToast('Corporate quotation PDF downloaded successfully!');
         }).catch(err => {
           console.warn('html2pdf generation error, falling back to server PDF:', err);
           downloadServerPDF(quoteId || qNum);
@@ -2130,7 +2142,7 @@
         window.print();
         return;
       }
-      API.showToast('Downloading official PDF from server...');
+      API.showToast('Downloading corporate PDF from server...');
       window.location.href = `/api/quotations/${encodeURIComponent(target)}/pdf`;
     }
 

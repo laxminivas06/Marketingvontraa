@@ -5,9 +5,9 @@
     "sequence": 1,
     "is_active": true,
     "format": "JSON",
-    "updated_at": "2026-11-12 21:21:24",
+    "updated_at": "2026-11-13 23:57:50",
     "record_count": 27,
-    "checksum": "9f90c49a9edec8f3ca794abed5dec77b754169868794bf7146716ef9b39a49c3"
+    "checksum": "844afc31d05abf1e238c0bc2617bf43226d2b11cc751977c677c1210884e125f"
   },
   "records": [
     {
@@ -40,7 +40,7 @@
       "priceAnnualINR": 12000,
       "priceAnnualUSD": 169,
       "isBundle": false,
-      "updatedAt": "2026-11-12 21:21:23",
+      "updatedAt": "2026-11-13 23:53:16",
       "_entity_type": "categories"
     },
     {
@@ -608,7 +608,7 @@
         "Google Maps, WhatsApp Integration & SEO Optimization",
         "Cross-Platform Compatible & Mobile Responsive"
       ],
-      "updatedAt": "2026-11-12 21:21:24",
+      "updatedAt": "2026-11-13 23:53:16",
       "_entity_type": "categories"
     },
     {
