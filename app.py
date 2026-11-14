@@ -1,4 +1,6 @@
 import os
+import re
+import math
 import json
 import uuid
 import jwt
@@ -567,6 +569,64 @@ def decode_google_token(token_str: str) -> dict:
 
     return {}
 
+# -------------------------------------------------------------
+# NUMERIC & DATA CLEANING HELPERS (RESILIENT TO CURRENCY & COMMAS)
+# -------------------------------------------------------------
+def safe_parse_float(val, default=0.0):
+    if val is None:
+        return default
+    if isinstance(val, (int, float)):
+        if math.isnan(val) or math.isinf(val):
+            return default
+        return float(val)
+    s = str(val).strip()
+    if not s:
+        return default
+    clean = re.sub(r'[₹$€£,]', '', s)
+    clean = re.sub(r'(?i)\b(inr|usd|rs\.?|per\s*(?:month|year|mo|yr)|\/(?:month|year|mo|yr))\b', '', clean).strip()
+    m = re.search(r'[-+]?\d+(?:\.\d+)?', clean)
+    if m:
+        try:
+            return float(m.group(0))
+        except (ValueError, TypeError):
+            return default
+    return default
+
+def safe_parse_number(val, default=0):
+    f = safe_parse_float(val, default=float(default))
+    return int(round(f))
+
+def get_flex_field(row: dict, candidate_keys: list, default=''):
+    if not isinstance(row, dict):
+        return default
+    clean_candidates = [k.lower().replace(' ', '').replace('_', '').replace('-', '') for k in candidate_keys]
+    
+    # 1. Exact match first
+    for k in candidate_keys:
+        if k in row and row[k] is not None and str(row[k]).strip() != '':
+            return row[k]
+            
+    # 2. Normalized match (handles headers with trailing spaces like 'Category Name ')
+    for row_key, val in row.items():
+        if val is None or str(val).strip() == '':
+            continue
+        clean_row_key = str(row_key).lower().replace(' ', '').replace('_', '').replace('-', '')
+        if clean_row_key in clean_candidates:
+            return val
+
+    return default
+
+def parse_features_list(raw_feats):
+    if raw_feats is None:
+        return []
+    if isinstance(raw_feats, list):
+        return [str(f).strip() for f in raw_feats if str(f).strip()]
+    s = str(raw_feats).strip()
+    if not s:
+        return []
+    parts = s.replace('\n', '|').replace(';', '|').replace(',', '|').replace('•', '|').split('|')
+    return [p.strip() for p in parts if p.strip()]
+
 @app.route('/api/auth/login', methods=['POST'])
 def api_auth_login():
     # Username/password login is completely prohibited per requirement 15
@@ -665,15 +725,15 @@ def normalize_categories(cats):
             if not (item['enableOneTime'] or item['enableMonthly'] or item['enableAnnual']):
                 item['enableOneTime'] = True
 
-        base_inr = int(item.get('basePriceINR', 0))
-        base_usd = int(item.get('basePriceUSD', 0))
+        base_inr = safe_parse_number(item.get('basePriceINR', 0))
+        base_usd = safe_parse_number(item.get('basePriceUSD', 0))
 
-        item['priceOneTimeINR'] = int(item.get('priceOneTimeINR') if item.get('priceOneTimeINR') is not None else base_inr)
-        item['priceOneTimeUSD'] = int(item.get('priceOneTimeUSD') if item.get('priceOneTimeUSD') is not None else base_usd)
-        item['priceMonthlyINR'] = int(item.get('priceMonthlyINR') if item.get('priceMonthlyINR') is not None else (round(item['priceOneTimeINR'] / 10) if item['priceOneTimeINR'] else 0))
-        item['priceMonthlyUSD'] = int(item.get('priceMonthlyUSD') if item.get('priceMonthlyUSD') is not None else (round(item['priceOneTimeUSD'] / 10) if item['priceOneTimeUSD'] else 0))
-        item['priceAnnualINR'] = int(item.get('priceAnnualINR') if item.get('priceAnnualINR') is not None else (item['priceOneTimeINR'] or 0))
-        item['priceAnnualUSD'] = int(item.get('priceAnnualUSD') if item.get('priceAnnualUSD') is not None else (item['priceOneTimeUSD'] or 0))
+        item['priceOneTimeINR'] = safe_parse_number(item.get('priceOneTimeINR'), base_inr)
+        item['priceOneTimeUSD'] = safe_parse_number(item.get('priceOneTimeUSD'), base_usd)
+        item['priceMonthlyINR'] = safe_parse_number(item.get('priceMonthlyINR'), round(item['priceOneTimeINR'] / 10) if item['priceOneTimeINR'] else 0)
+        item['priceMonthlyUSD'] = safe_parse_number(item.get('priceMonthlyUSD'), round(item['priceOneTimeUSD'] / 10) if item['priceOneTimeUSD'] else 0)
+        item['priceAnnualINR'] = safe_parse_number(item.get('priceAnnualINR'), item['priceOneTimeINR'] or 0)
+        item['priceAnnualUSD'] = safe_parse_number(item.get('priceAnnualUSD'), item['priceOneTimeUSD'] or 0)
         item['basePriceINR'] = item['priceOneTimeINR']
         item['basePriceUSD'] = item['priceOneTimeUSD']
         
@@ -756,12 +816,12 @@ def api_categories():
     if not (enable_onetime or enable_monthly or enable_annual):
         enable_onetime = True
 
-    price_onetime_inr = int(payload.get('priceOneTimeINR') or payload.get('basePriceINR') or 0)
-    price_onetime_usd = int(payload.get('priceOneTimeUSD') or payload.get('basePriceUSD') or 0)
-    price_monthly_inr = int(payload.get('priceMonthlyINR') or (round(price_onetime_inr / 10) if price_onetime_inr else 0))
-    price_monthly_usd = int(payload.get('priceMonthlyUSD') or (round(price_onetime_usd / 10) if price_onetime_usd else 0))
-    price_annual_inr = int(payload.get('priceAnnualINR') or price_onetime_inr or 0)
-    price_annual_usd = int(payload.get('priceAnnualUSD') or price_onetime_usd or 0)
+    price_onetime_inr = safe_parse_number(payload.get('priceOneTimeINR') if payload.get('priceOneTimeINR') is not None else payload.get('basePriceINR'), 0)
+    price_onetime_usd = safe_parse_number(payload.get('priceOneTimeUSD') if payload.get('priceOneTimeUSD') is not None else payload.get('basePriceUSD'), 0)
+    price_monthly_inr = safe_parse_number(payload.get('priceMonthlyINR'), round(price_onetime_inr / 10) if price_onetime_inr else 0)
+    price_monthly_usd = safe_parse_number(payload.get('priceMonthlyUSD'), round(price_onetime_usd / 10) if price_onetime_usd else 0)
+    price_annual_inr = safe_parse_number(payload.get('priceAnnualINR'), price_onetime_inr or 0)
+    price_annual_usd = safe_parse_number(payload.get('priceAnnualUSD'), price_onetime_usd or 0)
     features = payload.get('features') or []
 
     if not name:
@@ -847,19 +907,19 @@ def api_category_item(cat_id):
                 cat['enableOneTime'] = True
 
         if 'priceOneTimeINR' in payload or 'basePriceINR' in payload:
-            cat['priceOneTimeINR'] = int(payload.get('priceOneTimeINR') if payload.get('priceOneTimeINR') is not None else (payload.get('basePriceINR') or 0))
+            cat['priceOneTimeINR'] = safe_parse_number(payload.get('priceOneTimeINR') if payload.get('priceOneTimeINR') is not None else payload.get('basePriceINR'), 0)
             cat['basePriceINR'] = cat['priceOneTimeINR']
         if 'priceOneTimeUSD' in payload or 'basePriceUSD' in payload:
-            cat['priceOneTimeUSD'] = int(payload.get('priceOneTimeUSD') if payload.get('priceOneTimeUSD') is not None else (payload.get('basePriceUSD') or 0))
+            cat['priceOneTimeUSD'] = safe_parse_number(payload.get('priceOneTimeUSD') if payload.get('priceOneTimeUSD') is not None else payload.get('basePriceUSD'), 0)
             cat['basePriceUSD'] = cat['priceOneTimeUSD']
         if 'priceMonthlyINR' in payload:
-            cat['priceMonthlyINR'] = int(payload.get('priceMonthlyINR', 0))
+            cat['priceMonthlyINR'] = safe_parse_number(payload.get('priceMonthlyINR'), 0)
         if 'priceMonthlyUSD' in payload:
-            cat['priceMonthlyUSD'] = int(payload.get('priceMonthlyUSD', 0))
+            cat['priceMonthlyUSD'] = safe_parse_number(payload.get('priceMonthlyUSD'), 0)
         if 'priceAnnualINR' in payload:
-            cat['priceAnnualINR'] = int(payload.get('priceAnnualINR', 0))
+            cat['priceAnnualINR'] = safe_parse_number(payload.get('priceAnnualINR'), 0)
         if 'priceAnnualUSD' in payload:
-            cat['priceAnnualUSD'] = int(payload.get('priceAnnualUSD', 0))
+            cat['priceAnnualUSD'] = safe_parse_number(payload.get('priceAnnualUSD'), 0)
 
         if 'features' in payload:
             cat['features'] = payload['features']
@@ -914,12 +974,12 @@ def api_bundle_recalculate():
     for aid in app_ids:
         app_obj = app_map.get(aid)
         if app_obj:
-            ot_inr = int(app_obj.get('priceOneTimeINR') or app_obj.get('basePriceINR') or 0)
-            ot_usd = int(app_obj.get('priceOneTimeUSD') or app_obj.get('basePriceUSD') or 0)
-            mo_inr = int(app_obj.get('priceMonthlyINR') or (round(ot_inr / 10) if ot_inr else 0))
-            mo_usd = int(app_obj.get('priceMonthlyUSD') or (round(ot_usd / 10) if ot_usd else 0))
-            an_inr = int(app_obj.get('priceAnnualINR') or ot_inr)
-            an_usd = int(app_obj.get('priceAnnualUSD') or ot_usd)
+            ot_inr = safe_parse_number(app_obj.get('priceOneTimeINR') if app_obj.get('priceOneTimeINR') is not None else app_obj.get('basePriceINR'), 0)
+            ot_usd = safe_parse_number(app_obj.get('priceOneTimeUSD') if app_obj.get('priceOneTimeUSD') is not None else app_obj.get('basePriceUSD'), 0)
+            mo_inr = safe_parse_number(app_obj.get('priceMonthlyINR'), round(ot_inr / 10) if ot_inr else 0)
+            mo_usd = safe_parse_number(app_obj.get('priceMonthlyUSD'), round(ot_usd / 10) if ot_usd else 0)
+            an_inr = safe_parse_number(app_obj.get('priceAnnualINR'), ot_inr)
+            an_usd = safe_parse_number(app_obj.get('priceAnnualUSD'), ot_usd)
 
             tot_ot_inr += ot_inr
             tot_ot_usd += ot_usd
@@ -963,51 +1023,6 @@ def api_categories_template():
         headers={"Content-disposition": "attachment; filename=aivontraa_categories_template.csv"}
     )
 
-def safe_parse_number(val, default=0):
-    if val is None:
-        return default
-    if isinstance(val, (int, float)):
-        return int(round(val))
-    s = str(val).strip()
-    if not s:
-        return default
-    s = s.replace('₹', '').replace('$', '').replace('€', '').replace('£', '').replace(',', '').strip()
-    try:
-        return int(round(float(s)))
-    except (ValueError, TypeError):
-        return default
-
-def get_flex_field(row: dict, candidate_keys: list, default=''):
-    if not isinstance(row, dict):
-        return default
-    clean_candidates = [k.lower().replace(' ', '').replace('_', '').replace('-', '') for k in candidate_keys]
-    
-    # 1. Exact match first
-    for k in candidate_keys:
-        if k in row and row[k] is not None and str(row[k]).strip() != '':
-            return row[k]
-            
-    # 2. Normalized match (handles headers with trailing spaces like 'Category Name ')
-    for row_key, val in row.items():
-        if val is None or str(val).strip() == '':
-            continue
-        clean_row_key = str(row_key).lower().replace(' ', '').replace('_', '').replace('-', '')
-        if clean_row_key in clean_candidates:
-            return val
-
-    return default
-
-def parse_features_list(raw_feats):
-    if raw_feats is None:
-        return []
-    if isinstance(raw_feats, list):
-        return [str(f).strip() for f in raw_feats if str(f).strip()]
-    s = str(raw_feats).strip()
-    if not s:
-        return []
-    parts = s.replace('\n', '|').replace(';', '|').replace(',', '|').replace('•', '|').split('|')
-    return [p.strip() for p in parts if p.strip()]
-
 @app.route('/api/categories/bulk-upload', methods=['POST'])
 def api_categories_bulk_upload():
     try:
@@ -1036,8 +1051,24 @@ def api_categories_bulk_upload():
             raw_feats = get_flex_field(row, ['Included Features', 'features', 'key features', 'feature list'])
             features = parse_features_list(raw_feats)
 
-            inr_val = get_flex_field(row, ['INR Price', 'basePriceINR', 'price inr', 'inr', 'price (inr)', 'base price inr', 'price', 'cost inr'])
-            usd_val = get_flex_field(row, ['USD Price', 'basePriceUSD', 'price usd', 'usd', 'price (usd)', 'base price usd', 'cost usd'])
+            # Price fields parsing - supporting currency formatted strings like '₹12,000', '$169', '12000'
+            inr_val = get_flex_field(row, ['INR Price', 'basePriceINR', 'priceOneTimeINR', 'price inr', 'inr', 'price (inr)', 'base price inr', 'one-time inr', 'one time inr', 'price', 'cost inr'])
+            usd_val = get_flex_field(row, ['USD Price', 'basePriceUSD', 'priceOneTimeUSD', 'price usd', 'usd', 'price (usd)', 'base price usd', 'one-time usd', 'one time usd', 'cost usd'])
+
+            mo_inr_val = get_flex_field(row, ['Monthly INR', 'priceMonthlyINR', 'monthly inr', 'monthly price inr', 'monthly (inr)'])
+            mo_usd_val = get_flex_field(row, ['Monthly USD', 'priceMonthlyUSD', 'monthly usd', 'monthly price usd', 'monthly (usd)'])
+
+            an_inr_val = get_flex_field(row, ['Annual INR', 'priceAnnualINR', 'annual inr', 'yearly inr', 'annual price inr', 'annual (inr)'])
+            an_usd_val = get_flex_field(row, ['Annual USD', 'priceAnnualUSD', 'annual usd', 'yearly usd', 'annual price usd', 'annual (usd)'])
+
+            ot_inr = safe_parse_number(inr_val, 0)
+            ot_usd = safe_parse_number(usd_val, 0)
+
+            mo_inr = safe_parse_number(mo_inr_val, round(ot_inr / 10) if ot_inr else 0) if mo_inr_val != '' else (round(ot_inr / 10) if ot_inr else 0)
+            mo_usd = safe_parse_number(mo_usd_val, round(ot_usd / 10) if ot_usd else 0) if mo_usd_val != '' else (round(ot_usd / 10) if ot_usd else 0)
+
+            an_inr = safe_parse_number(an_inr_val, ot_inr) if an_inr_val != '' else ot_inr
+            an_usd = safe_parse_number(an_usd_val, ot_usd) if an_usd_val != '' else ot_usd
 
             classification = str(get_flex_field(row, ['Classification', 'classification', 'type', 'category type'], 'Website')).strip()
             desc = str(get_flex_field(row, ['Description', 'desc', 'details', 'summary'], '')).strip()
@@ -1049,9 +1080,21 @@ def api_categories_bulk_upload():
                 "classification": classification or "Website",
                 "desc": desc,
                 "referenceUrl": ref_url,
-                "basePriceINR": safe_parse_number(inr_val, 0),
-                "basePriceUSD": safe_parse_number(usd_val, 0),
-                "features": features
+                "isBundle": False,
+                "bundleApps": [],
+                "enableOneTime": True,
+                "enableMonthly": True,
+                "enableAnnual": True,
+                "priceOneTimeINR": ot_inr,
+                "priceOneTimeUSD": ot_usd,
+                "priceMonthlyINR": mo_inr,
+                "priceMonthlyUSD": mo_usd,
+                "priceAnnualINR": an_inr,
+                "priceAnnualUSD": an_usd,
+                "basePriceINR": ot_inr,
+                "basePriceUSD": ot_usd,
+                "features": features,
+                "createdAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
             existing_cats.append(new_cat)
             existing_names.add(name.lower())
@@ -1137,9 +1180,9 @@ def api_commission_slabs():
     payload = request.get_json() or {}
     title = payload.get('title', '').strip()
     currency = payload.get('currency', 'INR').upper()
-    min_price = float(payload.get('minPrice', 0))
-    max_price = float(payload.get('maxPrice', 0))
-    rate = min(10.0, max(0.0, float(payload.get('rate', 0))))
+    min_price = safe_parse_float(payload.get('minPrice', 0))
+    max_price = safe_parse_float(payload.get('maxPrice', 0))
+    rate = min(10.0, max(0.0, safe_parse_float(payload.get('rate', 0))))
 
     new_slab = {
         "id": f"slab-{currency.lower()}-{uuid.uuid4().hex[:6]}",
@@ -1174,9 +1217,9 @@ def api_commission_slab_item(slab_id):
     if request.method == 'PUT':
         payload = request.get_json() or {}
         slabs[idx]['title'] = payload.get('title', slabs[idx]['title']).strip()
-        slabs[idx]['minPrice'] = float(payload.get('minPrice', slabs[idx]['minPrice']))
-        slabs[idx]['maxPrice'] = float(payload.get('maxPrice', slabs[idx]['maxPrice']))
-        slabs[idx]['rate'] = min(10.0, max(0.0, float(payload.get('rate', slabs[idx]['rate']))))
+        slabs[idx]['minPrice'] = safe_parse_float(payload.get('minPrice', slabs[idx]['minPrice']))
+        slabs[idx]['maxPrice'] = safe_parse_float(payload.get('maxPrice', slabs[idx]['maxPrice']))
+        slabs[idx]['rate'] = min(10.0, max(0.0, safe_parse_float(payload.get('rate', slabs[idx]['rate']))))
         save_db(db)
         return jsonify({"success": True, "slab": slabs[idx]})
 
@@ -1325,7 +1368,7 @@ def api_addons():
     if not name:
         return jsonify({"success": False, "message": "Add-on name is required"}), 400
 
-    price = float(payload.get('price', 0))
+    price = safe_parse_float(payload.get('price', 0))
     currency = payload.get('currency', 'INR').upper()
     if currency not in ['INR', 'USD']:
         currency = 'INR'
@@ -1374,7 +1417,7 @@ def api_addon_item(add_id):
         if not name:
             return jsonify({"success": False, "message": "Add-on name cannot be empty"}), 400
 
-        price = float(payload.get('price', addons[idx].get('price', 0)))
+        price = safe_parse_float(payload.get('price', addons[idx].get('price', 0)))
         currency = payload.get('currency', addons[idx].get('currency', 'INR')).upper()
         if currency not in ['INR', 'USD']:
             currency = 'INR'
@@ -1458,8 +1501,8 @@ def api_quotations():
     else:
         selected_payment_period = 'One-Time'
 
-    website_price = float(payload.get('websitePrice', payload.get('basePrice', 0)))
-    domain_amount = float(payload.get('domainAmount', 0))
+    website_price = safe_parse_float(payload.get('websitePrice', payload.get('basePrice', 0)))
+    domain_amount = safe_parse_float(payload.get('domainAmount', 0))
     addons = payload.get('addons', [])
 
     # Split website cost according to its payment model
@@ -1482,8 +1525,8 @@ def api_quotations():
             monthly_addons.append(a)
 
     # 1. ONE-TIME CHARGES
-    onetime_addons_inr = round(sum(float(a.get('price', 0)) for a in onetime_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
-    onetime_addons_usd = round(sum(float(a.get('price', 0)) for a in onetime_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+    onetime_addons_inr = round(sum(safe_parse_float(a.get('price', 0)) for a in onetime_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    onetime_addons_usd = round(sum(safe_parse_float(a.get('price', 0)) for a in onetime_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
 
     base_onetime = website_onetime + domain_amount
     if currency == 'INR':
@@ -1499,8 +1542,8 @@ def api_quotations():
     onetime_total_usd = round(onetime_usd + onetime_gst_usd, 2)
 
     # 2. MONTHLY RECURRING CHARGES
-    monthly_addons_inr = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
-    monthly_addons_usd = round(sum(float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+    monthly_addons_inr = round(sum(safe_parse_float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    monthly_addons_usd = round(sum(safe_parse_float(a.get('price', 0)) for a in monthly_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
 
     if currency == 'INR':
         monthly_inr = round(website_monthly + monthly_addons_inr, 2)
@@ -1515,8 +1558,8 @@ def api_quotations():
     monthly_total_usd = round(monthly_usd + monthly_gst_usd, 2)
 
     # 3. ANNUAL RECURRING CHARGES
-    annual_addons_inr = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
-    annual_addons_usd = round(sum(float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
+    annual_addons_inr = round(sum(safe_parse_float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'INR'), 2)
+    annual_addons_usd = round(sum(safe_parse_float(a.get('price', 0)) for a in annual_addons if str(a.get('currency', '')).upper() == 'USD'), 2)
 
     if currency == 'INR':
         annual_inr = round(website_annual + annual_addons_inr, 2)
